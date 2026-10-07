@@ -38,12 +38,11 @@ function EditEmail() {
     try {
       setLoading(true);
 
-      const response =
-        await sendEmailChangeOTP(normalizedEmail);
+      await sendEmailChangeOTP(normalizedEmail);
 
       navigate("/verify-email", {
         state: {
-          email: response.data.email,
+          email: normalizedEmail,
         },
       });
     } catch (error) {

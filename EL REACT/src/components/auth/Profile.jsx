@@ -6,6 +6,7 @@ import {
   Wallet,
   Ticket,
   MapPin,
+  Lock,
   LogOut,
   Mail,
   Phone,
@@ -443,6 +444,19 @@ function Profile() {
 
                 <span>
                   SAVED ADDRESSES
+                </span>
+
+              </button>
+
+
+              <button
+                className="sidebar-item"
+                onClick={() => navigate("/change-password")}
+              >
+                <Lock size={17} />
+
+                <span>
+                  CHANGE PASSWORD
                 </span>
 
               </button>

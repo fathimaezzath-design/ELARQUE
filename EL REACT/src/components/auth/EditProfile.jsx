@@ -8,8 +8,6 @@ import {
   Calendar,
   MapPin,
   Lock,
-  Eye,
-  EyeOff,
   Camera,
   ArrowLeft,
   Save,
@@ -19,7 +17,6 @@ import {
   getProfile,
   updateProfile,
   updateProfileImage,
-  changePassword,
 } from "../../services/profileService";
 
 
@@ -52,28 +49,6 @@ const EditProfile = () => {
   const [pageLoading, setPageLoading] = useState(true);
 
 
-  /* =========================
-     PASSWORD STATE
-  ========================= */
-
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  const [passwordErrors, setPasswordErrors] = useState({});
-  const [passwordLoading, setPasswordLoading] =
-    useState(false);
-
-  const [showCurrentPassword, setShowCurrentPassword] =
-    useState(false);
-
-  const [showNewPassword, setShowNewPassword] =
-    useState(false);
-
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
 
 
   /* =========================
@@ -196,23 +171,6 @@ const EditProfile = () => {
   };
 
 
-  /* =========================
-     PASSWORD INPUT CHANGE
-  ========================= */
-
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-
-    setPasswordData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    setPasswordErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
-  };
 
 
   /* =========================
@@ -238,17 +196,6 @@ const EditProfile = () => {
       if (!/^[0-9]{10}$/.test(cleanPhone)) {
         newErrors.phoneNumber =
           "Enter a valid 10 digit phone number";
-      }
-    }
-
-    if (formData.address.pincode.trim()) {
-      if (
-        !/^[0-9]{6}$/.test(
-          formData.address.pincode
-        )
-      ) {
-        newErrors.pincode =
-          "Enter a valid 6 digit pincode";
       }
     }
 
@@ -304,12 +251,37 @@ const EditProfile = () => {
       const response =
         await updateProfile(payload);
 
-      if (imageFile) {
-        await updateProfileImage(imageFile);
-      }
-
-      const updatedUser =
+      let updatedUser =
         response?.data?.user;
+
+      if (imageFile) {
+        const imageResponse =
+          await updateProfileImage(imageFile);
+
+        const newProfileImage =
+          imageResponse?.data?.profileImage;
+
+        if (newProfileImage) {
+          if (updatedUser) {
+            updatedUser = {
+              ...updatedUser,
+              profileImage: newProfileImage,
+            };
+          } else {
+            try {
+              const existingLocalUser = JSON.parse(
+                localStorage.getItem("user") || "{}"
+              );
+              updatedUser = {
+                ...existingLocalUser,
+                profileImage: newProfileImage,
+              };
+            } catch {
+              updatedUser = { profileImage: newProfileImage };
+            }
+          }
+        }
+      }
 
       if (updatedUser) {
         localStorage.setItem(
@@ -373,91 +345,6 @@ const EditProfile = () => {
   };
 
 
-  /* =========================
-     PASSWORD VALIDATION
-  ========================= */
-
-  const validatePassword = () => {
-    const newErrors = {};
-
-    if (!passwordData.currentPassword) {
-      newErrors.currentPassword =
-        "Current password is required";
-    }
-
-    if (!passwordData.newPassword) {
-      newErrors.newPassword =
-        "New password is required";
-    } else if (
-      passwordData.newPassword.length < 8
-    ) {
-      newErrors.newPassword =
-        "Password must contain at least 8 characters";
-    }
-
-    if (!passwordData.confirmPassword) {
-      newErrors.confirmPassword =
-        "Please confirm your password";
-    } else if (
-      passwordData.newPassword !==
-      passwordData.confirmPassword
-    ) {
-      newErrors.confirmPassword =
-        "Passwords do not match";
-    }
-
-    setPasswordErrors(newErrors);
-
-    return (
-      Object.keys(newErrors).length === 0
-    );
-  };
-
-
-  /* =========================
-     CHANGE PASSWORD
-  ========================= */
-
-  const handleChangePassword = async () => {
-    if (!validatePassword()) {
-      return;
-    }
-
-    try {
-      setPasswordLoading(true);
-
-      const response =
-        await changePassword(
-          passwordData
-        );
-
-      alert(
-        response?.data?.message ||
-          "Password changed successfully"
-      );
-
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-
-      setPasswordErrors({});
-
-    } catch (error) {
-      console.error(
-        "CHANGE PASSWORD ERROR:",
-        error
-      );
-
-      alert(
-        error?.response?.data?.message ||
-          "Unable to change password"
-      );
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
 
 
   /* =========================
@@ -655,9 +542,19 @@ const EditProfile = () => {
 
               <div className="form-group">
 
-                <label>
-                  Email Address
-                </label>
+                <div className="label-with-action">
+                  <label>
+                    Email Address
+                  </label>
+
+                  <button
+                    type="button"
+                    className="change-email-btn"
+                    onClick={() => navigate("/edit-email")}
+                  >
+                    Change Email
+                  </button>
+                </div>
 
                 <div className="input-wrapper disabled-input">
 
@@ -674,8 +571,7 @@ const EditProfile = () => {
                 </div>
 
                 <small className="field-note">
-                  Email address cannot be
-                  changed here.
+                  To update your email address, click Change Email above.
                 </small>
 
               </div>
@@ -801,7 +697,7 @@ const EditProfile = () => {
 
 
           {/* =========================
-              ADDRESS
+              SAVED ADDRESS
           ========================= */}
 
           <div className="profile-section">
@@ -813,148 +709,26 @@ const EditProfile = () => {
               <div>
 
                 <h2>
-                  Address
+                  Saved Address
                 </h2>
 
                 <p>
-                  Add your current address details
+                  Manage your delivery and billing addresses
                 </p>
 
               </div>
 
             </div>
 
-
-            <div className="form-grid">
-
-              {/* STREET */}
-
-              <div className="form-group full-width">
-
-                <label>
-                  Street Address
-                </label>
-
-                <div className="input-wrapper">
-
-                  <MapPin size={18} />
-
-                  <input
-                    type="text"
-                    name="street"
-                    value={
-                      formData.address.street
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter your street address"
-                  />
-
-                </div>
-
-              </div>
-
-
-              {/* CITY */}
-
-              <div className="form-group">
-
-                <label>
-                  City
-                </label>
-
-                <div className="input-wrapper">
-
-                  <MapPin size={18} />
-
-                  <input
-                    type="text"
-                    name="city"
-                    value={
-                      formData.address.city
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter city"
-                  />
-
-                </div>
-
-              </div>
-
-
-              {/* STATE */}
-
-              <div className="form-group">
-
-                <label>
-                  State
-                </label>
-
-                <div className="input-wrapper">
-
-                  <MapPin size={18} />
-
-                  <input
-                    type="text"
-                    name="state"
-                    value={
-                      formData.address.state
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter state"
-                  />
-
-                </div>
-
-              </div>
-
-
-              {/* PINCODE */}
-
-              <div className="form-group">
-
-                <label>
-                  Pincode
-                </label>
-
-                <div
-                  className={`input-wrapper ${
-                    errors.pincode
-                      ? "input-error"
-                      : ""
-                  }`}
-                >
-
-                  <MapPin size={18} />
-
-                  <input
-                    type="text"
-                    name="pincode"
-                    value={
-                      formData.address.pincode
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter pincode"
-                    maxLength={6}
-                  />
-
-                </div>
-
-                {errors.pincode && (
-                  <span className="error-text">
-                    {errors.pincode}
-                  </span>
-                )}
-
-              </div>
-
+            <div>
+              <button
+                type="button"
+                className="manage-address-btn"
+                onClick={() => navigate("/addresses")}
+              >
+                <MapPin size={16} />
+                Manage Saved Address
+              </button>
             </div>
 
           </div>
@@ -984,234 +758,15 @@ const EditProfile = () => {
 
             </div>
 
-
-            <div className="password-form">
-
-              {/* CURRENT PASSWORD */}
-
-              <div className="form-group">
-
-                <label>
-                  Current Password
-                </label>
-
-                <div
-                  className={`input-wrapper password-input ${
-                    passwordErrors.currentPassword
-                      ? "input-error"
-                      : ""
-                  }`}
-                >
-
-                  <Lock size={18} />
-
-                  <input
-                    type={
-                      showCurrentPassword
-                        ? "text"
-                        : "password"
-                    }
-                    name="currentPassword"
-                    value={
-                      passwordData.currentPassword
-                    }
-                    onChange={
-                      handlePasswordChange
-                    }
-                    placeholder="Enter current password"
-                  />
-
-                  <button
-                    type="button"
-                    className="password-eye"
-                    onClick={() =>
-                      setShowCurrentPassword(
-                        !showCurrentPassword
-                      )
-                    }
-                  >
-
-                    {showCurrentPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
-
-                  </button>
-
-                </div>
-
-                {passwordErrors.currentPassword && (
-                  <span className="error-text">
-                    {
-                      passwordErrors.currentPassword
-                    }
-                  </span>
-                )}
-
-              </div>
-
-
-              {/* NEW PASSWORD */}
-
-              <div className="form-group">
-
-                <label>
-                  New Password
-                </label>
-
-                <div
-                  className={`input-wrapper password-input ${
-                    passwordErrors.newPassword
-                      ? "input-error"
-                      : ""
-                  }`}
-                >
-
-                  <Lock size={18} />
-
-                  <input
-                    type={
-                      showNewPassword
-                        ? "text"
-                        : "password"
-                    }
-                    name="newPassword"
-                    value={
-                      passwordData.newPassword
-                    }
-                    onChange={
-                      handlePasswordChange
-                    }
-                    placeholder="Enter new password"
-                  />
-
-                  <button
-                    type="button"
-                    className="password-eye"
-                    onClick={() =>
-                      setShowNewPassword(
-                        !showNewPassword
-                      )
-                    }
-                  >
-
-                    {showNewPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
-
-                  </button>
-
-                </div>
-
-                {passwordErrors.newPassword && (
-                  <span className="error-text">
-                    {
-                      passwordErrors.newPassword
-                    }
-                  </span>
-                )}
-
-                <small className="field-note">
-                  Password must contain at
-                  least 8 characters.
-                </small>
-
-              </div>
-
-
-              {/* CONFIRM PASSWORD */}
-
-              <div className="form-group">
-
-                <label>
-                  Confirm New Password
-                </label>
-
-                <div
-                  className={`input-wrapper password-input ${
-                    passwordErrors.confirmPassword
-                      ? "input-error"
-                      : ""
-                  }`}
-                >
-
-                  <Lock size={18} />
-
-                  <input
-                    type={
-                      showConfirmPassword
-                        ? "text"
-                        : "password"
-                    }
-                    name="confirmPassword"
-                    value={
-                      passwordData.confirmPassword
-                    }
-                    onChange={
-                      handlePasswordChange
-                    }
-                    placeholder="Confirm new password"
-                  />
-
-                  <button
-                    type="button"
-                    className="password-eye"
-                    onClick={() =>
-                      setShowConfirmPassword(
-                        !showConfirmPassword
-                      )
-                    }
-                  >
-
-                    {showConfirmPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
-
-                  </button>
-
-                </div>
-
-                {passwordErrors.confirmPassword && (
-                  <span className="error-text">
-                    {
-                      passwordErrors.confirmPassword
-                    }
-                  </span>
-                )}
-
-              </div>
-
-
-              {/* CHANGE PASSWORD */}
-
-              <div className="change-password-action">
-
-                <button
-                  type="button"
-                  className="change-password-btn"
-                  onClick={
-                    handleChangePassword
-                  }
-                  disabled={
-                    passwordLoading
-                  }
-                >
-
-                  <Lock size={17} />
-
-                  {passwordLoading
-                    ? "Changing..."
-                    : "Change Password"}
-
-                </button>
-
-              </div>
-
+            <div>
+              <button
+                type="button"
+                className="manage-address-btn"
+                onClick={() => navigate("/change-password")}
+              >
+                <Lock size={16} />
+                Change Password
+              </button>
             </div>
 
           </div>
@@ -1489,6 +1044,34 @@ const styles = `
     color: #999;
   }
 
+  .label-with-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .label-with-action label {
+    margin-bottom: 0;
+  }
+
+  .change-email-btn {
+    border: none;
+    background: transparent;
+    color: #6b1f2a;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    letter-spacing: 0.3px;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+  }
+
+  .change-email-btn:hover {
+    color: #4a0f19;
+  }
+
   .error-text {
     margin-top: 6px;
     color: #c62828;
@@ -1499,69 +1082,6 @@ const styles = `
     border-color: #c62828 !important;
   }
 
-  .password-form {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 22px;
-  }
-
-  .password-input {
-    position: relative;
-  }
-
-  .password-input input {
-    padding-right: 38px;
-  }
-
-  .password-eye {
-    position: absolute;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    color: #777;
-    cursor: pointer;
-  }
-
-  .password-eye:hover {
-    color: #6b1f2a;
-  }
-
-  .change-password-action {
-    display: flex;
-    align-items: flex-end;
-  }
-
-  .change-password-btn {
-    min-height: 46px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 20px;
-    border: 1px solid #6b1f2a;
-    border-radius: 6px;
-    background: #6b1f2a;
-    color: white;
-    font-family: "Poppins", sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    transition: 0.2s ease;
-  }
-
-  .change-password-btn:hover {
-    background: #4a0f19;
-    border-color: #4a0f19;
-  }
-
-  .change-password-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
 
   .form-actions {
     display: flex;
@@ -1610,6 +1130,28 @@ const styles = `
     cursor: not-allowed;
   }
 
+  .manage-address-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #faf6f0;
+    border: 1px solid #e8dfd5;
+    border-radius: 8px;
+    color: #520814;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.25s ease;
+  }
+
+  .manage-address-btn:hover {
+    background: #520814;
+    color: #faf6f0;
+    border-color: #520814;
+  }
+
   .profile-page-loading {
     min-height: 100vh;
     display: flex;
@@ -1649,8 +1191,7 @@ const styles = `
       padding: 25px;
     }
 
-    .form-grid,
-    .password-form {
+    .form-grid {
       grid-template-columns: 1fr;
     }
 
@@ -1687,14 +1228,6 @@ const styles = `
 
     .cancel-btn,
     .save-btn {
-      width: 100%;
-    }
-
-    .change-password-action {
-      align-items: stretch;
-    }
-
-    .change-password-btn {
       width: 100%;
     }
   }
