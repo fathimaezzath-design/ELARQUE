@@ -43,10 +43,7 @@ export const updateProfileImage = (file) => {
   formData.append("profileImage", file);
 
   return API.put("/image", formData, {
-    headers: {
-      ...authHeader(),
-      "Content-Type": "multipart/form-data",
-    },
+    headers: authHeader(),
   });
 };
 
