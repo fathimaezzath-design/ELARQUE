@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { getProfile } from "../../services/authService";
+import { getAddresses } from "../../services/addressService";
 
 function Profile() {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ function Profile() {
   // =====================================================
 
   const [user, setUser] = useState(null);
+  const [defaultAddress, setDefaultAddress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -45,32 +47,48 @@ function Profile() {
           return;
         }
 
-        const response = await getProfile();
+        const [profileRes, addressRes] = await Promise.allSettled([
+          getProfile(),
+          getAddresses(),
+        ]);
 
-        console.log("PROFILE RESPONSE:", response.data);
+        if (profileRes.status === "fulfilled") {
+          const userData = profileRes.value?.data?.user;
+          setUser(userData);
 
-        setUser(response.data.user);
+          // Keep user data locally also
+          localStorage.setItem(
+            "user",
+            JSON.stringify(userData)
+          );
+        } else {
+          const err = profileRes.reason;
+          console.log("PROFILE ERROR:", err);
 
-        // Keep user data locally also
-        localStorage.setItem(
-          "user",
-          JSON.stringify(response.data.user)
-        );
-      } catch (err) {
-        console.log("PROFILE ERROR:", err);
-        console.log("PROFILE RESPONSE:", err.response);
+          if (err?.response?.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/login");
+            return;
+          }
 
-        if (err.response?.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          navigate("/login");
-          return;
+          setError(
+            err?.response?.data?.message ||
+              "Unable to load profile."
+          );
         }
 
-        setError(
-          err.response?.data?.message ||
-            "Unable to load profile."
-        );
+        if (addressRes.status === "fulfilled") {
+          const addresses = addressRes.value?.data?.addresses || [];
+          const defAddr = addresses.find((addr) => addr.isDefault === true);
+          setDefaultAddress(defAddr || null);
+        } else {
+          console.log("ADDRESS ERROR:", addressRes.reason);
+          setDefaultAddress(null);
+        }
+      } catch (err) {
+        console.log("PROFILE LOAD ERROR:", err);
+        setError("Unable to load profile.");
       } finally {
         setLoading(false);
       }
@@ -115,9 +133,10 @@ function Profile() {
   // =====================================================
 
   const formatAddress = (address) => {
-    if (!address) return "No address added";
+    if (!address) return "No saved address";
 
     const parts = [
+      address.house,
       address.street,
       address.city,
       address.state,
@@ -126,7 +145,25 @@ function Profile() {
 
     return parts.length > 0
       ? parts.join(", ")
-      : "No address added";
+      : "No saved address";
+  };
+
+  // =====================================================
+  // GET PROFILE IMAGE URL
+  // =====================================================
+
+  const getImageUrl = (image) => {
+    if (!image) return "";
+
+    if (image.startsWith("http://") || image.startsWith("https://")) {
+      return image;
+    }
+
+    if (image.startsWith("/")) {
+      return `http://localhost:5000${image}`;
+    }
+
+    return `http://localhost:5000/${image}`;
   };
 
   // =====================================================
@@ -336,7 +373,7 @@ function Profile() {
               {user.profileImage ? (
 
                 <img
-                  src={`http://localhost:5000${user.profileImage}`}
+                  src={getImageUrl(user.profileImage)}
                   alt="Profile"
                   className="profile-image"
                 />
@@ -538,7 +575,7 @@ function Profile() {
 
                 <h2>
                   <span>•</span>
-                  Personal Dossier
+                  Personal Details
                 </h2>
 
                 <p>
@@ -713,7 +750,7 @@ function Profile() {
                   </label>
 
                   <h3>
-                    {formatAddress(user.address)}
+                    {formatAddress(defaultAddress)}
                   </h3>
 
                   <small>
