@@ -12,6 +12,8 @@ import EditProfile from "../components/auth/EditProfile";
 import EditEmail from "../components/auth/EditEmail";
 import VerifyEmail from "../components/auth/VerifyEmail";
 import EmailVerified from "../components/auth/EmailVerified";
+import Addresses from "../components/auth/Addresses";
+import ChangePassword from "../components/auth/ChangePassword";
 
 function UserRoutes() {
   return (
@@ -34,6 +36,8 @@ function UserRoutes() {
       
       <Route path="/profile" element={<Profile />} />
       <Route path="/edit-profile" element={<EditProfile />} />
+      <Route path="/addresses" element={<Addresses />} />
+      <Route path="/change-password" element={<ChangePassword />} />
     </Routes>
   );
 }

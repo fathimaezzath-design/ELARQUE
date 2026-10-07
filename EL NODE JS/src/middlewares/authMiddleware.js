@@ -27,12 +27,13 @@ const authMiddleware = (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    // Normalize so both req.user.id and req.user._id work,
+    // Normalize so req.user.id, req.user._id, and req.user.userId work,
     // since different controllers reference each differently.
     req.user = {
       ...decoded,
       id: decoded.id,
       _id: decoded.id,
+      userId: decoded.id,
     };
 
     next();

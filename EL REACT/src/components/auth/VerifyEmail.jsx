@@ -137,6 +137,21 @@ function VerifyEmail() {
 
       await verifyEmailChangeOTP(otpValue);
 
+      try {
+        const storedUser = JSON.parse(
+          localStorage.getItem("user") || "{}"
+        );
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...storedUser,
+            email,
+          })
+        );
+      } catch {
+        // Fallback if parsing fails
+      }
+
       navigate("/email-verified", {
         state: {
           email,
