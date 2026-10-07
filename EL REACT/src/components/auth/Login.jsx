@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../services/authService";
+import { loginUser, googleLoginUser } from "../../services/authService";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../config/firebase";
 
@@ -324,6 +324,7 @@ padding:34px;
       const { data } = await loginUser(formData);
 
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       navigate("/");
     } catch (err) {
@@ -337,19 +338,30 @@ padding:34px;
 
   const handleGoogleLogin = async () => {
     try {
-        const result = await signInWithPopup(auth, googleProvider);
+      setLoading(true);
+      setErrors({});
 
-        const user = result.user;
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
 
-        console.log(user.displayName);
-        console.log(user.email);
+      const idToken = await user.getIdToken();
+      const { data } = await googleLoginUser(idToken);
 
-        // Later we'll send this to your Node backend
-        navigate("/");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      navigate("/");
     } catch (error) {
-        console.log(error);
+      console.error("Google login error:", error);
+      setErrors({
+        server:
+          error.response?.data?.message ||
+          "Google authentication failed. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
-    };
+  };
 
   return (
     <div className="login-page">

@@ -36,6 +36,9 @@ export const resendOTP = (data) =>
 export const loginUser = (data) =>
   API.post("/login", data);
 
+export const googleLoginUser = (idToken) =>
+  API.post("/google", { idToken });
+
 
 // =========================
 // FORGOT PASSWORD
