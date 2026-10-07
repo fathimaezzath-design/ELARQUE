@@ -7,6 +7,8 @@ const path = require("path");
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const addressRoutes = require("./routes/addressRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const adminUserRoutes = require("./routes/adminUserRoutes");
 
 const app = express();
 
@@ -31,6 +33,11 @@ app.use("/api/profile", profileRoutes);
 // ADDRESS ROUTES
 app.use("/api/address", addressRoutes);
 app.use("/api/addresses", addressRoutes);
+
+
+// ADMIN ROUTES
+app.use("/api/admin", adminRoutes);
+app.use("/api/admin", adminUserRoutes);
 
 
 app.get("/", (req, res) => {
