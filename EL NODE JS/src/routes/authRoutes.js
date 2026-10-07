@@ -7,6 +7,7 @@ const {
   verifyOTP,
   resendOTP,
   loginUser,
+  googleLogin,
   forgotPassword,
   verifyResetOTP,
   resendResetOTP,
@@ -24,6 +25,7 @@ router.post("/resend-otp", resendOTP);
 
 // Login
 router.post("/login", loginUser);
+router.post("/google", googleLogin);
 
 // Forgot password
 router.post("/forgot-password", forgotPassword);

@@ -1,0 +1,55 @@
+/* ELARQUE Luxury Haute Western Couture Design System */
+:root {
+  /* Brand Color Palette */
+  --el-burgundy: #520814;
+  --el-burgundy-deep: #38020A;
+  --el-burgundy-darkest: #2A0107;
+  --el-burgundy-rich: #6B111F;
+  --el-burgundy-light: #842030;
+  --el-burgundy-soft: rgba(82, 8, 20, 0.08);
+
+  --el-cream: #FAF6F0;
+  --el-cream-warm: #F7F2EB;
+  --el-cream-soft: #FDFBF7;
+  --el-sand: #EDE5DA;
+  --el-sand-light: #F4EFEA;
+
+  --el-gold: #C49E60;
+  --el-gold-light: #E3C77D;
+  --el-gold-muted: #B88E4C;
+  --el-gold-foil: linear-gradient(135deg, #DFBE82 0%, #C49E60 50%, #9B7332 100%);
+
+  --el-border: #E8DFD5;
+  --el-border-light: #F0EAE1;
+  --el-border-dark: rgba(255, 255, 255, 0.12);
+  --el-border-burgundy: #66101D;
+
+  --el-text-dark: #1A1A1A;
+  --el-text-heading: #141414;
+  --el-text-muted: #726861;
+  --el-text-light: #9B9189;
+  --el-text-cream: #FAF6F0;
+  --el-text-gold: #D8B273;
+
+  /* Typography */
+  --font-serif: 'Cormorant Garamond', Garamond, Georgia, serif;
+  --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Elevation & Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(82, 8, 20, 0.08);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 6px 20px rgba(42, 1, 7, 0.06);
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* Container */
+  --container-max: 1360px;
+  --container-padding: 32px;
+}

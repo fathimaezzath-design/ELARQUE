@@ -18,14 +18,25 @@ const userSchema = new mongoose.Schema(
 
     phoneNumber: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
       unique: true,
+      sparse: true,
       trim: true,
     },
 
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
+    },
+
+    googleId: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     referralCode: {

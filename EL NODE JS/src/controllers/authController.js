@@ -5,6 +5,7 @@ const PasswordResetOTP = require("../models/PasswordResetOTP");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const axios = require("axios");
 
 const {
   createOTP,
@@ -229,7 +230,9 @@ exports.loginUser = async (req, res) => {
         message: "Please enter your password.",
       });
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user)
       return res.status(400).json({
@@ -242,6 +245,14 @@ exports.loginUser = async (req, res) => {
         success: false,
         message: "Please verify your account first.",
       });
+
+    if (!user.password) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "This account was created using Google. Please log in with Google, or reset your password to create a password.",
+      });
+    }
 
     const match = await bcrypt.compare(password, user.password);
 
@@ -276,6 +287,143 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Login failed.",
+    });
+  }
+};
+
+
+exports.googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Firebase ID token is required.",
+      });
+    }
+
+    const expectedProjectId = process.env.FIREBASE_PROJECT_ID;
+
+    if (!expectedProjectId) {
+      console.error("FIREBASE_PROJECT_ID is not configured in backend environment.");
+      return res.status(500).json({
+        success: false,
+        message: "Server authentication configuration error.",
+      });
+    }
+
+    // 1. Decode token header to obtain key ID (kid)
+    const decodedToken = jwt.decode(idToken, { complete: true });
+    if (!decodedToken || !decodedToken.header?.kid) {
+      return res.status(400).json({
+        success: false,
+        message: "Malformed Firebase ID token.",
+      });
+    }
+
+    // 2. Fetch Firebase Authentication public certificates
+    const certsResponse = await axios.get(
+      "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+    );
+
+    const publicCert = certsResponse.data[decodedToken.header.kid];
+    if (!publicCert) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token signing key.",
+      });
+    }
+
+    // 3. Cryptographically verify the Firebase ID token using jsonwebtoken
+    const payload = jwt.verify(idToken, publicCert, {
+      algorithms: ["RS256"],
+      audience: expectedProjectId,
+      issuer: `https://securetoken.google.com/${expectedProjectId}`,
+    });
+
+    // 4. Verify email is verified
+    if (payload.email_verified !== true) {
+      return res.status(403).json({
+        success: false,
+        message: "Google email is not verified.",
+      });
+    }
+
+    const email = payload.email?.toLowerCase().trim();
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "No email address found in Google token.",
+      });
+    }
+
+    const fullName = payload.name || email.split("@")[0];
+    const profileImage = payload.picture || "";
+    const googleId = payload.sub;
+
+    // 4. Find or create the user
+    let user = await User.findOne({ email });
+
+    if (user) {
+      if (user.isBlocked) {
+        return res.status(403).json({
+          success: false,
+          message: "Your account is blocked. Please contact support.",
+        });
+      }
+
+      let needsSave = false;
+      if (!user.isVerified) {
+        user.isVerified = true;
+        needsSave = true;
+      }
+      if (!user.googleId) {
+        user.googleId = googleId;
+        needsSave = true;
+      }
+      if (!user.profileImage && profileImage) {
+        user.profileImage = profileImage;
+        needsSave = true;
+      }
+      if (needsSave) {
+        await user.save();
+      }
+    } else {
+      user = await User.create({
+        fullName,
+        email,
+        googleId,
+        profileImage,
+        isVerified: true,
+        agreedToTerms: true,
+      });
+    }
+
+    // 5. Generate existing ELARQUE JWT
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Google login successful.",
+      token,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber || "",
+        profileImage: user.profileImage || "",
+      },
+    });
+  } catch (err) {
+    console.error("GOOGLE AUTH ERROR:", err.response?.data || err.message);
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired Google authentication credentials.",
     });
   }
 };
@@ -603,18 +751,20 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    // Check old password
-    const samePassword = await bcrypt.compare(
-      password,
-      user.password
-    );
+    // Check old password only if the user already has a password set
+    if (user.password) {
+      const samePassword = await bcrypt.compare(
+        password,
+        user.password
+      );
 
-    if (samePassword) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "New password must be different from your previous password.",
-      });
+      if (samePassword) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "New password must be different from your previous password.",
+        });
+      }
     }
 
     // Hash new password
