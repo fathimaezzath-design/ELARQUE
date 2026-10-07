@@ -1,0 +1,451 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+.admin-login-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+      ellipse 80% 60% at 50% 25%,
+      rgba(95, 14, 28, 0.28) 0%,
+      rgba(13, 4, 8, 0.95) 70%,
+      #090306 100%
+    ),
+    #090306;
+  font-family: "Poppins", sans-serif;
+  color: #f7f1eb;
+  padding: 30px 20px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle decorative ambient glow */
+.admin-login-wrapper::before {
+  content: "";
+  position: absolute;
+  top: -150px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 350px;
+  background: radial-gradient(
+    circle,
+    rgba(140, 24, 43, 0.22) 0%,
+    transparent 70%
+  );
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+/* Centered Login Card */
+.admin-login-card {
+  width: 100%;
+  max-width: 460px;
+  background: linear-gradient(
+    165deg,
+    rgba(25, 9, 16, 0.92) 0%,
+    rgba(15, 5, 10, 0.96) 60%,
+    rgba(10, 3, 7, 0.98) 100%
+  );
+  border: 1px solid rgba(193, 154, 89, 0.24);
+  border-radius: 20px;
+  padding: 44px 40px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85),
+    0 0 45px rgba(95, 14, 28, 0.22),
+    inset 0 1px 0 rgba(223, 194, 141, 0.18);
+  backdrop-filter: blur(16px);
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+/* Header & Branding */
+.admin-login-header {
+  text-align: center;
+  margin-bottom: 34px;
+}
+
+.admin-brand-logo {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 9px;
+  margin: 0;
+  color: #dfc28d;
+  background: linear-gradient(135deg, #f7e7c4 0%, #dfc28d 50%, #b88d4c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+}
+
+.admin-brand-subtitle {
+  margin-top: 8px;
+  margin-bottom: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 3.5px;
+  color: #b59f8c;
+  text-transform: uppercase;
+}
+
+.admin-header-divider {
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(223, 194, 141, 0.6) 50%,
+    transparent 100%
+  );
+  margin: 16px auto 0;
+}
+
+/* Form Layout */
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-form-group label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #d1bfae;
+  text-transform: uppercase;
+}
+
+/* Input Fields */
+.admin-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(22, 7, 14, 0.85);
+  border: 1px solid rgba(193, 154, 89, 0.22);
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 50px;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.admin-input-wrapper:hover {
+  border-color: rgba(223, 194, 141, 0.45);
+}
+
+.admin-input-wrapper:focus-within {
+  border-color: #dfc28d;
+  box-shadow: 0 0 18px rgba(223, 194, 141, 0.18),
+    0 0 0 1px rgba(223, 194, 141, 0.3);
+  background: rgba(28, 9, 18, 0.95);
+}
+
+.admin-input-icon {
+  color: #bfa17c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.admin-input-wrapper:focus-within .admin-input-icon {
+  color: #f7e7c4;
+}
+
+.admin-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: "Poppins", sans-serif;
+  font-size: 13.5px;
+  color: #fdfaf6;
+  width: 100%;
+}
+
+.admin-input-wrapper input::placeholder {
+  color: #7d6b60;
+  font-size: 13px;
+}
+
+.admin-password-toggle {
+  background: transparent;
+  border: none;
+  color: #a8927e;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  transition: color 0.2s ease;
+}
+
+.admin-password-toggle:hover {
+  color: #f7e7c4;
+}
+
+/* Remember Me & Forgot Password Row */
+.admin-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -2px;
+  font-size: 12px;
+}
+
+.admin-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #c7b6a8;
+  user-select: none;
+  font-size: 12px;
+}
+
+.admin-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(193, 154, 89, 0.4);
+  border-radius: 4px;
+  background: rgba(22, 7, 14, 0.9);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  margin: 0;
+}
+
+.admin-checkbox:checked {
+  background: #6b1f2a;
+  border-color: #dfc28d;
+}
+
+.admin-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 8px;
+  border: solid #f7e7c4;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  top: 1px;
+}
+
+.admin-checkbox:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(223, 194, 141, 0.3);
+}
+
+.admin-forgot-btn {
+  background: transparent;
+  border: none;
+  color: #dfc28d;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.admin-forgot-btn:hover {
+  color: #f7e7c4;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Submit Action Button */
+.admin-submit-btn {
+  width: 100%;
+  height: 52px;
+  background: linear-gradient(
+    135deg,
+    #7a1526 0%,
+    #580d1b 50%,
+    #3d0712 100%
+  );
+  border: 1px solid rgba(223, 194, 141, 0.38);
+  border-radius: 10px;
+  color: #faf6f0;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  margin-top: 6px;
+  box-shadow: 0 8px 24px rgba(95, 14, 28, 0.4),
+    inset 0 1px 0 rgba(247, 231, 196, 0.25);
+  transition: all 0.25s ease;
+}
+
+.admin-submit-btn:hover {
+  background: linear-gradient(
+    135deg,
+    #8f1c30 0%,
+    #691222 50%,
+    #4a0a17 100%
+  );
+  border-color: rgba(223, 194, 141, 0.65);
+  box-shadow: 0 10px 28px rgba(122, 21, 38, 0.55),
+    0 0 15px rgba(223, 194, 141, 0.25);
+  transform: translateY(-1px);
+}
+
+.admin-submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(95, 14, 28, 0.4);
+}
+
+.admin-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.admin-submit-arrow {
+  font-size: 16px;
+  font-weight: 500;
+  color: #dfc28d;
+  transition: transform 0.2s ease;
+}
+
+.admin-submit-btn:hover .admin-submit-arrow {
+  transform: translateX(4px);
+  color: #f7e7c4;
+}
+
+/* Footer Security Tagline */
+.admin-login-footer {
+  text-align: center;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(223, 194, 141, 0.12);
+}
+
+.admin-security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  color: #8c7667;
+  text-transform: uppercase;
+}
+
+.admin-security-badge svg {
+  color: #bfa17c;
+}
+
+/* Error Banner */
+.admin-error-banner {
+  background: rgba(122, 21, 38, 0.35);
+  border: 1px solid rgba(220, 53, 69, 0.5);
+  color: #fca5a5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: admin-fade-in 0.2s ease-in-out;
+}
+
+.admin-error-banner svg {
+  flex-shrink: 0;
+  color: #f87171;
+}
+
+@keyframes admin-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Spinner */
+.admin-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(247, 231, 196, 0.3);
+  border-top-color: #dfc28d;
+  border-radius: 50%;
+  animation: admin-spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ================= RESPONSIVE DESIGN ================= */
+
+@media (max-width: 600px) {
+  .admin-login-wrapper {
+    padding: 20px 14px;
+  }
+
+  .admin-login-card {
+    padding: 34px 22px;
+    border-radius: 16px;
+  }
+
+  .admin-brand-logo {
+    font-size: 32px;
+    letter-spacing: 7px;
+  }
+
+  .admin-brand-subtitle {
+    font-size: 9.5px;
+    letter-spacing: 2.5px;
+  }
+
+  .admin-submit-btn {
+    height: 48px;
+    padding: 0 18px;
+    font-size: 12px;
+    letter-spacing: 2.5px;
+  }
+
+  .admin-options-row {
+    flex-direction: row;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-options-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

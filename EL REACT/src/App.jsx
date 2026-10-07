@@ -1,7 +1,7 @@
-import UserRoutes from "./routes/UserRoutes";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-  return <UserRoutes />;
+  return <AppRoutes />;
 }
 
 export default App;
