@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import AdminLogin from "../components/admin/AdminLogin";
 import ProtectedAdminRoute from "../components/admin/ProtectedAdminRoute";
 import UserManagement from "../components/admin/UserManagement";
+import CategoryManagement from "../components/admin/CategoryManagement";
 
 // Temporary minimal placeholder to verify successful /admin navigation
 function AdminPlaceholder() {
@@ -67,9 +68,18 @@ function AdminRoutes() {
           </ProtectedAdminRoute>
         }
       />
+      <Route
+        path="/admin/categories"
+        element={
+          <ProtectedAdminRoute>
+            <CategoryManagement />
+          </ProtectedAdminRoute>
+        }
+      />
       <Route path="/admin/login" element={<AdminLogin />} />
     </Routes>
   );
 }
+
 
 export default AdminRoutes;
