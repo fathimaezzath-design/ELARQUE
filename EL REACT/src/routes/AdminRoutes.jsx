@@ -3,6 +3,7 @@ import AdminLogin from "../components/admin/AdminLogin";
 import ProtectedAdminRoute from "../components/admin/ProtectedAdminRoute";
 import UserManagement from "../components/admin/UserManagement";
 import CategoryManagement from "../components/admin/CategoryManagement";
+import ProductManagement from "../components/admin/ProductManagement";
 
 // Temporary minimal placeholder to verify successful /admin navigation
 function AdminPlaceholder() {
@@ -57,6 +58,14 @@ function AdminRoutes() {
         element={
           <ProtectedAdminRoute>
             <AdminPlaceholder />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/products"
+        element={
+          <ProtectedAdminRoute>
+            <ProductManagement />
           </ProtectedAdminRoute>
         }
       />
