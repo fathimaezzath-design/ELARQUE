@@ -4,6 +4,7 @@ import ProtectedAdminRoute from "../components/admin/ProtectedAdminRoute";
 import UserManagement from "../components/admin/UserManagement";
 import CategoryManagement from "../components/admin/CategoryManagement";
 import ProductManagement from "../components/admin/ProductManagement";
+import AddProduct from "../components/admin/AddProduct";
 
 // Temporary minimal placeholder to verify successful /admin navigation
 function AdminPlaceholder() {
@@ -66,6 +67,14 @@ function AdminRoutes() {
         element={
           <ProtectedAdminRoute>
             <ProductManagement />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/products/add"
+        element={
+          <ProtectedAdminRoute>
+            <AddProduct />
           </ProtectedAdminRoute>
         }
       />

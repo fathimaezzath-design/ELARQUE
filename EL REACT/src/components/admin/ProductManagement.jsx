@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Plus,
@@ -105,6 +105,7 @@ const formatUpdated = (dateStr) => {
 
 const ProductManagement = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Products & Backend Data State
   const [products, setProducts] = useState([]);
@@ -130,7 +131,16 @@ const ProductManagement = () => {
   const [expandedIds, setExpandedIds] = useState([]);
 
   // Placeholder Notice Banner
-  const [noticeMessage, setNoticeMessage] = useState("");
+  const [noticeMessage, setNoticeMessage] = useState(
+    () => location.state?.successMessage || ""
+  );
+
+  // Clear history state once consumed
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const showPlaceholderNotice = (actionName) => {
     setNoticeMessage(
@@ -417,7 +427,7 @@ const ProductManagement = () => {
             <button
               type="button"
               className="admin-btn-add-product"
-              onClick={() => showPlaceholderNotice("+ ADD NEW PRODUCT")}
+              onClick={() => navigate("/admin/products/add")}
             >
               <Plus size={16} strokeWidth={2.5} />
               <span>+ ADD NEW PRODUCT</span>
