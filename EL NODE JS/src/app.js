@@ -10,6 +10,7 @@ const addressRoutes = require("./routes/addressRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
+const adminProductRoutes = require("./routes/adminProductRoutes");
 
 const app = express();
 
@@ -40,6 +41,8 @@ app.use("/api/addresses", addressRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin", adminUserRoutes);
 app.use("/api/admin", adminCategoryRoutes);
+app.use("/api/admin/products", adminProductRoutes);
+app.use("/api/admin", adminProductRoutes);
 
 
 app.get("/", (req, res) => {
