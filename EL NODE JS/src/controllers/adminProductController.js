@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const Category = require("../models/Category");
+const { cleanupFiles } = require("../middlewares/productUploadMiddleware");
 
 // Helper to escape regex special characters for safe regex matching
 function escapeRegex(text) {
@@ -269,3 +270,34 @@ exports.createProduct = async (req, res) => {
     });
   }
 };
+
+exports.uploadProductImages = async (req, res) => {
+  try {
+    if (!req.files || req.files.length < 3) {
+      cleanupFiles(req);
+      return res.status(400).json({
+        success: false,
+        message: "A minimum of 3 images is required.",
+      });
+    }
+
+    const imagePaths = req.files.map(
+      (file) => `/uploads/products/${file.filename}`
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Product images uploaded successfully",
+      images: imagePaths,
+    });
+  } catch (error) {
+    cleanupFiles(req);
+    console.error("Upload product images error:", error);
+    return res.status(500).json({
+      success: false,
+      message:
+        "An internal server error occurred while uploading product images.",
+    });
+  }
+};
+
