@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   Plus,
   Search,
@@ -29,138 +30,112 @@ import {
 } from "lucide-react";
 import "./ProductManagement.css";
 
-// Realistic Mock Luxury Fashion Products
-const INITIAL_MOCK_PRODUCTS = [
-  {
-    id: "prod-1",
-    name: "Executive Burgundy Blazer",
-    sku: "ELQ-BLZ-701",
-    category: "Blazers",
-    price: "₹24,999",
-    stock: 42,
-    maxStock: 50,
-    status: "In Stock",
-    statusType: "in-stock",
-    lastUpdated: "Today, 14:22",
-    imageInitials: "BB",
-    imageGradient: "linear-gradient(135deg, #7a1526 0%, #3d0711 100%)",
-    sizes: ["S", "M", "L"],
-    colors: ["Burgundy", "Black"],
-    variants: [
-      { id: "v1-1", color: "Burgundy", size: "S", stock: 12, salon: "Dallas Salon Reserve" },
-      { id: "v1-2", color: "Burgundy", size: "M", stock: 15, salon: "Parisian Salon Main" },
-      { id: "v1-3", color: "Burgundy", size: "L", stock: 8, salon: "Dallas Salon Reserve" },
-      { id: "v1-4", color: "Black", size: "M", stock: 7, salon: "Parisian Salon Main" },
-    ],
-  },
-  {
-    id: "prod-2",
-    name: "Executive Cream Silk Suit",
-    sku: "ELQ-SUT-702",
-    category: "Suits",
-    price: "₹34,500",
-    stock: 12,
-    maxStock: 40,
-    status: "Low Stock",
-    statusType: "low-stock",
-    lastUpdated: "Yesterday, 18:10",
-    imageInitials: "CS",
-    imageGradient: "linear-gradient(135deg, #dfc28d 0%, #7d6537 100%)",
-    sizes: ["38R", "40R", "42R"],
-    colors: ["Cream", "Champagne"],
-    variants: [
-      { id: "v2-1", color: "Cream", size: "38R", stock: 4, salon: "Parisian Salon Main" },
-      { id: "v2-2", color: "Cream", size: "40R", stock: 5, salon: "Dallas Salon Reserve" },
-      { id: "v2-3", color: "Champagne", size: "42R", stock: 3, salon: "Parisian Salon Main" },
-    ],
-  },
-  {
-    id: "prod-3",
-    name: "Office Crepe Pencil Dress",
-    sku: "ELQ-DRS-703",
-    category: "Dresses",
-    price: "₹18,900",
-    stock: 28,
-    maxStock: 35,
-    status: "In Stock",
-    statusType: "in-stock",
-    lastUpdated: "3 days ago",
-    imageInitials: "PD",
-    imageGradient: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
-    sizes: ["XS", "S", "M", "L"],
-    colors: ["Midnight Navy", "Onyx"],
-    variants: [
-      { id: "v3-1", color: "Midnight Navy", size: "XS", stock: 6, salon: "Dallas Salon Reserve" },
-      { id: "v3-2", color: "Midnight Navy", size: "S", stock: 10, salon: "Parisian Salon Main" },
-      { id: "v3-3", color: "Midnight Navy", size: "M", stock: 8, salon: "Dallas Salon Reserve" },
-      { id: "v3-4", color: "Onyx", size: "L", stock: 4, salon: "Parisian Salon Main" },
-    ],
-  },
-  {
-    id: "prod-4",
-    name: "Modern Wide-Leg Trousers",
-    sku: "ELQ-TRS-704",
-    category: "Trousers",
-    price: "₹12,400",
-    stock: 0,
-    maxStock: 30,
-    status: "Out of Stock",
-    statusType: "out-of-stock",
-    lastUpdated: "5 days ago",
-    imageInitials: "WT",
-    imageGradient: "linear-gradient(135deg, #374151 0%, #1f2937 100%)",
-    sizes: ["28", "30", "32"],
-    colors: ["Charcoal", "Taupe"],
-    variants: [
-      { id: "v4-1", color: "Charcoal", size: "28", stock: 0, salon: "Parisian Salon Main" },
-      { id: "v4-2", color: "Charcoal", size: "30", stock: 0, salon: "Dallas Salon Reserve" },
-      { id: "v4-3", color: "Taupe", size: "32", stock: 0, salon: "Dallas Salon Reserve" },
-    ],
-  },
-  {
-    id: "prod-5",
-    name: "Pleated Frontier Silk Shirt",
-    sku: "ELQ-SHT-705",
-    category: "Shirts",
-    price: "₹15,200",
-    stock: 16,
-    maxStock: 25,
-    status: "Draft / Preview",
-    statusType: "draft",
-    lastUpdated: "1 week ago",
-    imageInitials: "FS",
-    imageGradient: "linear-gradient(135deg, #475569 0%, #1e1b4b 100%)",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Pearl White", "Ivory"],
-    variants: [
-      { id: "v5-1", color: "Pearl White", size: "S", stock: 5, salon: "Parisian Salon Main" },
-      { id: "v5-2", color: "Pearl White", size: "M", stock: 6, salon: "Dallas Salon Reserve" },
-      { id: "v5-3", color: "Ivory", size: "L", stock: 3, salon: "Parisian Salon Main" },
-      { id: "v5-4", color: "Ivory", size: "XL", stock: 2, salon: "Dallas Salon Reserve" },
-    ],
-  },
-];
+const API_BASE_URL = "http://localhost:5000/api/admin/products";
+const CATEGORIES_API_URL = "http://localhost:5000/api/admin/categories";
+const PAGE_LIMIT = 10;
+
+// Luxury Atelier Color Mapping
+const getColorHex = (color) => {
+  if (!color) return "#94a3b8";
+  const c = color.toLowerCase().trim();
+  const colorMap = {
+    black: "#111827",
+    onyx: "#111827",
+    white: "#f8fafc",
+    burgundy: "#7a1526",
+    maroon: "#800000",
+    cream: "#dfc28d",
+    champagne: "#f5e6ca",
+    gold: "#dfc28d",
+    navy: "#1e3a8a",
+    midnight: "#0f172a",
+    blue: "#3b82f6",
+    charcoal: "#374151",
+    grey: "#6b7280",
+    gray: "#6b7280",
+    brown: "#78350f",
+    taupe: "#8b7e74",
+    green: "#15803d",
+    emerald: "#059669",
+    olive: "#556b2f",
+    red: "#dc2626",
+    pink: "#ec4899",
+    beige: "#f5f5dc",
+  };
+  return colorMap[c] || "#dfc28d";
+};
+
+// Retrieve first image from first variant that contains an image
+const getProductThumbnail = (product) => {
+  if (Array.isArray(product.variants)) {
+    for (const v of product.variants) {
+      if (Array.isArray(v.images) && v.images.length > 0) {
+        const img = v.images[0];
+        return img.startsWith("http") ? img : `http://localhost:5000${img}`;
+      }
+    }
+  }
+  return null;
+};
+
+// Compute placeholder initials from product name
+const getInitials = (name) => {
+  if (!name) return "EL";
+  const words = name.trim().split(/\s+/);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+};
+
+// Format ISO date string into readable Indian / Atelier format
+const formatUpdated = (dateStr) => {
+  if (!dateStr) return "—";
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+};
 
 const ProductManagement = () => {
   const navigate = useNavigate();
 
-  // Mock Products & UI State
-  const [products] = useState(INITIAL_MOCK_PRODUCTS);
+  // Products & Backend Data State
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [retryTrigger, setRetryTrigger] = useState(0);
+
+  // Filters & Search State
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [sortBy, setSortBy] = useState("updated-desc");
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+
   // Selection & Accordion Expansion State
   const [selectedIds, setSelectedIds] = useState([]);
-  const [expandedIds, setExpandedIds] = useState(["prod-1"]); // Product 1 expanded by default for preview
-  const [activePage, setActivePage] = useState(1);
+  const [expandedIds, setExpandedIds] = useState([]);
 
   // Placeholder Notice Banner
   const [noticeMessage, setNoticeMessage] = useState("");
 
   const showPlaceholderNotice = (actionName) => {
-    setNoticeMessage(`Action "${actionName}" is a placeholder in Step 12D. Backend integration will be connected in subsequent steps.`);
+    setNoticeMessage(
+      `Action "${actionName}" is a placeholder in Step 12F. Backend integration will be connected in subsequent steps.`
+    );
     setTimeout(() => {
       setNoticeMessage("");
     }, 4500);
@@ -172,23 +147,153 @@ const ProductManagement = () => {
     navigate("/admin/login");
   };
 
-  // Filter products by client search & selects
-  const filteredProducts = products.filter((prod) => {
-    const query = searchQuery.trim().toLowerCase();
-    const matchesSearch =
-      !query ||
-      prod.name.toLowerCase().includes(query) ||
-      prod.sku.toLowerCase().includes(query) ||
-      prod.category.toLowerCase().includes(query);
+  // 1. Load Categories on mount to populate the category filter dropdown
+  useEffect(() => {
+    let isMounted = true;
+    const adminToken = localStorage.getItem("adminToken");
+    if (!adminToken) return;
 
-    const matchesCategory =
-      selectedCategory === "all" || prod.category === selectedCategory;
+    axios
+      .get(`${CATEGORIES_API_URL}?page=1&limit=100`, {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      })
+      .then((res) => {
+        if (isMounted && res.data?.success) {
+          setCategories(res.data.categories || []);
+        }
+      })
+      .catch(() => {
+        // Non-blocking for product listing
+      });
 
-    const matchesStatus =
-      selectedStatus === "all" || prod.status === selectedStatus;
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+  // 2. Debounce search input (350ms) & reset pagination to page 1
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      const trimmed = searchQuery.trim();
+      setDebouncedSearch(trimmed);
+      setCurrentPage(1);
+    }, 350);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // 3. Fetch Products from Backend with AbortController
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const fetchProducts = async () => {
+      const adminToken = localStorage.getItem("adminToken");
+      if (!adminToken) {
+        navigate("/admin/login");
+        return;
+      }
+
+      setLoading(true);
+      setErrorMessage("");
+
+      try {
+        const params = {
+          page: currentPage,
+          limit: PAGE_LIMIT,
+          sort: sortBy,
+        };
+
+        if (debouncedSearch) {
+          params.search = debouncedSearch;
+        }
+
+        if (selectedCategory && selectedCategory !== "all") {
+          params.category = selectedCategory;
+        }
+
+        const response = await axios.get(API_BASE_URL, {
+          params,
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (!isMounted) return;
+
+        if (response.data && response.data.success) {
+          const fetchedProducts = response.data.products || [];
+          const paginationData = response.data.pagination || {
+            currentPage: 1,
+            totalPages: 1,
+            totalProducts: 0,
+            limit: PAGE_LIMIT,
+          };
+
+          // Edge case: if current page is beyond totalPages and totalPages > 0
+          if (paginationData.totalPages > 0 && currentPage > paginationData.totalPages) {
+            setCurrentPage(paginationData.totalPages);
+            return;
+          }
+
+          setProducts(fetchedProducts);
+          setTotalPages(paginationData.totalPages || 0);
+          setTotalProducts(paginationData.totalProducts || 0);
+        } else {
+          setErrorMessage("Unable to retrieve products from atelier vault.");
+        }
+      } catch (error) {
+        if (
+          axios.isCancel(error) ||
+          error.name === "CanceledError" ||
+          error.code === "ERR_CANCELED"
+        ) {
+          return;
+        }
+        if (!isMounted) return;
+
+        // 401 Unauthorized -> Clear ONLY admin credentials and redirect to /admin/login
+        if (error.response?.status === 401) {
+          localStorage.removeItem("adminToken");
+          localStorage.removeItem("adminUser");
+          navigate("/admin/login");
+          return;
+        }
+
+        setErrorMessage("Unable to load products. Please check connection and try again.");
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [currentPage, debouncedSearch, selectedCategory, sortBy, retryTrigger, navigate]);
+
+  // Clear search input & reload page 1
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setDebouncedSearch("");
+    setCurrentPage(1);
+  };
+
+  // Reset all filters & search
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setDebouncedSearch("");
+    setSelectedCategory("all");
+    setSelectedStatus("all");
+    setSortBy("updated-desc");
+    setCurrentPage(1);
+    setRetryTrigger((prev) => prev + 1);
+  };
 
   // Toggle selection for a single product
   const toggleSelectProduct = (id) => {
@@ -197,29 +302,57 @@ const ProductManagement = () => {
     );
   };
 
-  // Toggle Select All
+  // Toggle Select All on current page
   const handleSelectAll = () => {
-    if (selectedIds.length === filteredProducts.length) {
+    if (products.length > 0 && selectedIds.length === products.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredProducts.map((p) => p.id));
+      setSelectedIds(products.map((p) => p.id));
     }
   };
 
-  // Toggle variant matrix expansion
+  // Toggle variant matrix accordion expansion
   const toggleExpandMatrix = (id) => {
     setExpandedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
-  // Reset all filters
-  const handleResetFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setSelectedStatus("all");
-    setSortBy("updated-desc");
-  };
+  // Derive Statistics accurately from backend data
+  const totalStockOnPage = products.reduce((acc, p) => acc + (p.stock || 0), 0);
+  const lowStockOnPage = products.filter(
+    (p) => (p.stock || 0) > 0 && (p.stock || 0) <= 10
+  ).length;
+  const vaultValueOnPage = products.reduce((acc, p) => {
+    const unitPrice =
+      p.salePrice !== undefined && p.salePrice !== null && p.salePrice < p.price
+        ? p.salePrice
+        : p.price || 0;
+    return acc + unitPrice * (p.stock || 0);
+  }, 0);
+  const formattedVaultValue =
+    vaultValueOnPage >= 100000
+      ? `₹${(vaultValueOnPage / 100000).toFixed(1)}L`
+      : `₹${vaultValueOnPage.toLocaleString("en-IN")}`;
+
+  // Pagination bounds calculation
+  const startIndex = totalProducts === 0 ? 0 : (currentPage - 1) * PAGE_LIMIT + 1;
+  const endIndex =
+    totalProducts === 0
+      ? 0
+      : Math.min(startIndex + products.length - 1, totalProducts);
+
+  // Generate pagination buttons
+  const pageNumbers = [];
+  const maxButtons = 5;
+  let startBtn = Math.max(1, currentPage - 2);
+  let endBtn = Math.min(totalPages, startBtn + maxButtons - 1);
+  if (endBtn - startBtn + 1 < maxButtons) {
+    startBtn = Math.max(1, endBtn - maxButtons + 1);
+  }
+  for (let i = startBtn; i <= endBtn; i++) {
+    pageNumbers.push(i);
+  }
 
   return (
     <div className="admin-products-page">
@@ -316,8 +449,8 @@ const ProductManagement = () => {
             </div>
             <div className="stat-card-content">
               <div className="stat-label">ACTIVE SILHOUETTES</div>
-              <div className="stat-value">84</div>
-              <div className="stat-badge badge-neutral">Styles</div>
+              <div className="stat-value">{totalProducts}</div>
+              <div className="stat-badge badge-neutral">Catalog Styles</div>
             </div>
           </div>
 
@@ -328,8 +461,8 @@ const ProductManagement = () => {
             </div>
             <div className="stat-card-content">
               <div className="stat-label">TOTAL UNITS IN STOCK</div>
-              <div className="stat-value">1,248</div>
-              <div className="stat-badge badge-emerald">96% Available</div>
+              <div className="stat-value">{totalStockOnPage}</div>
+              <div className="stat-badge badge-emerald">Loaded Reserve</div>
             </div>
           </div>
 
@@ -340,7 +473,7 @@ const ProductManagement = () => {
             </div>
             <div className="stat-card-content">
               <div className="stat-label">LOW STOCK RESERVE</div>
-              <div className="stat-value">18</div>
+              <div className="stat-value">{lowStockOnPage}</div>
               <div className="stat-badge badge-amber">Require Loom Run</div>
             </div>
           </div>
@@ -352,8 +485,8 @@ const ProductManagement = () => {
             </div>
             <div className="stat-card-content">
               <div className="stat-label">BESPOKE VAULT VALUE</div>
-              <div className="stat-value">₹49.8L</div>
-              <div className="stat-badge badge-gold">High Yield</div>
+              <div className="stat-value">{formattedVaultValue}</div>
+              <div className="stat-badge badge-gold">Active Reserve</div>
             </div>
           </div>
         </section>
@@ -367,13 +500,14 @@ const ProductManagement = () => {
               className="admin-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Burgundy Tailored Blazer..."
+              placeholder="Search by product name or brand..."
             />
             {searchQuery && (
               <button
                 type="button"
                 className="search-clear-btn"
-                onClick={() => setSearchQuery("")}
+                onClick={handleClearSearch}
+                title="Clear Search"
               >
                 <X size={14} />
               </button>
@@ -381,24 +515,27 @@ const ProductManagement = () => {
           </div>
 
           <div className="admin-filter-group">
-            {/* Category Select */}
+            {/* Category Select - Dynamic from real backend categories */}
             <div className="admin-select-wrap">
               <select
                 className="admin-select"
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setCurrentPage(1);
+                }}
               >
-                <option value="all">Category: Bespoke Blazers (42)</option>
-                <option value="Blazers">Category: Blazers (42)</option>
-                <option value="Suits">Category: Couture Suits (18)</option>
-                <option value="Dresses">Category: Evening Dresses (14)</option>
-                <option value="Trousers">Category: Tailored Trousers (10)</option>
-                <option value="Shirts">Category: Frontier Shirts (16)</option>
+                <option value="all">Category: All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    Category: {cat.name}
+                  </option>
+                ))}
               </select>
               <ChevronDown size={14} className="select-arrow" />
             </div>
 
-            {/* Status Select */}
+            {/* Status Select - Visual filter preservation */}
             <div className="admin-select-wrap">
               <select
                 className="admin-select"
@@ -406,30 +543,32 @@ const ProductManagement = () => {
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
                 <option value="all">Status: All Atelier Status</option>
-                <option value="In Stock">In Stock</option>
-                <option value="Low Stock">Low Stock</option>
-                <option value="Out of Stock">Out of Stock</option>
-                <option value="Draft / Preview">Draft / Preview</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
               </select>
               <ChevronDown size={14} className="select-arrow" />
             </div>
 
-            {/* Sort Select */}
+            {/* Sort Select - Connected to backend sort parameter */}
             <div className="admin-select-wrap">
               <select
                 className="admin-select"
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setCurrentPage(1);
+                }}
               >
                 <option value="updated-desc">Sort: Last Updated (Newest)</option>
+                <option value="updated-asc">Sort: Last Updated (Oldest)</option>
                 <option value="price-desc">Price: High to Low</option>
                 <option value="price-asc">Price: Low to High</option>
-                <option value="stock-asc">Stock: Low to High</option>
+                <option value="created-asc">Sort: Date Created</option>
               </select>
               <ChevronDown size={14} className="select-arrow" />
             </div>
 
-            {/* Refresh Button */}
+            {/* Refresh / Reset Button */}
             <button
               type="button"
               className="admin-btn-refresh"
@@ -449,10 +588,10 @@ const ProductManagement = () => {
                 type="checkbox"
                 className="admin-checkbox"
                 checked={
-                  filteredProducts.length > 0 &&
-                  selectedIds.length === filteredProducts.length
+                  products.length > 0 && selectedIds.length === products.length
                 }
                 onChange={handleSelectAll}
+                disabled={products.length === 0}
               />
               <span className="bulk-count-text">
                 Select All ({selectedIds.length} Selected)
@@ -512,10 +651,10 @@ const ProductManagement = () => {
                       type="checkbox"
                       className="admin-checkbox"
                       checked={
-                        filteredProducts.length > 0 &&
-                        selectedIds.length === filteredProducts.length
+                        products.length > 0 && selectedIds.length === products.length
                       }
                       onChange={handleSelectAll}
+                      disabled={products.length === 0}
                     />
                   </th>
                   <th className="col-image">PRODUCT IMAGE</th>
@@ -530,228 +669,390 @@ const ProductManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.map((product) => {
-                  const isExpanded = expandedIds.includes(product.id);
-                  const isSelected = selectedIds.includes(product.id);
-                  const stockPercent = Math.min(
-                    100,
-                    Math.round((product.stock / product.maxStock) * 100)
-                  );
-
-                  return (
-                    <React.Fragment key={product.id}>
-                      <tr className={`product-row ${isSelected ? "row-selected" : ""}`}>
-                        {/* 1. Checkbox */}
-                        <td className="col-checkbox">
-                          <input
-                            type="checkbox"
-                            className="admin-checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleSelectProduct(product.id)}
-                          />
-                        </td>
-
-                        {/* 2. PRODUCT IMAGE */}
-                        <td className="col-image">
-                          <div
-                            className="product-thumbnail"
-                            style={{ background: product.imageGradient }}
+                {/* 1. Loading State */}
+                {loading ? (
+                  <tr>
+                    <td colSpan={10}>
+                      <div className="admin-table-loading-state">
+                        <div className="admin-table-spinner" />
+                        <p>Retrieving luxury silhouettes from atelier vault...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : errorMessage ? (
+                  /* 2. Error State */
+                  <tr>
+                    <td colSpan={10}>
+                      <div className="admin-table-error-state">
+                        <AlertTriangle size={32} color="#fca5a5" />
+                        <p>{errorMessage}</p>
+                        <button
+                          type="button"
+                          className="admin-table-retry-btn"
+                          onClick={() => setRetryTrigger((prev) => prev + 1)}
+                        >
+                          <RefreshCw size={14} />
+                          <span>Retry Loading</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : products.length === 0 ? (
+                  /* 3. Empty State */
+                  <tr>
+                    <td colSpan={10}>
+                      <div className="admin-table-empty-state">
+                        <Shirt size={36} color="#8e7a69" />
+                        <p>
+                          {debouncedSearch || (selectedCategory && selectedCategory !== "all")
+                            ? "No matching luxury products found for current search and filters."
+                            : "No luxury silhouettes found in atelier vault."}
+                        </p>
+                        {(debouncedSearch || (selectedCategory && selectedCategory !== "all")) && (
+                          <button
+                            type="button"
+                            className="admin-table-retry-btn"
+                            onClick={handleResetFilters}
                           >
-                            <span className="thumb-initials">{product.imageInitials}</span>
-                          </div>
-                        </td>
+                            <RefreshCw size={14} />
+                            <span>Reset Search &amp; Filters</span>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  /* 4. Product Data Rows */
+                  products.map((product) => {
+                    const isExpanded = expandedIds.includes(product.id);
+                    const isSelected = selectedIds.includes(product.id);
+                    const thumbnailUrl = getProductThumbnail(product);
+                    const initials = getInitials(product.name);
 
-                        {/* 3. PRODUCT NAME & SKU */}
-                        <td className="col-product">
-                          <div className="product-identity">
-                            <span className="product-name">{product.name}</span>
-                            <span className="product-sku">SKU: {product.sku}</span>
-                          </div>
-                        </td>
+                    // Extract unique sizes & colors for the summary
+                    const sizes = Array.from(
+                      new Set(
+                        (product.variants || []).map((v) => v.size).filter(Boolean)
+                      )
+                    );
+                    const colors = Array.from(
+                      new Set(
+                        (product.variants || []).map((v) => v.color).filter(Boolean)
+                      )
+                    );
 
-                        {/* 4. CATEGORY */}
-                        <td className="col-category">
-                          <span className="category-pill">{product.category}</span>
-                        </td>
+                    // Determine effective price
+                    const activePrice =
+                      product.salePrice !== undefined &&
+                      product.salePrice !== null &&
+                      product.salePrice !== "" &&
+                      product.salePrice < product.price
+                        ? product.salePrice
+                        : product.price;
 
-                        {/* 5. VARIANTS (MATRIX) */}
-                        <td className="col-variants">
-                          <div className="variants-cell">
-                            <div className="variants-summary">
-                              <span className="variant-sizes">
-                                {product.sizes.join(", ")}
-                              </span>
-                              <span className="variant-colors">
-                                {product.colors.join(", ")}
-                              </span>
+                    const formattedPrice =
+                      typeof activePrice === "number"
+                        ? `₹${activePrice.toLocaleString("en-IN")}`
+                        : activePrice || "₹0";
+
+                    // Stock & Status calculations
+                    const stockUnits = product.stock ?? 0;
+                    const statusType =
+                      product.status === "inactive"
+                        ? "draft"
+                        : stockUnits === 0
+                        ? "out-of-stock"
+                        : stockUnits <= 10
+                        ? "low-stock"
+                        : "in-stock";
+                    const stockPercent =
+                      stockUnits === 0
+                        ? 0
+                        : Math.min(100, Math.max(12, stockUnits * 2));
+
+                    return (
+                      <React.Fragment key={product.id}>
+                        <tr className={`product-row ${isSelected ? "row-selected" : ""}`}>
+                          {/* 1. Checkbox */}
+                          <td className="col-checkbox">
+                            <input
+                              type="checkbox"
+                              className="admin-checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelectProduct(product.id)}
+                            />
+                          </td>
+
+                          {/* 2. PRODUCT IMAGE */}
+                          <td className="col-image">
+                            <div
+                              className="product-thumbnail"
+                              style={{
+                                background: !thumbnailUrl
+                                  ? "linear-gradient(135deg, #3d0e1b 0%, #17050a 100%)"
+                                  : undefined,
+                              }}
+                            >
+                              {thumbnailUrl ? (
+                                <img
+                                  src={thumbnailUrl}
+                                  alt={product.name}
+                                  className="product-thumbnail-img"
+                                />
+                              ) : (
+                                <span className="thumb-initials">{initials}</span>
+                              )}
                             </div>
-                            <button
-                              type="button"
-                              className={`btn-view-matrix ${isExpanded ? "active" : ""}`}
-                              onClick={() => toggleExpandMatrix(product.id)}
-                            >
-                              <span>{isExpanded ? "Hide Matrix" : "View Matrix"}</span>
-                              {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                            </button>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* 6. PRICE */}
-                        <td className="col-price">
-                          <span className="price-tag">{product.price}</span>
-                        </td>
-
-                        {/* 7. STOCK DISPLAY */}
-                        <td className="col-stock">
-                          <div className="stock-display">
-                            <span className="stock-units">{product.stock} units</span>
-                            <div className="stock-progress-bar">
-                              <div
-                                className={`stock-progress-fill fill-${product.statusType}`}
-                                style={{ width: `${stockPercent}%` }}
-                              />
+                          {/* 3. PRODUCT NAME & SKU */}
+                          <td className="col-product">
+                            <div className="product-identity">
+                              <span className="product-name">{product.name}</span>
+                              {product.sku && (
+                                <span className="product-sku">SKU: {product.sku}</span>
+                              )}
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* 8. STATUS BADGES */}
-                        <td className="col-status">
-                          <span className={`status-badge status-${product.statusType}`}>
-                            <span className="status-dot" />
-                            <span>{product.status}</span>
-                          </span>
-                        </td>
+                          {/* 4. CATEGORY */}
+                          <td className="col-category">
+                            <span className="category-pill">
+                              {product.category?.name || "Uncategorized"}
+                            </span>
+                          </td>
 
-                        {/* 9. LAST UPDATED */}
-                        <td className="col-updated">
-                          <span className="updated-text">{product.lastUpdated}</span>
-                        </td>
-
-                        {/* 10. ACTIONS */}
-                        <td className="col-actions">
-                          <div className="action-buttons-group">
-                            <button
-                              type="button"
-                              className="btn-icon"
-                              onClick={() => showPlaceholderNotice(`Edit ${product.name}`)}
-                              title="Edit Silhouette"
-                            >
-                              <Pencil size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-icon"
-                              onClick={() => showPlaceholderNotice(`View ${product.name}`)}
-                              title="View Atelier Details"
-                            >
-                              <Eye size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-icon btn-icon-danger"
-                              onClick={() => showPlaceholderNotice(`Delete ${product.name}`)}
-                              title="Delete Product"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-icon"
-                              onClick={() => showPlaceholderNotice(`More actions for ${product.name}`)}
-                              title="More Options"
-                            >
-                              <MoreHorizontal size={13} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-
-                      {/* 6. EXPANDED VARIANT MATRIX ACCORDION ROW */}
-                      {isExpanded && (
-                        <tr className="variant-matrix-row">
-                          <td colSpan={10} className="variant-matrix-cell">
-                            <div className="variant-matrix-panel">
-                              <div className="matrix-panel-header">
-                                <div className="matrix-title-group">
-                                  <Layers size={14} className="matrix-icon" />
-                                  <span className="matrix-title">
-                                    VARIANT MATRIX &amp; SALON ALLOCATION
-                                  </span>
-                                  <span className="matrix-sku-ref">
-                                    Parent SKU: {product.sku}
-                                  </span>
-                                </div>
-                                <button
-                                  type="button"
-                                  className="btn-add-variant"
-                                  onClick={() =>
-                                    showPlaceholderNotice(`+ Add Variant to ${product.sku}`)
-                                  }
-                                >
-                                  <Plus size={13} />
-                                  <span>+ Add Variant</span>
-                                </button>
+                          {/* 5. VARIANTS (MATRIX) */}
+                          <td className="col-variants">
+                            <div className="variants-cell">
+                              <div className="variants-summary">
+                                <span className="variant-sizes">
+                                  {sizes.length > 0
+                                    ? sizes.join(", ")
+                                    : "No sizes specified"}
+                                </span>
+                                <span className="variant-colors">
+                                  {colors.length > 0
+                                    ? colors.join(", ")
+                                    : "No colors specified"}
+                                </span>
                               </div>
+                              {Array.isArray(product.variants) &&
+                                product.variants.length > 0 && (
+                                  <button
+                                    type="button"
+                                    className={`btn-view-matrix ${
+                                      isExpanded ? "active" : ""
+                                    }`}
+                                    onClick={() => toggleExpandMatrix(product.id)}
+                                  >
+                                    <span>
+                                      {isExpanded ? "Hide Matrix" : "View Matrix"}
+                                    </span>
+                                    {isExpanded ? (
+                                      <ChevronUp size={12} />
+                                    ) : (
+                                      <ChevronDown size={12} />
+                                    )}
+                                  </button>
+                                )}
+                            </div>
+                          </td>
 
-                              <div className="matrix-cards-grid">
-                                {product.variants.map((v) => (
-                                  <div key={v.id} className="matrix-variant-card">
-                                    <div className="matrix-card-top">
-                                      <div className="matrix-color-tag">
-                                        <span
-                                          className="color-dot"
-                                          style={{
-                                            backgroundColor:
-                                              v.color.toLowerCase() === "burgundy"
-                                                ? "#7a1526"
-                                                : v.color.toLowerCase() === "black" ||
-                                                  v.color.toLowerCase() === "onyx"
-                                                ? "#111827"
-                                                : v.color.toLowerCase() === "cream" ||
-                                                  v.color.toLowerCase() === "champagne"
-                                                ? "#dfc28d"
-                                                : v.color.toLowerCase() === "charcoal"
-                                                ? "#4b5563"
-                                                : "#94a3b8",
-                                          }}
-                                        />
-                                        <span className="color-name">{v.color}</span>
-                                      </div>
-                                      <span className="matrix-size-pill">
-                                        Size {v.size}
-                                      </span>
-                                    </div>
+                          {/* 6. PRICE */}
+                          <td className="col-price">
+                            <span className="price-tag">{formattedPrice}</span>
+                          </td>
 
-                                    <div className="matrix-stock-info">
-                                      <span className="stock-reserve-label">
-                                        Stock Reserve:
-                                      </span>
-                                      <span
-                                        className={`stock-reserve-val ${
-                                          v.stock === 0
-                                            ? "text-out"
-                                            : v.stock <= 5
-                                            ? "text-low"
-                                            : "text-ok"
-                                        }`}
-                                      >
-                                        {v.stock} units
-                                      </span>
-                                    </div>
-
-                                    <div className="matrix-salon-footer">
-                                      <span className="salon-badge">{v.salon}</span>
-                                    </div>
-                                  </div>
-                                ))}
+                          {/* 7. STOCK DISPLAY */}
+                          <td className="col-stock">
+                            <div className="stock-display">
+                              <span className="stock-units">
+                                {stockUnits} units
+                              </span>
+                              <div className="stock-progress-bar">
+                                <div
+                                  className={`stock-progress-fill fill-${statusType}`}
+                                  style={{ width: `${stockPercent}%` }}
+                                />
                               </div>
                             </div>
                           </td>
+
+                          {/* 8. STATUS BADGES */}
+                          <td className="col-status">
+                            <span className={`status-badge status-${statusType}`}>
+                              <span className="status-dot" />
+                              <span>
+                                {product.status
+                                  ? product.status.charAt(0).toUpperCase() +
+                                    product.status.slice(1)
+                                  : "Active"}
+                              </span>
+                            </span>
+                          </td>
+
+                          {/* 9. LAST UPDATED */}
+                          <td className="col-updated">
+                            <span className="updated-text">
+                              {formatUpdated(product.updatedAt)}
+                            </span>
+                          </td>
+
+                          {/* 10. ACTIONS */}
+                          <td className="col-actions">
+                            <div className="action-buttons-group">
+                              <button
+                                type="button"
+                                className="btn-icon"
+                                onClick={() =>
+                                  showPlaceholderNotice(`Edit ${product.name}`)
+                                }
+                                title="Edit Silhouette"
+                              >
+                                <Pencil size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-icon"
+                                onClick={() =>
+                                  showPlaceholderNotice(`View ${product.name}`)
+                                }
+                                title="View Atelier Details"
+                              >
+                                <Eye size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-icon btn-icon-danger"
+                                onClick={() =>
+                                  showPlaceholderNotice(`Delete ${product.name}`)
+                                }
+                                title="Delete Product"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-icon"
+                                onClick={() =>
+                                  showPlaceholderNotice(
+                                    `More actions for ${product.name}`
+                                  )
+                                }
+                                title="More Options"
+                              >
+                                <MoreHorizontal size={13} />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
+
+                        {/* 6. EXPANDED VARIANT MATRIX ACCORDION ROW */}
+                        {isExpanded && (
+                          <tr className="variant-matrix-row">
+                            <td colSpan={10} className="variant-matrix-cell">
+                              <div className="variant-matrix-panel">
+                                <div className="matrix-panel-header">
+                                  <div className="matrix-title-group">
+                                    <Layers size={14} className="matrix-icon" />
+                                    <span className="matrix-title">
+                                      VARIANT MATRIX &amp; STOCK ALLOCATION
+                                    </span>
+                                    {product.sku && (
+                                      <span className="matrix-sku-ref">
+                                        Parent SKU: {product.sku}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="btn-add-variant"
+                                    onClick={() =>
+                                      showPlaceholderNotice(
+                                        `+ Add Variant to ${product.name}`
+                                      )
+                                    }
+                                  >
+                                    <Plus size={13} />
+                                    <span>+ Add Variant</span>
+                                  </button>
+                                </div>
+
+                                <div className="matrix-cards-grid">
+                                  {(product.variants || []).map((v, vIdx) => {
+                                    const variantImages = Array.isArray(v.images)
+                                      ? v.images
+                                      : [];
+                                    const firstImg =
+                                      variantImages.length > 0
+                                        ? variantImages[0].startsWith("http")
+                                          ? variantImages[0]
+                                          : `http://localhost:5000${variantImages[0]}`
+                                        : null;
+
+                                    return (
+                                      <div
+                                        key={v._id || vIdx}
+                                        className="matrix-variant-card"
+                                      >
+                                        <div className="matrix-card-top">
+                                          <div className="matrix-color-tag">
+                                            <span
+                                              className="color-dot"
+                                              style={{
+                                                backgroundColor: getColorHex(
+                                                  v.color
+                                                ),
+                                              }}
+                                            />
+                                            <span className="color-name">
+                                              {v.color || "Default"}
+                                            </span>
+                                          </div>
+                                          <span className="matrix-size-pill">
+                                            Size {v.size || "Standard"}
+                                          </span>
+                                        </div>
+
+                                        {firstImg && (
+                                          <div className="matrix-images-strip">
+                                            <img
+                                              src={firstImg}
+                                              alt={`${product.name} ${v.color}`}
+                                              className="matrix-variant-img"
+                                            />
+                                          </div>
+                                        )}
+
+                                        <div className="matrix-stock-info">
+                                          <span className="stock-reserve-label">
+                                            Stock Reserve:
+                                          </span>
+                                          <span
+                                            className={`stock-reserve-val ${
+                                              v.stock === 0
+                                                ? "text-out"
+                                                : v.stock <= 5
+                                                ? "text-low"
+                                                : "text-ok"
+                                            }`}
+                                          >
+                                            {v.stock ?? 0} units
+                                          </span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -759,50 +1060,58 @@ const ProductManagement = () => {
           {/* 10. PAGINATION */}
           <footer className="admin-pagination-footer">
             <div className="pagination-info">
-              Showing <span>1–5</span> of <span>84</span> luxury silhouettes
+              Showing <span>{startIndex}–{endIndex}</span> of{" "}
+              <span>{totalProducts}</span> luxury silhouettes
             </div>
 
             <div className="pagination-controls">
               <button
                 type="button"
                 className="pagination-btn btn-nav"
-                onClick={() => setActivePage((p) => Math.max(1, p - 1))}
-                disabled={activePage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage <= 1 || loading}
               >
                 <ChevronLeft size={14} />
                 <span>Previous</span>
               </button>
 
-              {[1, 2, 3].map((page) => (
+              {pageNumbers.map((page) => (
                 <button
                   key={page}
                   type="button"
                   className={`pagination-btn btn-page ${
-                    activePage === page ? "page-active" : ""
+                    currentPage === page ? "page-active" : ""
                   }`}
-                  onClick={() => setActivePage(page)}
+                  onClick={() => setCurrentPage(page)}
+                  disabled={loading}
                 >
                   {page}
                 </button>
               ))}
 
-              <span className="pagination-ellipsis">...</span>
-
-              <button
-                type="button"
-                className={`pagination-btn btn-page ${
-                  activePage === 9 ? "page-active" : ""
-                }`}
-                onClick={() => setActivePage(9)}
-              >
-                9
-              </button>
+              {totalPages > maxButtons && !pageNumbers.includes(totalPages) && (
+                <>
+                  <span className="pagination-ellipsis">...</span>
+                  <button
+                    type="button"
+                    className={`pagination-btn btn-page ${
+                      currentPage === totalPages ? "page-active" : ""
+                    }`}
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={loading}
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
 
               <button
                 type="button"
                 className="pagination-btn btn-nav"
-                onClick={() => setActivePage((p) => Math.min(9, p + 1))}
-                disabled={activePage === 9}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage >= totalPages || totalPages === 0 || loading}
               >
                 <span>Next</span>
                 <ChevronRight size={14} />
