@@ -301,3 +301,136 @@ exports.uploadProductImages = async (req, res) => {
   }
 };
 
+exports.getProducts = async (req, res) => {
+  try {
+    const { search, page, limit, sort, category } = req.query;
+
+    // 1. Pagination Validation
+    const pageNumber = page !== undefined ? Number(page) : 1;
+    const limitNumber = limit !== undefined ? Number(limit) : 10;
+
+    if (
+      !Number.isInteger(pageNumber) ||
+      pageNumber < 1 ||
+      !Number.isInteger(limitNumber) ||
+      limitNumber < 1 ||
+      limitNumber > 100
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid pagination parameters. 'page' must be an integer >= 1 and 'limit' must be an integer between 1 and 100.",
+      });
+    }
+
+    // 2. Query filter: strictly non-deleted products
+    const filter = {
+      isDeleted: false,
+    };
+
+    // Optional category filter if provided
+    if (category && mongoose.Types.ObjectId.isValid(category)) {
+      filter.categoryId = category;
+    }
+
+    // Search case-insensitively and partially by name or brand
+    if (search && typeof search === "string" && search.trim().length > 0) {
+      const sanitized = escapeRegex(search.trim());
+      const searchRegex = { $regex: sanitized, $options: "i" };
+      filter.$or = [
+        { name: searchRegex },
+        { brand: searchRegex },
+      ];
+    }
+
+    // 3. Sorting (default: newest first)
+    let sortOption = { createdAt: -1 };
+    if (sort === "price-asc") {
+      sortOption = { price: 1 };
+    } else if (sort === "price-desc") {
+      sortOption = { price: -1 };
+    } else if (sort === "updated-asc") {
+      sortOption = { updatedAt: 1 };
+    } else if (sort === "updated-desc") {
+      sortOption = { updatedAt: -1 };
+    } else if (sort === "created-asc") {
+      sortOption = { createdAt: 1 };
+    }
+
+    // 4. Count & pagination
+    const totalProducts = await Product.countDocuments(filter);
+    const totalPages =
+      totalProducts === 0 ? 0 : Math.ceil(totalProducts / limitNumber);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // 5. Fetch products with populated categoryId
+    const products = await Product.find(filter)
+      .populate({
+        path: "categoryId",
+        select: "_id name isDeleted status",
+      })
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limitNumber)
+      .lean();
+
+    // 6. Safe payload formatting
+    const safeProducts = products.map((prod) => {
+      const variants = Array.isArray(prod.variants) ? prod.variants : [];
+      const totalStock = variants.reduce(
+        (sum, v) => sum + (Number(v.stock) || 0),
+        0
+      );
+
+      let categoryData = null;
+      if (prod.categoryId && !prod.categoryId.isDeleted) {
+        categoryData = {
+          id: prod.categoryId._id.toString(),
+          name: prod.categoryId.name,
+        };
+      }
+
+      return {
+        id: prod._id.toString(),
+        name: prod.name,
+        description: prod.description || "",
+        brand: prod.brand,
+        category: categoryData,
+        price: prod.price,
+        salePrice: prod.salePrice,
+        status: prod.status,
+        isFeatured: Boolean(prod.isFeatured),
+        isBestSeller: Boolean(prod.isBestSeller),
+        stock: totalStock,
+        variantCount: variants.length,
+        variants: variants.map((v) => ({
+          size: v.size,
+          color: v.color,
+          stock: v.stock,
+          images: Array.isArray(v.images) ? v.images : [],
+        })),
+        createdAt: prod.createdAt,
+        updatedAt: prod.updatedAt,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      products: safeProducts,
+      pagination: {
+        currentPage: pageNumber,
+        totalPages,
+        totalProducts,
+        limit: limitNumber,
+      },
+    });
+  } catch (error) {
+    console.error("Get products error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while retrieving products.",
+    });
+  }
+};
+
+

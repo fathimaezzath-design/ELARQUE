@@ -1,0 +1,725 @@
+/* ==========================================================================
+   ELARQUE ADMIN - ADD VARIANT STYLES
+   Haute Couture & Ready-to-Wear Atelier Luxury UI
+   ========================================================================== */
+
+.admin-add-variant-page {
+  min-height: 100vh;
+  background: #090306;
+  color: #f7f1eb;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   1. Left Sidebar Navigation
+   -------------------------------------------------------------------------- */
+.admin-sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: #12090e;
+  border-right: 1px solid rgba(223, 194, 141, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  box-sizing: border-box;
+  z-index: 50;
+}
+
+.admin-sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.admin-sidebar-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-sidebar-crest-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-brand-crest {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #090306;
+  background: linear-gradient(135deg, #dfc28d 0%, #b89758 100%);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  letter-spacing: 1px;
+}
+
+.admin-brand-name {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: #dfc28d;
+}
+
+.admin-sidebar-subtitle {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8e7a69;
+  padding-left: 40px;
+}
+
+.admin-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #b59f8c;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.admin-sidebar-link:hover {
+  color: #dfc28d;
+  background: rgba(223, 194, 141, 0.06);
+}
+
+.admin-sidebar-link.active {
+  color: #f7e7c4;
+  background: rgba(122, 21, 38, 0.35);
+  border-color: rgba(223, 194, 141, 0.35);
+  font-weight: 600;
+}
+
+.admin-sidebar-footer {
+  border-top: 1px solid rgba(223, 194, 141, 0.15);
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(223, 194, 141, 0.15);
+  border-radius: 20px;
+  font-size: 11.5px;
+  color: #d1c1b1;
+}
+
+.admin-user-avatar-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+
+.admin-sidebar-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-sidebar-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   2. Main Content Canvas
+   -------------------------------------------------------------------------- */
+.admin-add-variant-main {
+  flex: 1;
+  min-width: 0;
+  background: #090306;
+  overflow-y: auto;
+  padding: 32px 36px 64px 36px;
+}
+
+.admin-add-variant-card {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Back Navigation Button */
+.admin-back-nav {
+  display: flex;
+  align-items: center;
+}
+
+.admin-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(223, 194, 141, 0.06);
+  border: 1px solid rgba(223, 194, 141, 0.2);
+  border-radius: 6px;
+  color: #d1c1b1;
+  font-size: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-back:hover {
+  background: rgba(223, 194, 141, 0.14);
+  border-color: #dfc28d;
+  color: #f7e7c4;
+}
+
+/* Header */
+.admin-add-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid rgba(223, 194, 141, 0.15);
+  padding-bottom: 20px;
+}
+
+.admin-header-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #dfc28d;
+  background: rgba(223, 194, 141, 0.08);
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  padding: 4px 10px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.admin-add-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #dfc28d;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.admin-add-subtitle {
+  font-size: 13px;
+  color: #a89480;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+/* Global Alert */
+.admin-form-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.admin-form-alert.admin-alert-error {
+  background: rgba(122, 21, 38, 0.35);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #fca5a5;
+}
+
+/* --------------------------------------------------------------------------
+   3. Form Sections
+   -------------------------------------------------------------------------- */
+.admin-form-section {
+  background: #12090e;
+  border: 1px solid rgba(223, 194, 141, 0.18);
+  border-radius: 12px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-section-heading {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #dfc28d;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.admin-section-subheading {
+  font-size: 12.5px;
+  color: #8e7a69;
+  margin: -10px 0 0 0;
+}
+
+/* Form Groups & Inputs */
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-form-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #d1c1b1;
+}
+
+.admin-form-label .req {
+  color: #f87171;
+}
+
+.admin-form-input,
+.admin-form-select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(223, 194, 141, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #f7f1eb;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.admin-form-input:focus,
+.admin-form-select:focus {
+  outline: none;
+  border-color: #dfc28d;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 2px rgba(223, 194, 141, 0.15);
+}
+
+.admin-form-input.has-error,
+.admin-form-select.has-error {
+  border-color: #f87171;
+  background: rgba(122, 21, 38, 0.15);
+}
+
+.admin-form-select option {
+  background: #12090e;
+  color: #f7f1eb;
+}
+
+.admin-field-error {
+  color: #f87171;
+  font-size: 11.5px;
+}
+
+.admin-field-warning {
+  color: #fbbf24;
+  font-size: 12px;
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px;
+}
+
+.admin-input-helper {
+  font-size: 11px;
+  color: #8e7a69;
+}
+
+.admin-loading-products-inline {
+  color: #dfc28d;
+  font-size: 12.5px;
+  padding: 10px;
+}
+
+/* 2-Column Form Grid */
+.admin-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   4. Parent Product Preview Card
+   -------------------------------------------------------------------------- */
+.admin-product-preview-card {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.preview-badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #a89480;
+  width: fit-content;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-dot.active {
+  background: #4ade80;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+}
+
+.status-dot.inactive {
+  background: #9ca3af;
+}
+
+.preview-details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.preview-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.preview-label {
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #8e7a69;
+}
+
+.preview-value {
+  font-size: 13px;
+  color: #f7f1eb;
+  font-weight: 500;
+}
+
+.preview-value.title-val {
+  font-weight: 600;
+  color: #dfc28d;
+}
+
+.preview-value.gold-val {
+  color: #dfc28d;
+  font-weight: 600;
+}
+
+.preview-value .sale-val {
+  color: #fbbf24;
+  font-size: 11.5px;
+}
+
+.preview-existing-variants {
+  border-top: 1px solid rgba(223, 194, 141, 0.12);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.existing-variants-label {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #8e7a69;
+  text-transform: uppercase;
+}
+
+.existing-variants-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.existing-variant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(223, 194, 141, 0.08);
+  border: 1px solid rgba(223, 194, 141, 0.2);
+  font-size: 11px;
+  color: #d1c1b1;
+}
+
+.chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. Color Input with Swatch Preview
+   -------------------------------------------------------------------------- */
+.admin-color-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-color-preview-swatch {
+  position: absolute;
+  left: 12px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.admin-form-input.with-swatch {
+  padding-left: 40px;
+}
+
+/* Stock Input with Unit Label */
+.admin-stock-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-stock-unit-label {
+  position: absolute;
+  right: 14px;
+  font-size: 12px;
+  color: #8e7a69;
+  pointer-events: none;
+}
+
+.admin-derived-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #8e7a69;
+  margin-top: 4px;
+}
+
+.status-pill {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.status-pill.in-stock {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+}
+
+.status-pill.low-stock {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.status-pill.out-of-stock {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+/* --------------------------------------------------------------------------
+   6. Size Selector Grid
+   -------------------------------------------------------------------------- */
+.admin-size-selector-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-size-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 68px;
+  height: 42px;
+  padding: 0 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(223, 194, 141, 0.2);
+  border-radius: 8px;
+  color: #d1c1b1;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-size-btn:hover:not(:disabled) {
+  border-color: #dfc28d;
+  color: #f7e7c4;
+  background: rgba(223, 194, 141, 0.08);
+}
+
+.admin-size-btn.selected {
+  background: linear-gradient(135deg, #7a1526 0%, #520d18 100%);
+  border-color: #dfc28d;
+  color: #f7e7c4;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(122, 21, 38, 0.35);
+}
+
+.admin-size-btn .check-icon {
+  color: #dfc28d;
+}
+
+/* --------------------------------------------------------------------------
+   7. Form Actions Footer
+   -------------------------------------------------------------------------- */
+.admin-add-variant-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  padding-top: 10px;
+}
+
+.admin-btn-cancel {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  border-radius: 8px;
+  color: #d1c1b1;
+  font-family: "Poppins", sans-serif;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-cancel:hover:not(:disabled) {
+  background: rgba(223, 194, 141, 0.08);
+  border-color: #dfc28d;
+  color: #f7e7c4;
+}
+
+.admin-btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #7a1526 0%, #520d18 100%);
+  border: 1px solid rgba(223, 194, 141, 0.4);
+  color: #f7e7c4;
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(122, 21, 38, 0.4);
+}
+
+.admin-btn-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #961b30 0%, #681120 100%);
+  border-color: #dfc28d;
+  box-shadow: 0 6px 18px rgba(122, 21, 38, 0.55);
+  transform: translateY(-1px);
+}
+
+.admin-btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.admin-spinner-sm {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(247, 231, 196, 0.3);
+  border-top-color: #f7e7c4;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. Responsive Adjustments
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .admin-sidebar {
+    display: none;
+  }
+  .admin-add-variant-main {
+    padding: 24px 20px 48px 20px;
+  }
+  .preview-details-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .preview-details-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-size-selector-grid {
+    justify-content: space-between;
+  }
+  .admin-size-btn {
+    flex: 1 1 40px;
+  }
+}
