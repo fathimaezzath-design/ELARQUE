@@ -1,0 +1,906 @@
+/* ==========================================================================
+   ELARQUE ADMIN - PRODUCT IMAGE UPLOADER COMPONENT STYLES
+   Editorial Luxury Visual Management, Cropper Modal & Preview Grid
+   ========================================================================== */
+
+.admin-product-uploader {
+  background: #12090e;
+  border: 1px solid rgba(223, 194, 141, 0.2);
+  border-radius: 14px;
+  padding: 28px;
+  color: #f7f1eb;
+  font-family: "Poppins", sans-serif;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  margin-bottom: 28px;
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+.admin-uploader-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 22px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-uploader-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #dfc28d;
+  background: rgba(223, 194, 141, 0.08);
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.admin-uploader-tag-icon {
+  color: #dfc28d;
+}
+
+.admin-uploader-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #dfc28d;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+}
+
+.admin-uploader-subtitle {
+  font-size: 12.5px;
+  color: #b59f8c;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 650px;
+}
+
+.admin-uploader-count-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 8px 16px;
+  background: rgba(25, 14, 21, 0.85);
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  border-radius: 10px;
+}
+
+.admin-uploader-count-badge.count-valid {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(20, 35, 25, 0.6);
+}
+
+.admin-uploader-count-badge.count-valid .count-number {
+  color: #86efac;
+}
+
+.admin-uploader-count-badge .count-number {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #dfc28d;
+  letter-spacing: 1px;
+}
+
+.admin-uploader-count-badge .count-label {
+  font-size: 11px;
+  color: #b59f8c;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   Notification Banners
+   -------------------------------------------------------------------------- */
+.admin-uploader-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  animation: bannerFadeIn 0.25s ease-out;
+}
+
+@keyframes bannerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.banner-error {
+  background: rgba(122, 21, 38, 0.35);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+}
+
+.banner-success {
+  background: rgba(20, 50, 30, 0.45);
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  color: #86efac;
+}
+
+.banner-icon {
+  flex-shrink: 0;
+}
+
+.banner-close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.75;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s ease;
+}
+
+.banner-close:hover {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Drag & Drop Zone
+   -------------------------------------------------------------------------- */
+.admin-uploader-dropzone {
+  border: 1.5px dashed rgba(223, 194, 141, 0.35);
+  border-radius: 14px;
+  background: rgba(18, 9, 14, 0.6);
+  padding: 42px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-uploader-dropzone:hover {
+  border-color: #dfc28d;
+  background: rgba(28, 17, 23, 0.85);
+  box-shadow: 0 0 24px rgba(223, 194, 141, 0.12);
+}
+
+.admin-uploader-dropzone.dropzone-active {
+  border-color: #dfc28d;
+  background: rgba(45, 25, 36, 0.9);
+  box-shadow: 0 0 32px rgba(223, 194, 141, 0.25);
+  transform: scale(1.005);
+}
+
+.admin-uploader-dropzone.dropzone-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-dropzone-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-dropzone-icon-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(122, 21, 38, 0.6) 0%, rgba(74, 13, 24, 0.4) 100%);
+  border: 1px solid rgba(223, 194, 141, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dfc28d;
+  box-shadow: 0 4px 18px rgba(122, 21, 38, 0.45);
+  transition: transform 0.25s ease;
+}
+
+.admin-uploader-dropzone:hover .admin-dropzone-icon-circle {
+  transform: translateY(-2px) scale(1.05);
+  border-color: #dfc28d;
+}
+
+.admin-dropzone-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-dropzone-lead {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.75px;
+  color: #f7e7c4;
+}
+
+.admin-dropzone-sub {
+  font-size: 12.5px;
+  color: #b59f8c;
+}
+
+.admin-dropzone-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #7a1526 0%, #4a0d18 100%);
+  border: 1px solid rgba(223, 194, 141, 0.45);
+  border-radius: 8px;
+  color: #f7e7c4;
+  font-family: "Poppins", sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(122, 21, 38, 0.35);
+  margin-top: 4px;
+}
+
+.admin-dropzone-btn:hover {
+  background: linear-gradient(135deg, #941b30 0%, #5c101e 100%);
+  border-color: #dfc28d;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(223, 194, 141, 0.2);
+}
+
+.admin-dropzone-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #8e7a69;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.meta-separator {
+  color: rgba(223, 194, 141, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   Preview Grid & Cards
+   -------------------------------------------------------------------------- */
+.admin-preview-section {
+  margin-top: 28px;
+}
+
+.admin-preview-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(223, 194, 141, 0.15);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-preview-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.legend-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #dfc28d;
+  text-transform: uppercase;
+}
+
+.legend-caption {
+  font-size: 11.5px;
+  color: #b59f8c;
+}
+
+.admin-upload-badge-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.admin-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+}
+
+.admin-preview-card {
+  background: #190e15;
+  border: 1px solid rgba(223, 194, 141, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-preview-card:hover {
+  border-color: rgba(223, 194, 141, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.admin-preview-card.card-is-cover {
+  border: 1.5px solid #dfc28d;
+  box-shadow: 0 0 20px rgba(223, 194, 141, 0.2);
+}
+
+.admin-cover-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  background: linear-gradient(135deg, #dfc28d 0%, #b89758 100%);
+  color: #090306;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.admin-index-pill {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  background: rgba(9, 3, 6, 0.75);
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  color: #b59f8c;
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+
+.admin-preview-image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #090306;
+  overflow: hidden;
+}
+
+.admin-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.admin-preview-card:hover .admin-preview-img {
+  transform: scale(1.03);
+}
+
+.admin-preview-card-actions {
+  padding: 10px 12px;
+  background: #140b11;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid rgba(223, 194, 141, 0.12);
+}
+
+.admin-card-cover-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(223, 194, 141, 0.08);
+  border: 1px solid rgba(223, 194, 141, 0.3);
+  border-radius: 6px;
+  color: #dfc28d;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.admin-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.btn-make-cover {
+  width: 100%;
+  background: rgba(223, 194, 141, 0.12);
+  border-color: rgba(223, 194, 141, 0.25);
+  color: #dfc28d;
+}
+
+.btn-make-cover:hover {
+  background: #dfc28d;
+  color: #090306;
+  border-color: #dfc28d;
+}
+
+.admin-card-btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.btn-replace {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #d1c1b1;
+}
+
+.btn-replace:hover {
+  background: rgba(223, 194, 141, 0.15);
+  border-color: rgba(223, 194, 141, 0.35);
+  color: #f7e7c4;
+}
+
+.btn-remove {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.btn-remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   Footer Upload Action Bar
+   -------------------------------------------------------------------------- */
+.admin-uploader-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(223, 194, 141, 0.15);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.status-text {
+  font-size: 12.5px;
+  letter-spacing: 0.3px;
+}
+
+.status-text.muted {
+  color: #8e7a69;
+}
+
+.status-text.warning {
+  color: #fcd34d;
+}
+
+.status-text.success {
+  color: #86efac;
+}
+
+.admin-uploader-btn-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-btn-secondary {
+  padding: 10px 18px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #b59f8c;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-secondary:hover:not(:disabled) {
+  border-color: #dfc28d;
+  color: #f7f1eb;
+}
+
+.admin-btn-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 26px;
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+}
+
+.admin-btn-upload.btn-ready {
+  background: linear-gradient(135deg, #dfc28d 0%, #b89758 100%);
+  color: #090306;
+  border-color: #eed9ad;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(223, 194, 141, 0.35);
+}
+
+.admin-btn-upload.btn-ready:hover {
+  background: linear-gradient(135deg, #eed9ad 0%, #c9a768 100%);
+  box-shadow: 0 6px 24px rgba(223, 194, 141, 0.5);
+  transform: translateY(-1px);
+}
+
+.admin-btn-upload.btn-disabled {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #756254;
+  cursor: not-allowed;
+}
+
+.spin-icon {
+  animation: spinAnimation 1s linear infinite;
+}
+
+@keyframes spinAnimation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Cropper Modal Overlay & Dialog
+   -------------------------------------------------------------------------- */
+.admin-crop-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 3, 6, 0.88);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.admin-crop-modal {
+  background: #12090e;
+  border: 1px solid rgba(223, 194, 141, 0.35);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.admin-crop-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(223, 194, 141, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: #190e15;
+}
+
+.admin-crop-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #dfc28d;
+  background: rgba(223, 194, 141, 0.1);
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  padding: 3px 9px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.admin-crop-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #dfc28d;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+
+.admin-crop-desc {
+  font-size: 12px;
+  color: #b59f8c;
+  margin: 0;
+}
+
+.admin-crop-close-btn {
+  background: transparent;
+  border: none;
+  color: #b59f8c;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.admin-crop-close-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Cropper Canvas Workspace */
+.admin-crop-workspace {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  background: #090306;
+}
+
+/* Cropper Toolbar */
+.admin-crop-toolbar {
+  padding: 16px 24px;
+  background: #160c12;
+  border-top: 1px solid rgba(223, 194, 141, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.control-label {
+  font-size: 11px;
+  color: #8e7a69;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-right: 4px;
+}
+
+.admin-crop-zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.zoom-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #dfc28d;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zoom-btn:hover {
+  background: rgba(223, 194, 141, 0.15);
+  border-color: rgba(223, 194, 141, 0.35);
+}
+
+.admin-crop-zoom-slider {
+  flex: 1;
+  accent-color: #dfc28d;
+  height: 4px;
+  cursor: pointer;
+}
+
+.admin-crop-aspect-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aspect-btn {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #b59f8c;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.aspect-btn.aspect-active {
+  background: rgba(223, 194, 141, 0.15);
+  border-color: #dfc28d;
+  color: #f7e7c4;
+  font-weight: 600;
+}
+
+.aspect-btn:hover:not(.aspect-active) {
+  border-color: rgba(223, 194, 141, 0.3);
+  color: #f7f1eb;
+}
+
+/* Modal Actions Footer */
+.admin-crop-modal-footer {
+  padding: 16px 24px;
+  background: #190e15;
+  border-top: 1px solid rgba(223, 194, 141, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-crop-btn-cancel {
+  padding: 9px 18px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #b59f8c;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-crop-btn-cancel:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.admin-crop-btn-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-crop-btn-skip {
+  padding: 9px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #d1c1b1;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-crop-btn-skip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.admin-crop-btn-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 22px;
+  background: linear-gradient(135deg, #dfc28d 0%, #b89758 100%);
+  border: 1px solid #eed9ad;
+  border-radius: 8px;
+  color: #090306;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(223, 194, 141, 0.3);
+}
+
+.admin-crop-btn-confirm:hover {
+  background: linear-gradient(135deg, #eed9ad 0%, #c9a768 100%);
+  box-shadow: 0 6px 20px rgba(223, 194, 141, 0.45);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Breakpoints
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .admin-product-uploader {
+    padding: 20px;
+  }
+
+  .admin-preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .admin-crop-workspace {
+    height: 320px;
+  }
+
+  .admin-crop-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-uploader-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-uploader-btn-wrap {
+    justify-content: stretch;
+  }
+
+  .admin-btn-upload {
+    flex: 1;
+    justify-content: center;
+  }
+}
