@@ -5,6 +5,9 @@ import UserManagement from "../components/admin/UserManagement";
 import CategoryManagement from "../components/admin/CategoryManagement";
 import ProductManagement from "../components/admin/ProductManagement";
 import AddProduct from "../components/admin/AddProduct";
+import VariantManagement from "../components/admin/VariantManagement";
+import AddVariant from "../components/admin/AddVariant";
+import EditVariant from "../components/admin/EditVariant";
 
 // Temporary minimal placeholder to verify successful /admin navigation
 function AdminPlaceholder() {
@@ -75,6 +78,30 @@ function AdminRoutes() {
         element={
           <ProtectedAdminRoute>
             <AddProduct />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/variants"
+        element={
+          <ProtectedAdminRoute>
+            <VariantManagement />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/variants/add"
+        element={
+          <ProtectedAdminRoute>
+            <AddVariant />
+          </ProtectedAdminRoute>
+        }
+      />
+      <Route
+        path="/admin/variants/edit/:productId/:variantId"
+        element={
+          <ProtectedAdminRoute>
+            <EditVariant />
           </ProtectedAdminRoute>
         }
       />

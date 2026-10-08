@@ -11,6 +11,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
 const adminProductRoutes = require("./routes/adminProductRoutes");
+const adminVariantRoutes = require("./routes/adminVariantRoutes");
 
 const app = express();
 
@@ -43,6 +44,8 @@ app.use("/api/admin", adminUserRoutes);
 app.use("/api/admin", adminCategoryRoutes);
 app.use("/api/admin/products", adminProductRoutes);
 app.use("/api/admin", adminProductRoutes);
+app.use("/api/admin/products", adminVariantRoutes);
+app.use("/api/admin/variants", adminVariantRoutes);
 
 
 app.get("/", (req, res) => {
