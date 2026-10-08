@@ -1254,3 +1254,81 @@
     gap: 12px;
   }
 }
+
+/* --------------------------------------------------------------------------
+   12. Table Loading, Empty & Error States, and Image Previews
+   -------------------------------------------------------------------------- */
+.product-thumbnail {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.matrix-images-strip {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.matrix-variant-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid rgba(223, 194, 141, 0.25);
+}
+
+.admin-table-loading-state,
+.admin-table-empty-state,
+.admin-table-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px;
+  text-align: center;
+  gap: 12px;
+  color: #b59f8c;
+}
+
+.admin-table-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(223, 194, 141, 0.2);
+  border-top-color: #dfc28d;
+  border-radius: 50%;
+  animation: adminTableSpin 0.85s linear infinite;
+}
+
+@keyframes adminTableSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-table-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: rgba(223, 194, 141, 0.12);
+  border: 1px solid rgba(223, 194, 141, 0.35);
+  border-radius: 6px;
+  color: #f7e7c4;
+  font-family: "Poppins", sans-serif;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.admin-table-retry-btn:hover {
+  background: #dfc28d;
+  color: #090306;
+}
