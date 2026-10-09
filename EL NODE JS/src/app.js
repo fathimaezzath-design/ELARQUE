@@ -7,6 +7,7 @@ const path = require("path");
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const addressRoutes = require("./routes/addressRoutes");
+const productRoutes = require("./routes/productRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
@@ -36,6 +37,10 @@ app.use("/api/profile", profileRoutes);
 // ADDRESS ROUTES
 app.use("/api/address", addressRoutes);
 app.use("/api/addresses", addressRoutes);
+
+
+// CUSTOMER PRODUCT ROUTES (PUBLIC)
+app.use("/api/products", productRoutes);
 
 
 // ADMIN ROUTES
