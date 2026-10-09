@@ -21,7 +21,8 @@ function Navbar({ wishlistCount = 0, cartCount = 0 }) {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      console.log("Search for:", searchQuery);
+      navigate(`/collections?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
     }
   };
 
@@ -49,9 +50,15 @@ function Navbar({ wishlistCount = 0, cartCount = 0 }) {
           <ul className="el-nav-menu">
             {NAV_LINKS.map((link) => (
               <li key={link.label} className="el-nav-item">
-                <a href={link.href} className="el-nav-link">
-                  {link.label}
-                </a>
+                {link.href.startsWith("/") && !link.href.includes("#") ? (
+                  <Link to={link.href} className="el-nav-link">
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a href={link.href} className="el-nav-link">
+                    {link.label}
+                  </a>
+                )}
               </li>
             ))}
           </ul>
@@ -131,13 +138,23 @@ function Navbar({ wishlistCount = 0, cartCount = 0 }) {
             <ul className="el-mobile-menu">
               {NAV_LINKS.map((link) => (
                 <li key={link.label} className="el-mobile-item">
-                  <a
-                    href={link.href}
-                    className="el-mobile-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </a>
+                  {link.href.startsWith("/") && !link.href.includes("#") ? (
+                    <Link
+                      to={link.href}
+                      className="el-mobile-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      className="el-mobile-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </a>
+                  )}
                 </li>
               ))}
               <li className="el-mobile-item">

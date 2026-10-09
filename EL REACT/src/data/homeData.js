@@ -12,8 +12,8 @@ export const ANNOUNCEMENT_DATA = {
 };
 
 export const NAV_LINKS = [
-  { label: "SHOP", href: "/#shop" },
-  { label: "COLLECTIONS", href: "/#collections" },
+  { label: "SHOP", href: "/collections" },
+  { label: "COLLECTIONS", href: "/collections" },
   { label: "BEST SELLERS", href: "/#bestsellers" },
   { label: "CATEGORIES", href: "/#categories" },
   { label: "NEW ARRIVALS", href: "/#new-arrivals" },

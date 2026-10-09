@@ -1,0 +1,1298 @@
+/* ==========================================================================
+   ELARQUE COLLECTIONS & ARCHIVAL CATALOG STYLES
+   Haute Western Atelier Luxury UI (Matching Reference collections.png)
+   ========================================================================== */
+
+.el-collections-page {
+  min-height: 100vh;
+  background-color: #faf7f2;
+  color: #1a1a1a;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.el-collections-main {
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px 64px 24px;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   1. Editorial Hero Banner
+   -------------------------------------------------------------------------- */
+.el-hero-editorial-card {
+  background: #ece5dc;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  margin-bottom: 44px;
+  border: 1px solid rgba(197, 162, 101, 0.25);
+  box-shadow: 0 10px 30px rgba(74, 13, 27, 0.04);
+}
+
+.el-hero-editorial-content {
+  flex: 1.1;
+  padding: 48px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.el-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fdfaf5;
+  border: 1px solid #c5a265;
+  color: #4a0d1b;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.el-kicker-star {
+  color: #c5a265;
+}
+
+.el-hero-editorial-heading {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #3b0713;
+  margin: 4px 0 0 0;
+  letter-spacing: -0.5px;
+}
+
+.el-hero-editorial-desc {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #554a43;
+  max-width: 480px;
+  margin: 0;
+}
+
+.el-hero-editorial-ctas {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.el-btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #4a0d1b;
+  color: #ffffff;
+  padding: 12px 26px;
+  border-radius: 30px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(74, 13, 27, 0.2);
+}
+
+.el-btn-hero-primary:hover {
+  background: #6a1327;
+  transform: translateY(-1px);
+}
+
+.el-btn-hero-secondary {
+  background: transparent;
+  color: #4a0d1b;
+  border: 1px solid #4a0d1b;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.el-btn-hero-secondary:hover {
+  background: rgba(74, 13, 27, 0.05);
+}
+
+.el-hero-editorial-visual {
+  flex: 0.9;
+  height: 380px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-hero-editorial-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* --------------------------------------------------------------------------
+   2. Catalog Section Wrapper & Header Toolbar
+   -------------------------------------------------------------------------- */
+.el-catalog-section-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.el-catalog-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(197, 162, 101, 0.25);
+}
+
+.el-catalog-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.el-catalog-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: #3b0713;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.el-catalog-count-pill {
+  font-size: 13px;
+  color: #7d7066;
+  font-weight: 400;
+}
+
+.el-catalog-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.el-btn-mobile-filters {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: #4a0d1b;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Search Pill Input */
+.el-catalog-search-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(197, 162, 101, 0.4);
+  border-radius: 30px;
+  padding: 8px 16px;
+  width: 220px;
+  transition: all 0.2s ease;
+}
+
+.el-catalog-search-pill:focus-within {
+  border-color: #4a0d1b;
+  box-shadow: 0 0 0 3px rgba(74, 13, 27, 0.08);
+}
+
+.el-search-icon-muted {
+  color: #9c8e82;
+}
+
+.el-search-text-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 11.5px;
+  font-family: inherit;
+  color: #1a1a1a;
+  width: 100%;
+  letter-spacing: 1px;
+}
+
+.el-search-text-input::placeholder {
+  color: #a89d93;
+}
+
+.el-search-clear-btn {
+  background: transparent;
+  border: none;
+  color: #887a6f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+/* Grid density buttons */
+.el-grid-switcher {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid rgba(197, 162, 101, 0.4);
+  border-radius: 20px;
+  padding: 3px;
+}
+
+.el-grid-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 16px;
+  color: #887a6f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.el-grid-btn.active {
+  background: #4a0d1b;
+  color: #ffffff;
+}
+
+/* Sort Dropdown */
+.el-sort-select-wrapper {
+  position: relative;
+}
+
+.el-sort-dropdown {
+  background: #ffffff;
+  border: 1px solid rgba(197, 162, 101, 0.4);
+  border-radius: 20px;
+  padding: 9px 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #3b0713;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.el-sort-dropdown:focus {
+  border-color: #4a0d1b;
+}
+
+/* --------------------------------------------------------------------------
+   3. Active Filter Chips
+   -------------------------------------------------------------------------- */
+.el-active-chips-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: rgba(236, 229, 220, 0.6);
+  border-radius: 12px;
+  border: 1px dashed rgba(197, 162, 101, 0.4);
+}
+
+.el-chips-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #4a0d1b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.el-chips-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.el-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(74, 13, 27, 0.2);
+  color: #4a0d1b;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.el-filter-chip button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #4a0d1b;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.el-btn-clear-all-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #8b2539;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   4. Two-Column Layout (Sidebar + Grid)
+   -------------------------------------------------------------------------- */
+.el-catalog-layout-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 36px;
+  margin-top: 8px;
+}
+
+/* Left Filter Sidebar */
+.el-filter-sidebar {
+  width: 250px;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid rgba(197, 162, 101, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  position: sticky;
+  top: 90px;
+}
+
+.el-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(197, 162, 101, 0.2);
+}
+
+.el-sidebar-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-gold-icon {
+  color: #c5a265;
+}
+
+.el-sidebar-heading {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: #3b0713;
+  letter-spacing: 0.5px;
+}
+
+.el-btn-reset-sidebar {
+  background: transparent;
+  border: none;
+  color: #8b2539;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.el-btn-reset-sidebar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.el-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.el-filter-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.el-filter-group-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #3b0713;
+  letter-spacing: 1.5px;
+  margin: 0;
+}
+
+.el-size-guide-link {
+  font-size: 10.5px;
+  color: #8b2539;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Category List */
+.el-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.el-category-pill-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4b4139;
+  font-size: 12.5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.el-category-pill-row:hover {
+  background: #f7f3ec;
+  color: #3b0713;
+}
+
+.el-category-pill-row.active {
+  background: #4a0d1b;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.el-cat-count {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Price Filter Box */
+.el-price-filter-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.el-price-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-price-field {
+  display: flex;
+  align-items: center;
+  background: #f7f3ec;
+  border: 1px solid rgba(197, 162, 101, 0.3);
+  border-radius: 6px;
+  padding: 6px 8px;
+  width: 100%;
+}
+
+.el-currency-affix {
+  font-size: 11px;
+  color: #7d7066;
+  margin-right: 4px;
+}
+
+.el-price-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12px;
+  font-family: inherit;
+  color: #1a1a1a;
+  width: 100%;
+}
+
+.el-price-separator {
+  color: #887a6f;
+  font-size: 12px;
+}
+
+.el-price-range-badge {
+  background: #fdfaf5;
+  border: 1px solid rgba(197, 162, 101, 0.4);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a0d1b;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* Circular Size Selection */
+.el-size-pills-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.el-size-circle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(74, 13, 27, 0.3);
+  background: #ffffff;
+  color: #4a0d1b;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.el-size-circle-btn:hover {
+  border-color: #4a0d1b;
+  background: #f7f3ec;
+}
+
+.el-size-circle-btn.active {
+  background: #4a0d1b;
+  color: #ffffff;
+  border-color: #4a0d1b;
+}
+
+/* Brand Filters */
+.el-brand-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.el-brand-row-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #554a43;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.el-brand-row-btn:hover {
+  background: #f7f3ec;
+}
+
+.el-brand-row-btn.active {
+  background: rgba(74, 13, 27, 0.1);
+  color: #4a0d1b;
+  font-weight: 600;
+  border-color: rgba(74, 13, 27, 0.3);
+}
+
+.el-brand-count {
+  font-size: 10.5px;
+  color: #8e7f74;
+}
+
+/* --------------------------------------------------------------------------
+   5. Right Product Grid Section
+   -------------------------------------------------------------------------- */
+.el-catalog-grid-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.el-products-grid {
+  display: grid;
+  gap: 28px;
+  width: 100%;
+}
+
+.el-products-grid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.el-products-grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Product Card (Matching Reference) */
+.el-atelier-card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(197, 162, 101, 0.2);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.el-atelier-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(74, 13, 27, 0.08);
+  border-color: rgba(197, 162, 101, 0.45);
+}
+
+.el-card-media-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #eee7dd;
+  overflow: hidden;
+}
+
+.el-card-product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.el-atelier-card:hover .el-card-product-img {
+  transform: scale(1.04);
+}
+
+.el-card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3d0a16 0%, #170408 100%);
+  color: #dfc28d;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+/* Card Badges */
+.el-card-badges-group {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
+}
+
+.el-badge-category {
+  background: rgba(30, 7, 12, 0.85);
+  color: #f7f1eb;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  backdrop-filter: blur(4px);
+  width: fit-content;
+}
+
+.el-badge-bestseller {
+  background: #c5a265;
+  color: #1a080c;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.el-badge-discount {
+  background: #8b182b;
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  width: fit-content;
+}
+
+/* Wishlist Heart Button */
+.el-card-heart-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.el-card-heart-btn:hover {
+  transform: scale(1.1);
+  background: #ffffff;
+}
+
+.el-card-heart-btn.active {
+  background: #ffffff;
+}
+
+/* Card Body Content */
+.el-card-meta-wrap {
+  padding: 16px 18px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.el-card-brand {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #948577;
+}
+
+.el-card-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 19px;
+  font-weight: 600;
+  color: #2b060f;
+  margin: 0;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.el-card-fabric-subtitle {
+  font-size: 11.5px;
+  color: #6d6056;
+  margin: 0 0 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.el-card-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(197, 162, 101, 0.2);
+}
+
+.el-card-price-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.el-card-effective-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #3b0713;
+}
+
+.el-card-strike-price {
+  font-size: 12px;
+  color: #9e9083;
+  text-decoration: line-through;
+}
+
+.el-btn-quick-view {
+  background: transparent;
+  border: 1px solid #4a0d1b;
+  color: #4a0d1b;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-btn-quick-view:hover {
+  background: #4a0d1b;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   6. Pagination
+   -------------------------------------------------------------------------- */
+.el-catalog-pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(197, 162, 101, 0.25);
+}
+
+.el-page-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid rgba(74, 13, 27, 0.25);
+  color: #4a0d1b;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-page-nav-btn:hover:not(:disabled) {
+  background: rgba(74, 13, 27, 0.05);
+  border-color: #4a0d1b;
+}
+
+.el-page-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.el-page-numbers-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-page-num-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #4b4139;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.el-page-num-circle:hover:not(.active) {
+  background: #ece5dc;
+}
+
+.el-page-num-circle.active {
+  background: #4a0d1b;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.el-page-ellipsis {
+  font-size: 12px;
+  color: #8b7d72;
+  padding: 0 4px;
+}
+
+/* --------------------------------------------------------------------------
+   7. Skeletons & Empty States
+   -------------------------------------------------------------------------- */
+.el-product-card-skeleton {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(197, 162, 101, 0.15);
+}
+
+.el-skeleton-img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(90deg, #eee7dd 25%, #f6f1ea 50%, #eee7dd 75%);
+  background-size: 200% 100%;
+  animation: elPulse 1.5s infinite;
+  border-radius: 8px;
+}
+
+.el-skeleton-line {
+  height: 12px;
+  background: #eee7dd;
+  border-radius: 4px;
+}
+
+.el-skeleton-line.short {
+  width: 35%;
+}
+
+.el-skeleton-line.title {
+  width: 75%;
+}
+
+.el-skeleton-line.price {
+  width: 45%;
+}
+
+@keyframes elPulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.el-catalog-empty-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 56px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  border: 1px dashed rgba(197, 162, 101, 0.4);
+}
+
+.el-empty-heading {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 26px;
+  color: #3b0713;
+  margin: 0;
+}
+
+.el-empty-sub {
+  font-size: 13px;
+  color: #6e6055;
+  max-width: 440px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.el-btn-empty-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #4a0d1b;
+  color: #ffffff;
+  border: none;
+  padding: 11px 24px;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   8. Quick View Modal
+   -------------------------------------------------------------------------- */
+.el-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 5, 9, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.el-quick-view-card {
+  background: #faf7f2;
+  border-radius: 16px;
+  max-width: 840px;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(197, 162, 101, 0.35);
+  animation: modalScale 0.25s ease;
+}
+
+@keyframes modalScale {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.el-modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #3b0713;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 0.2s ease;
+}
+
+.el-modal-close-btn:hover {
+  transform: scale(1.1);
+}
+
+.el-modal-left-img {
+  flex: 1;
+  max-width: 380px;
+  background: #ece5dc;
+}
+
+.el-modal-left-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.el-modal-right-body {
+  flex: 1.2;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  justify-content: center;
+}
+
+.el-modal-brand {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #948577;
+}
+
+.el-modal-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #3b0713;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.el-modal-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.el-modal-active-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: #3b0713;
+}
+
+.el-modal-strike-price {
+  font-size: 14px;
+  color: #9e9083;
+  text-decoration: line-through;
+}
+
+.el-modal-discount-tag {
+  background: #8b182b;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.el-modal-desc {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #554a43;
+  margin: 0;
+}
+
+.el-modal-sizes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.el-modal-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #4a0d1b;
+}
+
+.el-modal-size-pills {
+  display: flex;
+  gap: 8px;
+}
+
+.el-modal-size-tag {
+  border: 1px solid #4a0d1b;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a0d1b;
+}
+
+.el-modal-actions-row {
+  margin-top: 14px;
+}
+
+.el-btn-view-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #4a0d1b;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-btn-view-details:hover {
+  background: #6a1327;
+}
+
+/* --------------------------------------------------------------------------
+   9. Responsive Mobile / Tablet Layout
+   -------------------------------------------------------------------------- */
+@media (max-width: 1080px) {
+  .el-hero-editorial-card {
+    flex-direction: column;
+  }
+
+  .el-hero-editorial-visual {
+    width: 100%;
+    height: 280px;
+  }
+
+  .el-products-grid.cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .el-btn-mobile-filters {
+    display: inline-flex;
+  }
+
+  .el-catalog-layout-grid {
+    flex-direction: column;
+  }
+
+  .el-filter-sidebar {
+    display: none;
+    width: 100%;
+    position: static;
+  }
+
+  .el-filter-sidebar.mobile-open {
+    display: flex;
+  }
+
+  .el-quick-view-card {
+    flex-direction: column;
+  }
+
+  .el-modal-left-img {
+    max-width: 100%;
+    height: 240px;
+  }
+}
+
+@media (max-width: 600px) {
+  .el-collections-main {
+    padding: 16px 14px 48px 14px;
+  }
+
+  .el-hero-editorial-content {
+    padding: 28px 20px;
+  }
+
+  .el-hero-editorial-heading {
+    font-size: 32px;
+  }
+
+  .el-products-grid.cols-3,
+  .el-products-grid.cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .el-catalog-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .el-catalog-controls-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .el-catalog-search-pill {
+    width: 100%;
+  }
+}
