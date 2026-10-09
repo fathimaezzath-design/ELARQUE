@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 
 import Home from "../components/home/Home";
+import Collections from "../components/user/Collections";
 import Login from "../components/auth/Login";
 import Signup from "../components/auth/Signup";
 import VerifyOTP from "../components/auth/VerifyOTP";
@@ -20,6 +21,8 @@ function UserRoutes() {
     <Routes>
 
       <Route path="/" element={<Home />} />
+      <Route path="/collections" element={<Collections />} />
+      <Route path="/shop" element={<Collections />} />
 
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
