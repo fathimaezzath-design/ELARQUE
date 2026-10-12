@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
-  LayoutDashboard,
-  Shirt,
-  FolderTree,
-  ShoppingBag,
-  Users as UsersIcon,
-  Tag,
-  Ticket,
-  RotateCcw,
-  BarChart3,
-  LogOut,
   Plus,
   Trash2,
   AlertCircle,
@@ -64,12 +54,7 @@ const AddProduct = () => {
   const [formErrors, setFormErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
 
-  // Logout handler - strictly admin credentials
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
-    navigate("/admin/login");
-  };
+
 
   // 1. Fetch Categories for Dropdown
   useEffect(() => {
@@ -332,72 +317,7 @@ const AddProduct = () => {
 
   return (
     <div className="admin-add-product-page">
-      {/* LEFT SIDEBAR NAVIGATION */}
-      <aside className="admin-sidebar">
-        <div className="admin-sidebar-top">
-          <div className="admin-sidebar-brand">
-            <div className="admin-sidebar-crest-group">
-              <span className="admin-brand-crest">EL</span>
-              <span className="admin-brand-name">ELARQUE</span>
-            </div>
-            <span className="admin-sidebar-subtitle">ADMIN DASHBOARD</span>
-          </div>
-
-          <nav className="admin-sidebar-nav">
-            <Link to="/admin" className="admin-sidebar-link">
-              <LayoutDashboard size={15} />
-              <span>Dashboard</span>
-            </Link>
-            <Link to="/admin/products" className="admin-sidebar-link active">
-              <Shirt size={15} />
-              <span>Products</span>
-            </Link>
-            <Link to="/admin/categories" className="admin-sidebar-link">
-              <FolderTree size={15} />
-              <span>Categories</span>
-            </Link>
-            <span className="admin-sidebar-link" style={{ opacity: 0.6, cursor: "default" }}>
-              <ShoppingBag size={15} />
-              <span>Orders</span>
-            </span>
-            <Link to="/admin/users" className="admin-sidebar-link">
-              <UsersIcon size={15} />
-              <span>Customers</span>
-            </Link>
-            <span className="admin-sidebar-link" style={{ opacity: 0.6, cursor: "default" }}>
-              <Tag size={15} />
-              <span>Offers</span>
-            </span>
-            <span className="admin-sidebar-link" style={{ opacity: 0.6, cursor: "default" }}>
-              <Ticket size={15} />
-              <span>Coupons</span>
-            </span>
-            <span className="admin-sidebar-link" style={{ opacity: 0.6, cursor: "default" }}>
-              <RotateCcw size={15} />
-              <span>Returns</span>
-            </span>
-            <span className="admin-sidebar-link" style={{ opacity: 0.6, cursor: "default" }}>
-              <BarChart3 size={15} />
-              <span>Sales Report</span>
-            </span>
-          </nav>
-        </div>
-
-        <div className="admin-sidebar-footer">
-          <button
-            type="button"
-            className="admin-sidebar-logout-btn"
-            onClick={handleLogout}
-            title="Sign Out"
-          >
-            <LogOut size={14} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT AREA */}
-      <main className="admin-add-product-main">
+      <div className="admin-add-product-main">
         <form onSubmit={handleSubmit} noValidate>
           <div className="admin-add-product-card">
             {/* Header */}
@@ -862,7 +782,7 @@ const AddProduct = () => {
             </footer>
           </div>
         </form>
-      </main>
+      </div>
     </div>
   );
 };
