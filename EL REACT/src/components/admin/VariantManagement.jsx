@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Layers,
-  LayoutDashboard,
   Shirt,
-  FolderTree,
-  ShoppingBag,
-  Users as UsersIcon,
-  Tag,
-  Ticket,
-  RotateCcw,
-  BarChart3,
-  Settings,
-  LogOut,
   Search,
   X,
   RefreshCw,
@@ -301,12 +291,7 @@ const VariantManagement = () => {
     }
   };
 
-  // Logout Handler (Clears ONLY admin credentials)
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
-    navigate("/admin/login");
-  };
+
 
   // Debounce search input (350ms) & reset to page 1
   useEffect(() => {
@@ -488,102 +473,8 @@ const VariantManagement = () => {
 
   return (
     <div className="admin-variants-page">
-      {/* 1. LEFT SIDEBAR NAVIGATION */}
-      <aside className="admin-sidebar">
-        <div className="admin-sidebar-top">
-          <div className="admin-sidebar-brand">
-            <div className="admin-sidebar-crest-group">
-              <span className="admin-brand-crest">EL</span>
-              <span className="admin-brand-name">ELARQUE</span>
-            </div>
-            <span className="admin-sidebar-subtitle">ADMIN DASHBOARD</span>
-          </div>
-
-          <nav className="admin-sidebar-nav">
-            <Link to="/admin" className="admin-sidebar-link">
-              <LayoutDashboard size={15} />
-              <span>Dashboard</span>
-            </Link>
-            <Link to="/admin/products" className="admin-sidebar-link">
-              <Shirt size={15} />
-              <span>Products</span>
-            </Link>
-            <Link to="/admin/variants" className="admin-sidebar-link active">
-              <Layers size={15} />
-              <span>Variants</span>
-            </Link>
-            <Link to="/admin/categories" className="admin-sidebar-link">
-              <FolderTree size={15} />
-              <span>Categories</span>
-            </Link>
-            <span
-              className="admin-sidebar-link"
-              style={{ opacity: 0.6, cursor: "default" }}
-            >
-              <ShoppingBag size={15} />
-              <span>Orders</span>
-            </span>
-            <Link to="/admin/users" className="admin-sidebar-link">
-              <UsersIcon size={15} />
-              <span>Customers</span>
-            </Link>
-            <span
-              className="admin-sidebar-link"
-              style={{ opacity: 0.6, cursor: "default" }}
-            >
-              <Tag size={15} />
-              <span>Offers</span>
-            </span>
-            <span
-              className="admin-sidebar-link"
-              style={{ opacity: 0.6, cursor: "default" }}
-            >
-              <Ticket size={15} />
-              <span>Coupons</span>
-            </span>
-            <span
-              className="admin-sidebar-link"
-              style={{ opacity: 0.6, cursor: "default" }}
-            >
-              <RotateCcw size={15} />
-              <span>Returns</span>
-            </span>
-            <span
-              className="admin-sidebar-link"
-              style={{ opacity: 0.6, cursor: "default" }}
-            >
-              <BarChart3 size={15} />
-              <span>Analytics</span>
-            </span>
-            <span
-              className="admin-sidebar-link"
-              style={{ opacity: 0.6, cursor: "default" }}
-            >
-              <Settings size={15} />
-              <span>Settings</span>
-            </span>
-          </nav>
-        </div>
-
-        <div className="admin-sidebar-footer">
-          <div className="admin-user-badge">
-            <div className="admin-user-avatar-dot" />
-            <span>Administrator</span>
-          </div>
-          <button
-            type="button"
-            className="admin-sidebar-logout-btn"
-            onClick={handleLogout}
-            title="Sign Out"
-          >
-            <LogOut size={14} />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* 2. MAIN CONTENT AREA */}
-      <main className="admin-variants-main">
+      {/* MAIN CONTENT AREA */}
+      <div className="admin-variants-main">
         <div className="admin-variants-container">
           {/* NOTICE BANNER */}
           {noticeMessage && (
@@ -1068,7 +959,7 @@ const VariantManagement = () => {
             )}
           </div>
         </div>
-      </main>
+      </div>
       {/* 7. DELETE CONFIRMATION MODAL */}
       {deleteModal.isOpen && (
         <div
