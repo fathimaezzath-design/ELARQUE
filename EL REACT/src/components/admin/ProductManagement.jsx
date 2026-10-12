@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Plus,
@@ -24,9 +24,6 @@ import {
   SlidersHorizontal,
   Shirt,
   Boxes,
-  LogOut,
-  FolderTree,
-  Users as UsersIcon,
 } from "lucide-react";
 import "./ProductManagement.css";
 
@@ -151,11 +148,6 @@ const ProductManagement = () => {
     }, 4500);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
-    navigate("/admin/login");
-  };
 
   // 1. Load Categories on mount to populate the category filter dropdown
   useEffect(() => {
@@ -366,48 +358,6 @@ const ProductManagement = () => {
 
   return (
     <div className="admin-products-page">
-      {/* TOP NAVIGATION BAR */}
-      <nav className="admin-nav-bar">
-        <div className="admin-nav-container">
-          <div className="admin-nav-brand">
-            <span className="admin-brand-crest">EL</span>
-            <span className="admin-brand-name">ELARQUE</span>
-            <span className="admin-brand-tag">Atelier Admin</span>
-          </div>
-
-          <div className="admin-nav-links">
-            <Link to="/admin/products" className="admin-nav-link active">
-              <Shirt size={14} />
-              <span>Products</span>
-            </Link>
-            <Link to="/admin/categories" className="admin-nav-link">
-              <FolderTree size={14} />
-              <span>Categories</span>
-            </Link>
-            <Link to="/admin/users" className="admin-nav-link">
-              <UsersIcon size={14} />
-              <span>Customers</span>
-            </Link>
-          </div>
-
-          <div className="admin-nav-actions">
-            <div className="admin-user-badge">
-              <div className="admin-user-avatar-dot" />
-              <span>Administrator</span>
-            </div>
-            <button
-              type="button"
-              className="admin-nav-logout-btn"
-              onClick={handleLogout}
-              title="Sign Out"
-            >
-              <LogOut size={14} />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </nav>
-
       <div className="admin-products-container">
         {/* 1. PAGE HEADER */}
         <header className="admin-products-header">
@@ -421,17 +371,6 @@ const ProductManagement = () => {
               Manage luxury western garments, couture variants, bespoke sizing matrix,
               stock reserve, and pricing tiers across Parisian &amp; Dallas salons.
             </p>
-          </div>
-
-          <div className="admin-header-actions">
-            <button
-              type="button"
-              className="admin-btn-add-product"
-              onClick={() => navigate("/admin/products/add")}
-            >
-              <Plus size={16} strokeWidth={2.5} />
-              <span>+ ADD NEW PRODUCT</span>
-            </button>
           </div>
         </header>
 
@@ -916,7 +855,11 @@ const ProductManagement = () => {
                                 type="button"
                                 className="btn-icon"
                                 onClick={() =>
-                                  showPlaceholderNotice(`Edit ${product.name}`)
+                                  navigate(
+                                    `/admin/products/edit/${
+                                      product.id || product._id
+                                    }`
+                                  )
                                 }
                                 title="Edit Silhouette"
                               >

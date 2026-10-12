@@ -1,0 +1,202 @@
+[1mdiff --git a/EL REACT/src/components/user/ProductDetails.css b/EL REACT/src/components/user/ProductDetails.css[m
+[1mnew file mode 100644[m
+[1mindex 0000000..9f7181e[m
+[1m--- /dev/null[m
+[1m+++ b/EL REACT/src/components/user/ProductDetails.css[m	
+[36m@@ -0,0 +1,1656 @@[m
+[32m+[m[32m/* ==========================================================================[m
+[32m+[m[32m   ELARQUE HAUTE COUTURE — PRODUCT DETAILS STYLESHEET[m
+[32m+[m[32m   Design Tokens: Warm Ivory (#FAF7F2), Deep Burgundy (#4A0D1B, #5C061C),[m
+[32m+[m[32m   Champagne Gold (#C5A265, #DFC28D), Onyx/Charcoal (#141414, #1F2421)[m
+[32m+[m[32m   Typography: Cormorant Garamond (Headings), Poppins (Body & UI)[m
+[32m+[m[32m   ========================================================================== */[m
+[32m+[m
+[32m+[m[32m@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');[m
+[32m+[m
+[32m+[m[32m:root {[m
+[32m+[m[32m  --el-bg-ivory: #FAF7F2;[m
+[32m+[m[32m  --el-bg-white: #FFFFFF;[m
+[32m+[m[32m  --el-bg-card: #FDFCF9;[m
+[32m+[m[32m  --el-burgundy-deep: #4A0D1B;[m
+[32m+[m[32m  --el-burgundy-accent: #5C061C;[m
+[32m+[m[32m  --el-burgundy-hover: #3A0914;[m
+[32m+[m[32m  --el-burgundy-light: #F7EAEF;[m
+[32m+[m[32m  --el-gold: #C5A265;[m
+[32m+[m[32m  --el-gold-light: #DFC28D;[m
+[32m+[m[32m  --el-gold-muted: #E8D9BD;[m
+[32m+[m[32m  --el-onyx: #141414;[m
+[32m+[m[32m  --el-charcoal: #27272A;[m
+[32m+[m[32m  --el-text-muted: #71717A;[m
+[32m+[m[32m  --el-border-light: #E8E2D8;[m
+[32m+[m[32m  --el-border-focus: #C5A265;[m
+[32m+[m[32m  --el-shadow-subtle: 0 4px 20px rgba(74, 13, 27, 0.04);[m
+[32m+[m[32m  --el-shadow-elevated: 0 10px 30px rgba(74, 13, 27, 0.08);[m
+[32m+[m[32m  --el-font-heading: 'Cormorant Garamond', Georgia, serif;[m
+[32m+[m[32m  --el-font-body: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* Page Outer Wrapper */[m
+[32m+[m[32m.el-product-details-page {[m
+[32m+[m[32m  min-height: 100vh;[m
+[32m+[m[32m  background-color: var(--el-bg-ivory);[m
+[32m+[m[32m  color: var(--el-charcoal);[m
+[32m+[m[32m  font-family: var(--el-font-body);[m
+[32m+[m[32m  display: flex;[m
+[32m+[m[32m  flex-direction: column;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* Main Content Container */[m
+[32m+[m[32m.el-details-main {[m
+[32m+[m[32m  flex: 1;[m
+[32m+[m[32m  max-width: 1360px;[m
+[32m+[m[32m  width: 100%;[m
+[32m+[m[32m  margin: 0 auto;[m
+[32m+[m[32m  padding: 1.5rem 1.5rem 4rem 1.5rem;[m
+[32m+[m[32m  box-sizing: border-box;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* --------------------------------------------------------------------------[m
+[32m+[m[32m   0. LOADING & ERROR / UNAVAILABLE STATES[m
+[32m+[m[32m   -------------------------------------------------------------------------- */[m
+[32m+[m[32m.el-details-state-box {[m
+[32m+[m[32m  display: flex;[m
+[32m+[m[32m  flex-direction: column;[m
+[32m+[m[32m  align-items: center;[m
+[32m+[m[32m  justify-content: center;[m
+[32m+[m[32m  text-align: center;[m
+[32m+[m[32m  min-height: 480px;[m
+[32m+[m[32m  padding: 3rem 1.5rem;[m
+[32m+[m[32m  background: var(--el-bg-white);[m
+[32m+[m[32m  border: 1px solid var(--el-border-light);[m
+[32m+[m[32m  border-radius: 4px;[m
+[32m+[m[32m  box-shadow: var(--el-shadow-subtle);[m
+[32m+[m[32m  margin: 2rem 0;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-details-spinner {[m
+[32m+[m[32m  width: 44px;[m
+[32m+[m[32m  height: 44px;[m
+[32m+[m[32m  border: 2px solid rgba(197, 162, 101, 0.25);[m
+[32m+[m[32m  border-top-color: var(--el-burgundy-accent);[m
+[32m+[m[32m  border-radius: 50%;[m
+[32m+[m[32m  animation: elSpin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;[m
+[32m+[m[32m  margin-bottom: 1.5rem;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m@keyframes elSpin {[m
+[32m+[m[32m  to {[m
+[32m+[m[32m    transform: rotate(360deg);[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-state-title {[m
+[32m+[m[32m  font-family: var(--el-font-heading);[m
+[32m+[m[32m  font-size: 2rem;[m
+[32m+[m[32m  font-weight: 500;[m
+[32m+[m[32m  color: var(--el-burgundy-deep);[m
+[32m+[m[32m  margin: 0.75rem 0 0.5rem 0;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-state-sub {[m
+[32m+[m[32m  font-size: 0.925rem;[m
+[32m+[m[32m  color: var(--el-text-muted);[m
+[32m+[m[32m  max-width: 460px;[m
+[32m+[m[32m  line-height: 1.6;[m
+[32m+[m[32m  margin: 0 0 1.75rem 0;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-state-actions-row {[m
+[32m+[m[32m  display: flex;[m
+[32m+[m[32m  gap: 1rem;[m
+[32m+[m[32m  flex-wrap: wrap;[m
+[32m+[m[32m  justify-content: center;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-btn-state-primary,[m
+[32m+[m[32m.el-btn-state-secondary {[m
+[32m+[m[32m  display: inline-flex;[m
+[32m+[m[32m  align-items: center;[m
+[32m+[m[32m  gap: 0.5rem;[m
+[32m+[m[32m  padding: 0.75rem 1.5rem;[m
+[32m+[m[32m  font-size: 0.75rem;[m
+[32m+[m[32m  font-weight: 600;[m
+[32m+[m[32m  letter-spacing: 0.08em;[m
+[32m+[m[32m  text-transform: uppercase;[m
+[32m+[m[32m  border-radius: 2px;[m
+[32m+[m[32m  cursor: pointer;[m
+[32m+[m[32m  transition: all 0.2s ease;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-btn-state-primary {[m
+[32m+[m[32m  background: var(--el-burgundy-accent);[m
+[32m+[m[32m  color: #FFFFFF;[m
+[32m+[m[32m  border: 1px solid var(--el-burgundy-accent);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-btn-state-primary:hover {[m
+[32m+[m[32m  background: var(--el-burgundy-hover);[m
+[32m+[m[32m  border-color: var(--el-burgundy-hover);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-btn-state-secondary {[m
+[32m+[m[32m  background: var(--el-bg-white);[m
+[32m+[m[32m  color: var(--el-burgundy-deep);[m
+[32m+[m[32m  border: 1px solid var(--el-border-light);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-btn-state-secondary:hover {[m
+[32m+[m[32m  border-color: var(--el-gold);[m
+[32m+[m[32m  background: #FAF7F2;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* --------------------------------------------------------------------------[m
+[32m+[m[32m   1. BREADCRUMBS ROW[m
+[32m+[m[32m   -------------------------------------------------------------------------- */[m
+[32m+[m[32m.el-breadcrumbs-nav {[m
+[32m+[m[32m  display: flex;[m
+[32m+[m[32m  align-items: center;[m
+[32m+[m[32m  flex-wrap: wrap;[m
+[32m+[m[32m  gap: 0.5rem;[m
+[32m+[m[32m  font-size: 0.6875rem;[m
+[32m+[m[32m  font-weight: 500;[m
+[32m+[m[32m  letter-spacing: 0.1em;[m
+[32m+[m[32m  color: var(--el-text-muted);[m
+[32m+[m[32m  padding: 0.75rem 0 1.5rem 0;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-crumb-link {[m
+[32m+[m[32m  color: #71717A;[m
+[32m+[m[32m  text-decoration: none;[m
+[32m+[m[32m  transition: color 0.2s ease;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-crumb-link:hover {[m
+[32m+[m[32m  color: var(--el-burgundy-accent);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-crumb-divider {[m
+[32m+[m[32m  color: #D4D4D8;[m
+[32m+[m[32m  font-weight: 300;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.el-crumb-current {[m
+[32m+[m[32m  color: var(--el-burgundy-deep);[m
+[32m+[m[32m  font-weight: 600;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* Notice Banners */[m
+[32m+[m[32m.el-notice-banner {[m
+[32m+[m[32m  display: flex;[m
+[32m+[m[32m  align-items: center;[m
+[32m+[m[32m  gap: 0.75rem;[m
+[32m+[m[32m  padding: 0.875rem 1.25rem;[m
+[32m+[m[32m  border-radius: 2px;[m
+[32m+[m[32m  font-size: 0.8125rem;[m
+[32m+[m[32m  margin-bottom: 1.5rem;[m
+[32m+[m[32m  animation: elFadeIn 0.3s ease;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m@keyframes elFadeIn {[m
+[32m+[m[32m  from {[m
+[32m+[m[32m    opacity: 0;[m
+[32m+[m[32m  
