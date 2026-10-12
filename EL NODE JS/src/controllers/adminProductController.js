@@ -433,4 +433,427 @@ exports.getProducts = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/admin/products/:id
+ * Retrieve a single product by MongoDB ID with populated category details.
+ */
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Product ID format.",
+      });
+    }
+
+    const product = await Product.findOne({
+      _id: id,
+      isDeleted: false,
+    })
+      .populate({
+        path: "categoryId",
+        select: "_id name isDeleted status",
+      })
+      .lean();
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found.",
+      });
+    }
+
+    let categoryData = null;
+    if (product.categoryId && !product.categoryId.isDeleted) {
+      categoryData = {
+        id: product.categoryId._id.toString(),
+        name: product.categoryId.name,
+      };
+    }
+
+    const totalStock = (product.variants || []).reduce(
+      (sum, v) => sum + (Number(v.stock) || 0),
+      0
+    );
+
+    return res.status(200).json({
+      success: true,
+      product: {
+        id: product._id.toString(),
+        name: product.name,
+        description: product.description,
+        brand: product.brand,
+        categoryId: product.categoryId?._id
+          ? product.categoryId._id.toString()
+          : product.categoryId
+          ? product.categoryId.toString()
+          : null,
+        category: categoryData,
+        price: product.price,
+        salePrice: product.salePrice,
+        status: product.status,
+        isFeatured: Boolean(product.isFeatured),
+        isBestSeller: Boolean(product.isBestSeller),
+        stock: totalStock,
+        variantCount: (product.variants || []).length,
+        variants: (product.variants || []).map((v) => ({
+          id: v._id ? v._id.toString() : undefined,
+          _id: v._id ? v._id.toString() : undefined,
+          size: v.size,
+          color: v.color,
+          stock: v.stock,
+          images: Array.isArray(v.images) ? v.images : [],
+        })),
+        isDeleted: product.isDeleted,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Get product by ID error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while retrieving the product.",
+    });
+  }
+};
+
+/**
+ * PATCH /api/admin/products/:id
+ * Update product fields while preserving embedded variant IDs and schema constraints.
+ */
+exports.updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Validate Product ID format
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Product ID format.",
+      });
+    }
+
+    // 2. Find Product (must not be soft-deleted)
+    const product = await Product.findOne({
+      _id: id,
+      isDeleted: false,
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found.",
+      });
+    }
+
+    const {
+      name,
+      description,
+      categoryId,
+      brand,
+      price,
+      salePrice,
+      status,
+      isFeatured,
+      isBestSeller,
+      images,
+      variants,
+    } = req.body;
+
+    // 3. Validate and update name (duplicate check excluding self)
+    if (name !== undefined) {
+      if (typeof name !== "string" || name.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Product name cannot be empty.",
+        });
+      }
+      const trimmedName = name.trim();
+      const escapedName = escapeRegex(trimmedName);
+      const existingProduct = await Product.findOne({
+        _id: { $ne: product._id },
+        name: { $regex: new RegExp(`^${escapedName}$`, "i") },
+        isDeleted: false,
+      });
+
+      if (existingProduct) {
+        return res.status(409).json({
+          success: false,
+          message: "A product with this name already exists.",
+        });
+      }
+      product.name = trimmedName;
+    }
+
+    // 4. Validate and update description
+    if (description !== undefined) {
+      if (typeof description !== "string" || description.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Product description cannot be empty.",
+        });
+      }
+      product.description = description.trim();
+    }
+
+    // 5. Validate and update brand
+    if (brand !== undefined) {
+      if (typeof brand !== "string" || brand.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Product brand cannot be empty.",
+        });
+      }
+      product.brand = brand.trim();
+    }
+
+    // 6. Validate and update categoryId
+    if (categoryId !== undefined) {
+      if (!categoryId || !mongoose.Types.ObjectId.isValid(categoryId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Category ID format.",
+        });
+      }
+
+      const category = await Category.findById(categoryId);
+      if (!category || category.isDeleted || category.status !== "active") {
+        return res.status(400).json({
+          success: false,
+          message: "Referenced category does not exist or is inactive/deleted.",
+        });
+      }
+      product.categoryId = category._id;
+    }
+
+    // 7. Validate and update price & salePrice
+    let effectivePrice = product.price;
+    if (price !== undefined) {
+      const numericPrice = Number(price);
+      if (
+        price === "" ||
+        price === null ||
+        isNaN(numericPrice) ||
+        numericPrice < 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Price must be a valid number greater than or equal to 0.",
+        });
+      }
+      effectivePrice = numericPrice;
+    }
+
+    if (salePrice !== undefined) {
+      if (salePrice === null || salePrice === "") {
+        product.salePrice = undefined;
+      } else {
+        const numericSalePrice = Number(salePrice);
+        if (isNaN(numericSalePrice) || numericSalePrice < 0) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "Sale price must be a valid number greater than or equal to 0.",
+          });
+        }
+        if (numericSalePrice > effectivePrice) {
+          return res.status(400).json({
+            success: false,
+            message: "Sale price cannot be greater than regular price.",
+          });
+        }
+        product.salePrice = numericSalePrice;
+      }
+    } else if (price !== undefined && product.salePrice !== undefined) {
+      if (product.salePrice > effectivePrice) {
+        return res.status(400).json({
+          success: false,
+          message: "Sale price cannot be greater than regular price.",
+        });
+      }
+    }
+
+    if (price !== undefined) {
+      product.price = effectivePrice;
+    }
+
+    // 8. Validate and update status
+    if (status !== undefined) {
+      if (!["active", "inactive"].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid product status. Allowed values are 'active' or 'inactive'.",
+        });
+      }
+      product.status = status;
+    }
+
+    // 9. Flags: isFeatured & isBestSeller
+    if (isFeatured !== undefined) {
+      product.isFeatured = Boolean(isFeatured);
+    }
+    if (isBestSeller !== undefined) {
+      product.isBestSeller = Boolean(isBestSeller);
+    }
+
+    // 10. Direct top-level images update (if provided and variants not updated)
+    if (images !== undefined && variants === undefined) {
+      if (!Array.isArray(images)) {
+        return res.status(400).json({
+          success: false,
+          message: "Images must be an array of image paths.",
+        });
+      }
+      if (product.variants.length > 0) {
+        product.variants[0].images = images;
+      }
+    }
+
+    // 11. Variants update (preserves existing variant IDs wherever practical)
+    if (variants !== undefined) {
+      if (!Array.isArray(variants) || variants.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "At least one garment variant is required.",
+        });
+      }
+
+      const ALLOWED_SIZES = ["XS", "S", "M", "L", "XL"];
+      const combinationsSeen = new Set();
+      const cleanedVariants = [];
+
+      for (let i = 0; i < variants.length; i++) {
+        const v = variants[i];
+        const trimmedSize = (v.size || "").trim();
+        const trimmedColor = (v.color || "").trim();
+        const numStock = Number(v.stock);
+
+        if (!trimmedColor) {
+          return res.status(400).json({
+            success: false,
+            message: `Variant #${i + 1}: Color name is required.`,
+          });
+        }
+
+        if (!trimmedSize || !ALLOWED_SIZES.includes(trimmedSize)) {
+          return res.status(400).json({
+            success: false,
+            message: `Variant #${i + 1}: Invalid size. Allowed sizes are ${ALLOWED_SIZES.join(
+              ", "
+            )}.`,
+          });
+        }
+
+        if (
+          v.stock === "" ||
+          v.stock === undefined ||
+          isNaN(numStock) ||
+          !Number.isInteger(numStock) ||
+          numStock < 0
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: `Variant #${
+              i + 1
+            }: Stock must be a whole number greater than or equal to 0.`,
+          });
+        }
+
+        const comboKey = `${trimmedColor.toLowerCase()}__${trimmedSize.toLowerCase()}`;
+        if (combinationsSeen.has(comboKey)) {
+          return res.status(409).json({
+            success: false,
+            message: `Duplicate variant: Combination of Color '${trimmedColor}' and Size '${trimmedSize}' already exists.`,
+          });
+        }
+        combinationsSeen.add(comboKey);
+
+        // Preserve matching existing variant ID if present
+        let targetId = undefined;
+        const vId = v._id || v.id;
+        if (vId && mongoose.Types.ObjectId.isValid(vId)) {
+          const match = product.variants.id(vId);
+          if (match) {
+            targetId = match._id;
+          }
+        }
+
+        cleanedVariants.push({
+          ...(targetId ? { _id: targetId } : {}),
+          size: trimmedSize,
+          color: trimmedColor,
+          stock: numStock,
+          images: Array.isArray(v.images) ? v.images : [],
+        });
+      }
+
+      product.variants = cleanedVariants;
+    }
+
+    // Explicitly guarantee isDeleted is never updated or overwritten
+    product.isDeleted = false;
+
+    await product.save();
+
+    // Populate category for clean response
+    const populatedProduct = await Product.findById(product._id)
+      .populate({
+        path: "categoryId",
+        select: "_id name isDeleted status",
+      })
+      .lean();
+
+    let categoryData = null;
+    if (populatedProduct.categoryId && !populatedProduct.categoryId.isDeleted) {
+      categoryData = {
+        id: populatedProduct.categoryId._id.toString(),
+        name: populatedProduct.categoryId.name,
+      };
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      product: {
+        id: populatedProduct._id.toString(),
+        name: populatedProduct.name,
+        description: populatedProduct.description,
+        brand: populatedProduct.brand,
+        categoryId: populatedProduct.categoryId?._id
+          ? populatedProduct.categoryId._id.toString()
+          : populatedProduct.categoryId
+          ? populatedProduct.categoryId.toString()
+          : null,
+        category: categoryData,
+        price: populatedProduct.price,
+        salePrice: populatedProduct.salePrice,
+        status: populatedProduct.status,
+        isFeatured: Boolean(populatedProduct.isFeatured),
+        isBestSeller: Boolean(populatedProduct.isBestSeller),
+        variants: (populatedProduct.variants || []).map((v) => ({
+          id: v._id ? v._id.toString() : undefined,
+          _id: v._id ? v._id.toString() : undefined,
+          size: v.size,
+          color: v.color,
+          stock: v.stock,
+          images: Array.isArray(v.images) ? v.images : [],
+        })),
+        isDeleted: populatedProduct.isDeleted,
+        createdAt: populatedProduct.createdAt,
+        updatedAt: populatedProduct.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Update product error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while updating the product.",
+    });
+  }
+};
+
 

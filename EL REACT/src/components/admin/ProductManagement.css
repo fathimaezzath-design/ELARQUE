@@ -204,39 +204,6 @@
   line-height: 1.55;
 }
 
-.admin-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Add New Product Button */
-.admin-btn-add-product {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 26px;
-  background: linear-gradient(135deg, #7a1526 0%, #4a0d18 100%);
-  border: 1px solid rgba(223, 194, 141, 0.45);
-  border-radius: 10px;
-  color: #f7e7c4;
-  font-family: "Poppins", sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 20px rgba(122, 21, 38, 0.45);
-}
-
-.admin-btn-add-product:hover {
-  background: linear-gradient(135deg, #941b30 0%, #5c101e 100%);
-  border-color: #dfc28d;
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(223, 194, 141, 0.25), 0 4px 20px rgba(122, 21, 38, 0.5);
-}
 
 /* Notice Banner */
 .admin-notice-banner {

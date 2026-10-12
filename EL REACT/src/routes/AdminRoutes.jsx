@@ -1,10 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import AdminLogin from "../components/admin/AdminLogin";
 import ProtectedAdminRoute from "../components/admin/ProtectedAdminRoute";
+import AdminLayout from "../layouts/AdminLayout";
 import UserManagement from "../components/admin/UserManagement";
 import CategoryManagement from "../components/admin/CategoryManagement";
 import ProductManagement from "../components/admin/ProductManagement";
 import AddProduct from "../components/admin/AddProduct";
+import EditProduct from "../components/admin/EditProduct";
 import VariantManagement from "../components/admin/VariantManagement";
 import AddVariant from "../components/admin/AddVariant";
 import EditVariant from "../components/admin/EditVariant";
@@ -57,74 +59,32 @@ function AdminPlaceholder() {
 function AdminRoutes() {
   return (
     <Routes>
-      <Route
-        path="/admin"
-        element={
-          <ProtectedAdminRoute>
-            <AdminPlaceholder />
-          </ProtectedAdminRoute>
-        }
-      />
-      <Route
-        path="/admin/products"
-        element={
-          <ProtectedAdminRoute>
-            <ProductManagement />
-          </ProtectedAdminRoute>
-        }
-      />
-      <Route
-        path="/admin/products/add"
-        element={
-          <ProtectedAdminRoute>
-            <AddProduct />
-          </ProtectedAdminRoute>
-        }
-      />
-      <Route
-        path="/admin/variants"
-        element={
-          <ProtectedAdminRoute>
-            <VariantManagement />
-          </ProtectedAdminRoute>
-        }
-      />
-      <Route
-        path="/admin/variants/add"
-        element={
-          <ProtectedAdminRoute>
-            <AddVariant />
-          </ProtectedAdminRoute>
-        }
-      />
-      <Route
-        path="/admin/variants/edit/:productId/:variantId"
-        element={
-          <ProtectedAdminRoute>
-            <EditVariant />
-          </ProtectedAdminRoute>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <ProtectedAdminRoute>
-            <UserManagement />
-          </ProtectedAdminRoute>
-        }
-      />
-      <Route
-        path="/admin/categories"
-        element={
-          <ProtectedAdminRoute>
-            <CategoryManagement />
-          </ProtectedAdminRoute>
-        }
-      />
+      {/* Public Admin Route - Without Admin Navbar */}
       <Route path="/admin/login" element={<AdminLogin />} />
+
+      {/* Protected Admin Routes - Wrapped with Unified Admin Navbar Layout */}
+      <Route
+        element={
+          <ProtectedAdminRoute>
+            <AdminLayout />
+          </ProtectedAdminRoute>
+        }
+      >
+        <Route path="/admin" element={<AdminPlaceholder />} />
+        <Route path="/admin/products" element={<ProductManagement />} />
+        <Route path="/admin/products/add" element={<AddProduct />} />
+        <Route path="/admin/products/edit/:id" element={<EditProduct />} />
+        <Route path="/admin/variants" element={<VariantManagement />} />
+        <Route path="/admin/variants/add" element={<AddVariant />} />
+        <Route
+          path="/admin/variants/edit/:productId/:variantId"
+          element={<EditVariant />}
+        />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/categories" element={<CategoryManagement />} />
+      </Route>
     </Routes>
   );
 }
-
 
 export default AdminRoutes;
