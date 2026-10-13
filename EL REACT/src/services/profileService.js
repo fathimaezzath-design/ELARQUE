@@ -1,8 +1,11 @@
 import axios from "axios";
+import { attachCustomerInterceptors } from "./api";
 
 const API = axios.create({
   baseURL: "http://localhost:5000/api/profile",
 });
+
+attachCustomerInterceptors(API);
 
 // Get authentication token
 const authHeader = () => {
@@ -61,11 +64,12 @@ export const changePassword = (data) => {
    EMAIL CHANGE
 ========================= */
 
-export const sendEmailChangeOTP = (newEmail) => {
+export const sendEmailChangeOTP = (newEmail, currentPassword = "") => {
   return API.post(
     "/email/send-otp",
     {
       newEmail,
+      currentPassword,
     },
     {
       headers: authHeader(),

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { attachCustomerInterceptors } from "./api";
 
 const API = axios.create({
   baseURL: "http://localhost:5000/api/auth",
@@ -8,16 +9,8 @@ const PROFILE_API = axios.create({
   baseURL: "http://localhost:5000/api/profile",
 });
 
-// Add JWT automatically to profile requests
-PROFILE_API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
+// Add JWT and 401 session handling automatically to profile requests
+attachCustomerInterceptors(PROFILE_API);
 
 
 // =========================
@@ -75,9 +68,10 @@ export const updateProfileImage = (formData) =>
 // CHANGE EMAIL
 // =========================
 
-export const sendEmailChangeOTP = (newEmail) =>
+export const sendEmailChangeOTP = (newEmail, currentPassword = "") =>
   PROFILE_API.post("/email/send-otp", {
     newEmail,
+    currentPassword,
   });
 
 export const verifyEmailChangeOTP = (otp) =>

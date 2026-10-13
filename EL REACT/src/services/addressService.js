@@ -1,8 +1,11 @@
 import axios from "axios";
+import { attachCustomerInterceptors } from "./api";
 
 const API = axios.create({
   baseURL: "http://localhost:5000/api/address",
 });
+
+attachCustomerInterceptors(API);
 
 const authHeader = () => {
   const token = localStorage.getItem("token");

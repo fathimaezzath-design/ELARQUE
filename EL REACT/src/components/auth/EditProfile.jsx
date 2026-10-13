@@ -11,6 +11,8 @@ import {
   Camera,
   ArrowLeft,
   Save,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 
 import {
@@ -18,6 +20,7 @@ import {
   updateProfile,
   updateProfileImage,
 } from "../../services/profileService";
+import UserLayout from "../../layouts/UserLayout";
 
 
 const EditProfile = () => {
@@ -45,6 +48,7 @@ const EditProfile = () => {
   const [imageFile, setImageFile] = useState(null);
 
   const [errors, setErrors] = useState({});
+  const [feedback, setFeedback] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -124,10 +128,10 @@ const EditProfile = () => {
           error
         );
 
-        alert(
-          error?.response?.data?.message ||
-            "Unable to load profile"
-        );
+        setFeedback({
+          type: "error",
+          message: error?.response?.data?.message || "Unable to load profile",
+        });
       } finally {
         setPageLoading(false);
       }
@@ -168,6 +172,7 @@ const EditProfile = () => {
       ...prev,
       [name]: "",
     }));
+    setFeedback({ type: "", message: "" });
   };
 
 
@@ -181,26 +186,35 @@ const EditProfile = () => {
     const newErrors = {};
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName =
-        "Full name is required";
+      newErrors.fullName = "Full name is required";
+    } else if (formData.fullName.trim().length < 2) {
+      newErrors.fullName = "Full name must be at least 2 characters";
+    } else if (formData.fullName.trim().length > 80) {
+      newErrors.fullName = "Full name cannot exceed 80 characters";
     }
 
     if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber =
-        "Phone number is required";
+      newErrors.phoneNumber = "Phone number is required";
     } else {
       const cleanPhone = formData.phoneNumber
         .replace(/\s|\+91/g, "")
         .trim();
 
       if (!/^[0-9]{10}$/.test(cleanPhone)) {
-        newErrors.phoneNumber =
-          "Enter a valid 10 digit phone number";
+        newErrors.phoneNumber = "Phone number must contain exactly 10 digits";
+      }
+    }
+
+    if (formData.dateOfBirth) {
+      const dobDate = new Date(formData.dateOfBirth);
+      if (isNaN(dobDate.getTime())) {
+        newErrors.dateOfBirth = "Please enter a valid date of birth";
+      } else if (dobDate > new Date()) {
+        newErrors.dateOfBirth = "Date of birth cannot be in the future";
       }
     }
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -290,12 +304,14 @@ const EditProfile = () => {
         );
       }
 
-      alert(
-        response?.data?.message ||
-          "Profile updated successfully"
-      );
+      setFeedback({
+        type: "success",
+        message: response?.data?.message || "Profile updated successfully.",
+      });
 
-      navigate("/profile");
+      setTimeout(() => {
+        navigate("/profile");
+      }, 1200);
 
     } catch (error) {
       console.error(
@@ -303,10 +319,20 @@ const EditProfile = () => {
         error
       );
 
-      alert(
-        error?.response?.data?.message ||
-          "Unable to update profile"
-      );
+      const errData = error?.response?.data;
+      if (errData?.field) {
+        setErrors((prev) => ({
+          ...prev,
+          [errData.field]: errData.message,
+        }));
+      }
+
+      setFeedback({
+        type: "error",
+        message:
+          errData?.message ||
+          "Unable to update profile. Please verify your details.",
+      });
     } finally {
       setLoading(false);
     }
@@ -373,7 +399,7 @@ const EditProfile = () => {
   ========================= */
 
   return (
-    <>
+    <UserLayout>
       <style>{styles}</style>
 
       <div className="edit-profile-page">
@@ -415,6 +441,17 @@ const EditProfile = () => {
           className="edit-card"
           onSubmit={handleSubmit}
         >
+
+          {feedback.message && (
+            <div className={`profile-feedback-banner ${feedback.type}`}>
+              {feedback.type === "error" ? (
+                <AlertCircle size={18} />
+              ) : (
+                <CheckCircle size={18} />
+              )}
+              <span>{feedback.message}</span>
+            </div>
+          )}
 
           {/* PROFILE IMAGE */}
 
@@ -644,6 +681,12 @@ const EditProfile = () => {
 
                 </div>
 
+                {errors.dateOfBirth && (
+                  <span className="error-text">
+                    {errors.dateOfBirth}
+                  </span>
+                )}
+
               </div>
 
 
@@ -807,7 +850,7 @@ const EditProfile = () => {
         </form>
 
       </div>
-    </>
+    </UserLayout>
   );
 };
 
@@ -818,10 +861,33 @@ const EditProfile = () => {
 
 const styles = `
   .edit-profile-page {
-    min-height: 100vh;
+    min-height: calc(100vh - 200px);
     background: #faf6f1;
     padding: 40px 7%;
     color: #2d1b1f;
+  }
+
+  .profile-feedback-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .profile-feedback-banner.error {
+    background: #fdf2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  .profile-feedback-banner.success {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
   }
 
   .edit-profile-header {
