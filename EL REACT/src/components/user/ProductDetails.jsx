@@ -24,6 +24,7 @@ import {
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import { getProductById } from "../../services/productService";
+import { addToCart } from "../../services/cartService";
 import "./ProductDetails.css";
 
 const ALLOWED_SIZES = ["XS", "S", "M", "L", "XL"];
@@ -110,6 +111,7 @@ const ProductDetails = () => {
   // Modals & User Feedback
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [cartNotice, setCartNotice] = useState("");
+  const [addingToBag, setAddingToBag] = useState(false);
   const [shareNotice, setShareNotice] = useState(false);
 
   // Local Wishlist State
@@ -319,25 +321,95 @@ const ProductDetails = () => {
     }
   };
 
-  // Add to Bag / Buy Now action (Transparent notice per step instructions)
-  const handleAddToBag = () => {
-    if (isOutOfStock) return;
-    setCartNotice(
-      `Selected: ${product.name} (Size: ${selectedSize}, Color: ${selectedColor}, Qty: ${displayQuantity}). Shopping Bag and Checkout backend integration is in progress.`
-    );
-    setTimeout(() => {
-      setCartNotice("");
-    }, 6000);
+  // Add to Bag action — wired to backend cart API
+  const handleAddToBag = async () => {
+    if (isOutOfStock || addingToBag) return;
+
+    // Auth check
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    // Ensure a specific variant is selected
+    if (!selectedVariant) {
+      setCartNotice("Please select a size and color before adding to your bag.");
+      setTimeout(() => setCartNotice(""), 4000);
+      return;
+    }
+
+    setAddingToBag(true);
+    setCartNotice("");
+
+    try {
+      const productId = product.id || product._id;
+      const variantId = selectedVariant.id || selectedVariant._id;
+      const response = await addToCart(productId, variantId, displayQuantity);
+
+      if (response.data?.success && response.data?.cart) {
+        // Notify Navbar and other listeners of updated cart
+        window.dispatchEvent(
+          new CustomEvent("elarque_cart_updated", { detail: response.data.cart })
+        );
+        setCartNotice(
+          `${product.name} (${selectedSize}, ${selectedColor}) added to your shopping bag.`
+        );
+      } else {
+        setCartNotice(response.data?.message || "Could not add to bag. Please try again.");
+      }
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        "Something went wrong while adding to your bag. Please try again.";
+      setCartNotice(msg);
+    } finally {
+      setAddingToBag(false);
+      setTimeout(() => setCartNotice(""), 5000);
+    }
   };
 
-  const handleBuyNow = () => {
-    if (isOutOfStock) return;
-    setCartNotice(
-      `Selected: ${product.name} (Size: ${selectedSize}, Color: ${selectedColor}). Atelier Express checkout integration is in progress.`
-    );
-    setTimeout(() => {
-      setCartNotice("");
-    }, 6000);
+  // Buy Now — adds to cart then navigates to cart page
+  const handleBuyNow = async () => {
+    if (isOutOfStock || addingToBag) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    if (!selectedVariant) {
+      setCartNotice("Please select a size and color before proceeding.");
+      setTimeout(() => setCartNotice(""), 4000);
+      return;
+    }
+
+    setAddingToBag(true);
+    setCartNotice("");
+
+    try {
+      const productId = product.id || product._id;
+      const variantId = selectedVariant.id || selectedVariant._id;
+      const response = await addToCart(productId, variantId, displayQuantity);
+
+      if (response.data?.success && response.data?.cart) {
+        window.dispatchEvent(
+          new CustomEvent("elarque_cart_updated", { detail: response.data.cart })
+        );
+        navigate("/cart");
+      } else {
+        setCartNotice(response.data?.message || "Could not add to bag. Please try again.");
+      }
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      setCartNotice(msg);
+    } finally {
+      setAddingToBag(false);
+      setTimeout(() => setCartNotice(""), 5000);
+    }
   };
 
   return (
