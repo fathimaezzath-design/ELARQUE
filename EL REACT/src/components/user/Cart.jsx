@@ -613,7 +613,6 @@ const Cart = () => {
 
               <div className="el-modal-item-info">
                 <div className="el-modal-item-tags-row">
-                  <span className="el-tag-bestseller">BEST SELLER</span>
                   <span className="el-tag-category">
                     {removalModal.item.category || "FORMAL ATELIER"}
                   </span>
@@ -627,7 +626,6 @@ const Cart = () => {
                 </span>
 
                 <div className="el-modal-item-price-row">
-                  <span className="el-modal-item-rating">★ 4.9 (1,240)</span>
                   <span className="el-modal-item-amount">
                     <span>ITEM AMOUNT</span>
                     {formatINR(removalModal.item.price)}

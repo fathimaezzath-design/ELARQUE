@@ -15,10 +15,12 @@ import {
   Grid2X2,
   AlertCircle,
   RefreshCw,
+  ShoppingBag,
 } from "lucide-react";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import { getProducts, getProductFacets } from "../../services/productService";
+import { addToCart } from "../../services/cartService";
 import "./Collections.css";
 
 const SIZES_CANONICAL = ["XS", "S", "M", "L", "XL"];
@@ -66,6 +68,12 @@ const Collections = () => {
   const [gridColumns, setGridColumns] = useState(3); // 3-col vs 2-col / 4-col
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+
+  // Quick-view cart state
+  const [quickViewSelectedSize, setQuickViewSelectedSize] = useState("");
+  const [quickViewSelectedColor, setQuickViewSelectedColor] = useState("");
+  const [quickViewAdding, setQuickViewAdding] = useState(false);
+  const [quickViewNotice, setQuickViewNotice] = useState({ type: "", text: "" });
   const [sessionWishlist, setSessionWishlist] = useState(() => {
     try {
       const saved = localStorage.getItem("elarque_session_wishlist");
@@ -264,6 +272,114 @@ const Collections = () => {
       }
       return updated;
     });
+  };
+
+  // Reset quick-view variant selections when the modal product changes
+  useEffect(() => {
+    if (!quickViewProduct) {
+      setQuickViewSelectedSize("");
+      setQuickViewSelectedColor("");
+      setQuickViewAdding(false);
+      setQuickViewNotice({ type: "", text: "" });
+      return;
+    }
+    const variants = quickViewProduct.variants || [];
+    // Auto-select if only one variant exists
+    if (variants.length === 1) {
+      setQuickViewSelectedSize(variants[0].size || "");
+      setQuickViewSelectedColor(variants[0].color || "");
+    } else {
+      setQuickViewSelectedSize("");
+      setQuickViewSelectedColor("");
+    }
+    setQuickViewNotice({ type: "", text: "" });
+  }, [quickViewProduct]);
+
+  // Add to cart from quick-view modal
+  const handleQuickViewAddToCart = async (e) => {
+    e.stopPropagation();
+    if (quickViewAdding) return;
+
+    // Auth check — matching ProductDetails.jsx pattern
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const variants = quickViewProduct?.variants || [];
+    const hasVariants = variants.length > 0;
+
+    let matchedVariant = null;
+    if (hasVariants) {
+      if (variants.length === 1) {
+        matchedVariant = variants[0];
+      } else {
+        if (!quickViewSelectedSize || !quickViewSelectedColor) {
+          setQuickViewNotice({
+            type: "error",
+            text: "Please select a size and colour before adding to your bag.",
+          });
+          setTimeout(() => setQuickViewNotice({ type: "", text: "" }), 4000);
+          return;
+        }
+        matchedVariant = variants.find(
+          (v) =>
+            v.size.toUpperCase() === quickViewSelectedSize.toUpperCase() &&
+            v.color.toLowerCase() === quickViewSelectedColor.toLowerCase()
+        );
+        if (!matchedVariant) {
+          setQuickViewNotice({
+            type: "error",
+            text: "Selected combination is unavailable. Please choose a different size or colour.",
+          });
+          setTimeout(() => setQuickViewNotice({ type: "", text: "" }), 4000);
+          return;
+        }
+      }
+    }
+
+    if (matchedVariant && matchedVariant.stock <= 0) {
+      setQuickViewNotice({ type: "error", text: "This variant is out of stock." });
+      setTimeout(() => setQuickViewNotice({ type: "", text: "" }), 4000);
+      return;
+    }
+
+    setQuickViewAdding(true);
+    setQuickViewNotice({ type: "", text: "" });
+
+    try {
+      const productId = quickViewProduct.id || quickViewProduct._id;
+      const variantId = matchedVariant?.id || matchedVariant?._id;
+      const response = await addToCart(productId, variantId, 1);
+
+      if (response.data?.success && response.data?.cart) {
+        window.dispatchEvent(
+          new CustomEvent("elarque_cart_updated", { detail: response.data.cart })
+        );
+        setQuickViewNotice({
+          type: "success",
+          text: `${quickViewProduct.name} added to your shopping bag.`,
+        });
+        // Auto-close modal after success
+        setTimeout(() => {
+          setQuickViewProduct(null);
+        }, 1500);
+      } else {
+        setQuickViewNotice({
+          type: "error",
+          text: response.data?.message || "Could not add to bag. Please try again.",
+        });
+      }
+    } catch (err) {
+      setQuickViewNotice({
+        type: "error",
+        text: err.response?.data?.message || "Something went wrong. Please try again.",
+      });
+    } finally {
+      setQuickViewAdding(false);
+      setTimeout(() => setQuickViewNotice({ type: "", text: "" }), 5000);
+    }
   };
 
   // Check if any filters are active
@@ -930,29 +1046,92 @@ const Collections = () => {
                   "Handcrafted silhouette sculpted from exceptional fabrics with bespoke atelier finishing."}
               </p>
 
+              {/* INTERACTIVE SIZE SELECTOR */}
               {quickViewProduct.sizes && quickViewProduct.sizes.length > 0 && (
                 <div className="el-modal-sizes-section">
-                  <span className="el-modal-section-label">Available Sizes:</span>
+                  <span className="el-modal-section-label">Size:</span>
                   <div className="el-modal-size-pills">
-                    {quickViewProduct.sizes.map((s) => (
-                      <span key={s} className="el-modal-size-tag">
-                        {s}
-                      </span>
+                    {quickViewProduct.sizes.map((s) => {
+                      const hasStock = (quickViewProduct.variants || []).some(
+                        (v) => v.size.toUpperCase() === s.toUpperCase() && v.stock > 0
+                      );
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          className={`el-modal-size-tag${
+                            quickViewSelectedSize === s ? " active" : ""
+                          }${!hasStock ? " sold-out" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setQuickViewSelectedSize((prev) => (prev === s ? "" : s));
+                          }}
+                          disabled={!hasStock}
+                        >
+                          {s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* INTERACTIVE COLOUR SELECTOR (only when product has multiple colours) */}
+              {quickViewProduct.colors && quickViewProduct.colors.length > 1 && (
+                <div className="el-modal-sizes-section">
+                  <span className="el-modal-section-label">Colour:</span>
+                  <div className="el-modal-size-pills">
+                    {quickViewProduct.colors.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={`el-modal-size-tag${
+                          quickViewSelectedColor === c ? " active" : ""
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setQuickViewSelectedColor((prev) => (prev === c ? "" : c));
+                        }}
+                      >
+                        {c}
+                      </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="el-modal-actions-row">
+              {/* CART NOTICE */}
+              {quickViewNotice.text && (
+                <p
+                  className={`el-qv-cart-notice el-qv-cart-notice-${
+                    quickViewNotice.type
+                  }`}
+                >
+                  {quickViewNotice.text}
+                </p>
+              )}
+
+              {/* ACTIONS ROW — View Details (outline) + Add to Bag (primary) */}
+              <div className="el-modal-actions-row el-modal-actions-row--split">
                 <button
                   type="button"
-                  className="el-btn-view-details"
+                  className="el-btn-view-details el-btn-view-details--outline"
                   onClick={() => {
                     navigate(`/products/${quickViewProduct.id || quickViewProduct._id}`);
                   }}
                 >
                   <Eye size={15} />
-                  <span>View Atelier Details</span>
+                  <span>View Details</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="el-btn-view-details"
+                  onClick={handleQuickViewAddToCart}
+                  disabled={quickViewAdding}
+                >
+                  <ShoppingBag size={15} />
+                  <span>{quickViewAdding ? "Adding..." : "Add to Bag"}</span>
                 </button>
               </div>
             </div>
