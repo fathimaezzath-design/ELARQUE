@@ -20,6 +20,7 @@ import {
   deleteAddress,
   setDefaultAddress,
 } from "../../services/addressService";
+import UserLayout from "../../layouts/UserLayout";
 
 const initialFormState = {
   fullName: "",
@@ -216,7 +217,7 @@ function Addresses() {
   };
 
   return (
-    <>
+    <UserLayout>
       <style>{styles}</style>
 
       <div className="addresses-page">
@@ -513,13 +514,13 @@ function Addresses() {
           </div>
         </div>
       )}
-    </>
+    </UserLayout>
   );
 }
 
 const styles = `
   .addresses-page {
-    min-height: 100vh;
+    min-height: calc(100vh - 200px);
     background: #faf6f1;
     padding: 40px 7%;
     color: #2d1b1f;

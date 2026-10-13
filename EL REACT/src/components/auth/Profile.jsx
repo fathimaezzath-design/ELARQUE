@@ -19,6 +19,7 @@ import {
 
 import { getProfile } from "../../services/authService";
 import { getAddresses } from "../../services/addressService";
+import UserLayout from "../../layouts/UserLayout";
 
 function Profile() {
   const navigate = useNavigate();
@@ -294,68 +295,12 @@ function Profile() {
   }
 
   return (
-    <div className="profile-page">
-
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
-      <header className="profile-header">
-
-        <div
-          className="profile-logo"
-          onClick={() => navigate("/")}
-        >
-          ELARQUE
-        </div>
-
-        <nav className="profile-nav">
-
-          <span onClick={() => navigate("/")}>
+    <UserLayout>
+      <div className="profile-page">
+        {/* =====================================================
             MAIN
-          </span>
-
-          <span>
-            COLLECTIONS
-          </span>
-
-          <span>
-            BEST SELLERS
-          </span>
-
-          <span>
-            CATEGORIES
-          </span>
-
-          <span>
-            NEW ARRIVALS
-          </span>
-
-        </nav>
-
-        <div className="profile-header-icons">
-
-          <Heart size={19} />
-
-          <Wallet size={19} />
-
-          <div
-            className="header-user"
-            onClick={() => navigate("/profile")}
-          >
-            <User size={17} />
-          </div>
-
-        </div>
-
-      </header>
-
-
-      {/* =====================================================
-          MAIN
-      ===================================================== */}
-
-      <main className="profile-container">
+        ===================================================== */}
+        <main className="profile-container">
 
 
         {/* =====================================================
@@ -928,99 +873,6 @@ function Profile() {
         </section>
 
       </main>
-
-
-      {/* =====================================================
-          FOOTER
-      ===================================================== */}
-
-      <footer className="profile-footer">
-
-        <div className="footer-column">
-
-          <h2>
-            ELARQUE
-          </h2>
-
-          <p>
-            Haute couture western tailoring curated with
-            architectural composition and legacy European
-            craftsmanship.
-          </p>
-
-          <small>
-            🔒 TLS 256-BIT ENCRYPTED VAULT
-          </small>
-
-        </div>
-
-
-        <div className="footer-column">
-
-          <h3>
-            SALONS HAUTE COUTURE
-          </h3>
-
-          <p>
-            Paris: 12 Place Vendôme, 75001
-          </p>
-
-          <p>
-            Milan: Via Monte Napoleone 8, 20121
-          </p>
-
-          <p>
-            Dallas: Highland Park Village
-          </p>
-
-        </div>
-
-
-        <div className="footer-column">
-
-          <h3>
-            SHOP ATELIER
-          </h3>
-
-          <p>
-            RUNWAY CAPES & DUST-COATS
-          </p>
-
-          <p>
-            SCULPTED LEATHER SILHOUETTES
-          </p>
-
-          <p>
-            EQUESTRIAN SILK TAILORING
-          </p>
-
-          <p>
-            BESPOKE FITTING SCHEDULE
-          </p>
-
-        </div>
-
-
-        <div className="footer-column">
-
-          <h3>
-            MONOGRAPH JOURNAL
-          </h3>
-
-          <p>
-            Receive seasonal salon folios, private salon
-            viewings, and limited archive drops.
-          </p>
-
-        </div>
-
-
-        <div className="footer-bottom">
-          © 2026 ELARQUE • TIMELESS ELEGANCE • MODERN CONFIDENCE
-        </div>
-
-      </footer>
-
 
       {/* =====================================================
           CSS
@@ -1702,7 +1554,8 @@ function Profile() {
       `}</style>
 
     </div>
-  );
+  </UserLayout>
+);
 }
 
 export default Profile;

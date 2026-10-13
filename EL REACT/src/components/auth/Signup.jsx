@@ -350,8 +350,8 @@ function SignUp() {
 
     if (!formData.password)
       newErrors.password = "Please create a password.";
-    else if (formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters long.";
+    else if (formData.password.length < 8)
+      newErrors.password = "Password must be at least 8 characters long.";
 
     if (!formData.confirmPassword)
       newErrors.confirmPassword = "Please confirm your password.";

@@ -20,6 +20,7 @@ import {
   verifyEmailChangeOTP,
   sendEmailChangeOTP,
 } from "../../services/authService";
+import UserLayout from "../../layouts/UserLayout";
 
 function VerifyEmail() {
   const navigate = useNavigate();
@@ -226,61 +227,8 @@ function VerifyEmail() {
   }
 
   return (
-    <>
+    <UserLayout>
       <div className="verify-email-page">
-
-        {/* TOP STRIP */}
-        <div className="top-strip"></div>
-
-        {/* NAVBAR */}
-        <header className="verify-navbar">
-
-          <div className="logo">
-            ELARQUE
-          </div>
-
-          <nav className="nav-links">
-
-            <span>MAIN</span>
-
-            <span>COLLECTIONS</span>
-
-            <span className="two-line">
-              BEST
-              <br />
-              SELLERS
-            </span>
-
-            <span>CATEGORIES</span>
-
-            <span className="two-line">
-              NEW
-              <br />
-              ARRIVALS
-            </span>
-
-          </nav>
-
-          <div className="nav-icons">
-
-            <div className="nav-heart">
-              ♡
-              <small>2</small>
-            </div>
-
-            <div className="nav-bag">
-              ♧
-              <small>1</small>
-            </div>
-
-            <div className="profile-icon">
-              ♙
-            </div>
-
-          </div>
-
-        </header>
-
         {/* MAIN */}
         <main className="verify-main">
 
@@ -470,22 +418,9 @@ function VerifyEmail() {
 
           </div>
 
-          {/* FOOTER */}
-          <div className="verify-footer">
-
-            ELARQUE CONCIERGE SERVICE
-
-            <span>•</span>
-
-            SALONS VENDÔME & MILAN
-
-          </div>
-
         </main>
 
-      </div>
-
-      <style>{`
+        <style>{`
 
         * {
           box-sizing: border-box;
@@ -1158,8 +1093,9 @@ function VerifyEmail() {
         }
 
       `}</style>
-    </>
-  );
+    </div>
+  </UserLayout>
+);
 }
 
 export default VerifyEmail;

@@ -51,16 +51,4 @@ router.put(
   profileController.changePassword
 );
 
-router.post(
-  "/email/send-otp",
-  authMiddleware,
-  profileController.sendEmailChangeOTP
-);
-
-router.post(
-  "/email/verify-otp",
-  authMiddleware,
-  profileController.verifyEmailChangeOTP
-);
-
 module.exports = router;
