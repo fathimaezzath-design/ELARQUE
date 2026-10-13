@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, Menu, X } from "lucide-react";
 import { NAV_LINKS } from "../../data/homeData";
@@ -8,6 +8,39 @@ function Navbar({ wishlistCount = 0, cartCount = 0 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Live cart count — listens for elarque_cart_updated events dispatched by Cart.jsx and ProductDetails.jsx
+  const [cartItemCount, setCartItemCount] = useState(0);
+
+  useEffect(() => {
+    // Fetch initial count on mount (only if logged in)
+    const token = localStorage.getItem("token");
+    if (token) {
+      import("../../services/cartService").then((cartService) => {
+        cartService
+          .getCart()
+          .then((res) => {
+            if (res.data?.success && res.data?.cart) {
+              setCartItemCount(res.data.cart.itemCount || 0);
+            }
+          })
+          .catch(() => {
+            // Silently ignore — user may not be authenticated or cart may be empty
+          });
+      });
+    }
+
+    // Listen for cart updates from any page
+    const handleCartUpdate = (e) => {
+      const cart = e.detail;
+      if (cart && typeof cart.itemCount === "number") {
+        setCartItemCount(cart.itemCount);
+      }
+    };
+
+    window.addEventListener("elarque_cart_updated", handleCartUpdate);
+    return () => window.removeEventListener("elarque_cart_updated", handleCartUpdate);
+  }, []);
 
   const handleProfileClick = () => {
     const token = localStorage.getItem("token");
@@ -110,13 +143,13 @@ function Navbar({ wishlistCount = 0, cartCount = 0 }) {
 
             {/* Shopping Bag */}
             <button
-              onClick={() => console.log("Open Cart")}
+              onClick={() => navigate("/cart")}
               className="el-icon-btn"
               aria-label="Shopping Bag"
             >
               <ShoppingBag size={20} strokeWidth={1.75} />
-              {cartCount > 0 && (
-                <span className="el-badge">{cartCount}</span>
+              {(cartItemCount > 0 || cartCount > 0) && (
+                <span className="el-badge">{cartItemCount || cartCount}</span>
               )}
             </button>
 
