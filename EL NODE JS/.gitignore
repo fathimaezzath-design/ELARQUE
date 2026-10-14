@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local setup and maintenance scripts
+setupAdmin.js
+fixUser.js
+

@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "../components/home/Home";
 import Collections from "../components/user/Collections";
 import ProductDetails from "../components/user/ProductDetails";
+import Wishlist from "../components/user/Wishlist";
 import Cart from "../components/user/Cart";
 import Login from "../components/auth/Login";
 import Signup from "../components/auth/Signup";
@@ -16,8 +17,10 @@ import EditEmail from "../components/auth/EditEmail";
 import VerifyEmail from "../components/auth/VerifyEmail";
 import EmailVerified from "../components/auth/EmailVerified";
 import Addresses from "../components/auth/Addresses";
+import AddAddress from "../components/auth/AddAddress";
 import ChangePassword from "../components/auth/ChangePassword";
 import ProtectedUserRoute from "../components/auth/ProtectedUserRoute";
+import Checkout from "../components/user/Checkout";
 
 function UserRoutes() {
   return (
@@ -28,6 +31,7 @@ function UserRoutes() {
       <Route path="/shop" element={<Collections />} />
       <Route path="/products/:id" element={<ProductDetails />} />
       <Route path="/product/:id" element={<ProductDetails />} />
+      <Route path="/wishlist" element={<Wishlist />} />
 
       {/* Customer authentication routes */}
       <Route path="/login" element={<Login />} />
@@ -43,6 +47,14 @@ function UserRoutes() {
         element={
           <ProtectedUserRoute>
             <Cart />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedUserRoute>
+            <Checkout />
           </ProtectedUserRoute>
         }
       />
@@ -91,6 +103,22 @@ function UserRoutes() {
         element={
           <ProtectedUserRoute>
             <Addresses />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/addresses/add"
+        element={
+          <ProtectedUserRoute>
+            <AddAddress />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/addresses/edit/:id"
+        element={
+          <ProtectedUserRoute>
+            <AddAddress />
           </ProtectedUserRoute>
         }
       />

@@ -3,6 +3,19 @@ import { useNavigate, Link } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, Menu, X } from "lucide-react";
 import { NAV_LINKS } from "../../data/homeData";
 
+// Safely calculate unique product ID count from elarque_session_wishlist
+const getStoredWishlistCount = () => {
+  try {
+    const saved = localStorage.getItem("elarque_session_wishlist");
+    if (!saved) return 0;
+    const list = JSON.parse(saved);
+    if (!Array.isArray(list)) return 0;
+    return new Set(list.filter(Boolean)).size;
+  } catch {
+    return 0;
+  }
+};
+
 function Navbar({ wishlistCount = 0, cartCount = 0 }) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -11,6 +24,27 @@ function Navbar({ wishlistCount = 0, cartCount = 0 }) {
 
   // Live cart count — listens for elarque_cart_updated events dispatched by Cart.jsx and ProductDetails.jsx
   const [cartItemCount, setCartItemCount] = useState(0);
+
+  // Live wishlist count — listens for elarque_wishlist_updated and storage events
+  const [sessionWishlistCount, setSessionWishlistCount] = useState(getStoredWishlistCount);
+
+  useEffect(() => {
+    const handleWishlistUpdate = () => {
+      setSessionWishlistCount(getStoredWishlistCount());
+    };
+
+    window.addEventListener("elarque_wishlist_updated", handleWishlistUpdate);
+    window.addEventListener("storage", handleWishlistUpdate);
+    return () => {
+      window.removeEventListener("elarque_wishlist_updated", handleWishlistUpdate);
+      window.removeEventListener("storage", handleWishlistUpdate);
+    };
+  }, []);
+
+  const displayWishlistCount =
+    typeof wishlistCount === "number" && wishlistCount > 0
+      ? wishlistCount
+      : sessionWishlistCount;
 
   useEffect(() => {
     // Fetch initial count on mount (only if logged in)
@@ -131,13 +165,13 @@ function Navbar({ wishlistCount = 0, cartCount = 0 }) {
 
             {/* Wishlist */}
             <button
-              onClick={() => navigate("/profile")}
+              onClick={() => navigate("/wishlist")}
               className="el-icon-btn"
               aria-label="Wishlist"
             >
               <Heart size={20} strokeWidth={1.75} />
-              {wishlistCount > 0 && (
-                <span className="el-badge">{wishlistCount}</span>
+              {displayWishlistCount > 0 && (
+                <span className="el-badge">{displayWishlistCount}</span>
               )}
             </button>
 

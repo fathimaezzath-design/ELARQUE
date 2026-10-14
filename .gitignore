@@ -27,3 +27,9 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Local maintenance scripts
+setupAdmin.js
+**/setupAdmin.js
+fixUser.js
+**/fixUser.js

@@ -9,6 +9,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const addressRoutes = require("./routes/addressRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
@@ -46,6 +47,10 @@ app.use("/api/products", productRoutes);
 
 // CART ROUTES (PROTECTED)
 app.use("/api/cart", cartRoutes);
+
+
+// ORDER ROUTES (PROTECTED)
+app.use("/api/orders", orderRoutes);
 
 
 // ADMIN ROUTES

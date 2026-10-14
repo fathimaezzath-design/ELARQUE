@@ -357,6 +357,20 @@ const Collections = () => {
         window.dispatchEvent(
           new CustomEvent("elarque_cart_updated", { detail: response.data.cart })
         );
+        // Synchronize wishlist: remove product from session wishlist upon adding to cart
+        setSessionWishlist((prev) => {
+          if (!Array.isArray(prev)) return prev;
+          const targetId = quickViewProduct?.id || quickViewProduct?._id || productId;
+          const updated = prev.filter(
+            (id) => id !== targetId && id !== quickViewProduct?._id && id !== quickViewProduct?.id
+          );
+          try {
+            localStorage.setItem("elarque_session_wishlist", JSON.stringify(updated));
+          } catch (storageErr) {
+            console.error(storageErr);
+          }
+          return updated;
+        });
         setQuickViewNotice({
           type: "success",
           text: `${quickViewProduct.name} added to your shopping bag.`,

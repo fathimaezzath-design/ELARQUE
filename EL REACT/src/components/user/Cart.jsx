@@ -246,12 +246,7 @@ const Cart = () => {
       });
       return;
     }
-    setNotice({
-      type: "info",
-      text:
-        "Atelier Express Checkout and Payment integration is scheduled for Step 5. Your bag is safely preserved.",
-    });
-    setTimeout(() => setNotice({ type: "", text: "" }), 6000);
+    navigate("/checkout");
   };
 
   const cartItemsCount = cart.items ? cart.items.length : 0;

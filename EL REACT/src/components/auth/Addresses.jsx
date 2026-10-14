@@ -241,7 +241,7 @@ function Addresses() {
             <button
               type="button"
               className="add-address-btn"
-              onClick={handleOpenAddModal}
+              onClick={() => navigate("/addresses/add")}
             >
               <Plus size={18} />
               <span>Add New Address</span>
@@ -266,7 +266,7 @@ function Addresses() {
               <button
                 type="button"
                 className="add-address-btn"
-                onClick={handleOpenAddModal}
+                onClick={() => navigate("/addresses/add")}
               >
                 <Plus size={18} />
                 <span>Add First Address</span>
