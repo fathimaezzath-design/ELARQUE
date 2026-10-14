@@ -21,6 +21,7 @@ import AddAddress from "../components/auth/AddAddress";
 import ChangePassword from "../components/auth/ChangePassword";
 import ProtectedUserRoute from "../components/auth/ProtectedUserRoute";
 import Checkout from "../components/user/Checkout";
+import OrderConfirmed from "../components/user/OrderConfirmed";
 
 function UserRoutes() {
   return (
@@ -55,6 +56,14 @@ function UserRoutes() {
         element={
           <ProtectedUserRoute>
             <Checkout />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/order-confirmed"
+        element={
+          <ProtectedUserRoute>
+            <OrderConfirmed />
           </ProtectedUserRoute>
         }
       />

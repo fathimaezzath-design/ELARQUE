@@ -27,6 +27,7 @@ import {
   updateAddress,
 } from "../../services/addressService";
 import { getCart } from "../../services/cartService";
+import { createOrder } from "../../services/orderService";
 import { getProfile } from "../../services/authService";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
@@ -422,7 +423,7 @@ function Checkout() {
   // -------------------------------------------------------------------------
   // Order Placement Trigger
   // -------------------------------------------------------------------------
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     const selected = addresses.find((a) => a._id === selectedId);
     if (!selected) {
       setOrderNotice({
@@ -434,13 +435,73 @@ function Checkout() {
     }
 
     setPlacingOrder(true);
-    // Display verified Step 3 foundation confirmation
-    setOrderNotice({
-      type: "info",
-      title: "Order Placement Foundation Verified",
-      message: `Your bespoke curation is prepared for dispatch to ${selected.fullName} (${selected.city}). Cash on Delivery & online payment dispatch activation is scheduled for Step 3C. No charge has been made.`,
-    });
-    setPlacingOrder(false);
+    setOrderNotice(null);
+
+    try {
+      const res = await createOrder(selectedId, "COD");
+
+      if (res?.data?.success && res?.data?.order) {
+        // Navigate to confirmation page, passing the persisted order via state.
+        // Using replace:true prevents the user from pressing Back into a
+        // half-processed checkout with a now-empty cart.
+        navigate("/order-confirmed", {
+          state: { order: res.data.order },
+          replace: true,
+        });
+      } else {
+        // Backend returned 2xx but no order — treat as unexpected failure
+        setOrderNotice({
+          type: "error",
+          title: "Order Not Created",
+          message:
+            res?.data?.message ||
+            "Your order could not be confirmed. Please try again or contact support.",
+        });
+        setPlacingOrder(false);
+      }
+    } catch (err) {
+      const status = err?.response?.status;
+      const serverMsg = err?.response?.data?.message;
+
+      if (status === 409) {
+        // Stock or duplicate conflict
+        setOrderNotice({
+          type: "error",
+          title: "Inventory Update",
+          message:
+            serverMsg ||
+            "One or more items are no longer available in the requested quantity. Please review your cart.",
+        });
+      } else if (status === 429) {
+        // Duplicate submission guard
+        setOrderNotice({
+          type: "error",
+          title: "Duplicate Order Detected",
+          message:
+            serverMsg ||
+            "A recent order is already being processed. Please check your order history.",
+        });
+      } else if (status === 400) {
+        setOrderNotice({
+          type: "error",
+          title: "Order Validation Failed",
+          message: serverMsg || "Please check your cart and address, then try again.",
+        });
+      } else if (status === 401) {
+        // The api.js interceptor will handle redirect to /login;
+        // no extra notice needed here
+      } else {
+        setOrderNotice({
+          type: "error",
+          title: "Order Failed",
+          message:
+            serverMsg ||
+            "An unexpected error occurred. Your card has not been charged. Please try again.",
+        });
+      }
+
+      setPlacingOrder(false);
+    }
   };
 
   // -------------------------------------------------------------------------
