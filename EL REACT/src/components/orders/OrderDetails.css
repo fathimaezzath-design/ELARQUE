@@ -1,0 +1,588 @@
+/* =====================================================
+   ELARQUE — ORDER DETAILS PAGE
+   Palette: cream #f7f0ea | burgundy #650d20 | warm white #fff
+===================================================== */
+
+/* ── PAGE ── */
+.od-page {
+  min-height: 100vh;
+  background: #f7f0ea;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #2c1810;
+}
+
+/* ── LOADING ── */
+.od-loading {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f7f0ea;
+}
+.od-loading-inner { text-align: center; }
+.od-loading-inner p { color: #7d706b; font-size: 13px; margin-top: 10px; }
+
+/* ── ERROR PAGE ── */
+.od-error-page { min-height: 100vh; background: #f7f0ea; }
+.od-error-header {
+  background: #fff;
+  padding: 18px 48px;
+  border-bottom: 1px solid #e8ddd6;
+}
+.od-error-box {
+  max-width: 480px;
+  margin: 80px auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 48px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(70, 20, 30, 0.08);
+}
+.od-error-icon { color: #c0392b; margin-bottom: 18px; }
+.od-error-box h2 {
+  font-family: Georgia, serif;
+  color: #2c1810;
+  margin: 0 0 10px;
+}
+.od-error-box p { color: #8a7570; font-size: 13px; margin-bottom: 24px; }
+.od-error-box button {
+  background: #650d20;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 28px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.od-error-box button:hover { background: #4a0910; }
+
+/* ── HEADER ── */
+.od-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 66px;
+  background: #fff;
+  border-bottom: 1px solid #e8ddd6;
+  box-shadow: 0 2px 12px rgba(70, 20, 30, 0.06);
+}
+.od-logo {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  letter-spacing: 5px;
+  font-weight: bold;
+  color: #650d20;
+  cursor: pointer;
+  user-select: none;
+}
+.od-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1.5px solid #650d20;
+  color: #650d20;
+  border-radius: 22px;
+  padding: 7px 16px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.od-back-btn:hover { background: #650d20; color: #fff; }
+
+/* ── MAIN ── */
+.od-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+/* ── TITLE ROW ── */
+.od-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.od-eyebrow {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: #b09080;
+  margin: 0 0 8px;
+}
+.od-eyebrow span { margin: 0 6px; }
+.od-heading {
+  font-family: Georgia, serif;
+  font-size: 30px;
+  color: #650d20;
+  margin: 0 0 6px;
+}
+.od-date { font-size: 13px; color: #8a7570; margin: 0; }
+
+.od-status-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* ── BADGES ── */
+.od-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.badge-placed     { background: #eef2ff; color: #3b4cc0; }
+.badge-confirmed  { background: #eff8f0; color: #2a7a3a; }
+.badge-processing { background: #fff7e6; color: #a06000; }
+.badge-shipped    { background: #f0f8ff; color: #0060a0; }
+.badge-delivered  { background: #f0faf0; color: #1a6a2a; }
+.badge-cancelled  { background: #fff0f0; color: #c0392b; }
+.badge-returned   { background: #fdf4e0; color: #8a6000; }
+
+.od-pay-badge {
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.pay-pending  { background: #fff7e6; color: #a06000; }
+.pay-paid     { background: #eff8f0; color: #2a7a3a; }
+.pay-failed   { background: #fff0f0; color: #c0392b; }
+.pay-refunded { background: #f0f8ff; color: #0060a0; }
+
+/* ── GRID ── */
+.od-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── CARD ── */
+.od-card {
+  background: #fff;
+  border: 1px solid #f0e6e0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 18px rgba(70, 20, 30, 0.05);
+  margin-bottom: 20px;
+}
+.od-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Georgia, serif;
+  font-size: 16px;
+  color: #2c1810;
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0e6e0;
+}
+.od-card-title svg { color: #650d20; }
+
+/* ── ITEMS ── */
+.od-items-list { display: flex; flex-direction: column; gap: 18px; }
+.od-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f5ede8;
+}
+.od-item:last-child { padding-bottom: 0; border-bottom: none; }
+
+.od-item-img {
+  width: 72px;
+  height: 86px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #f0e6e0;
+  flex-shrink: 0;
+}
+.od-item-img-ph {
+  width: 72px;
+  height: 86px;
+  border-radius: 10px;
+  background: #f5ede8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c4a8a0;
+  flex-shrink: 0;
+}
+.od-item-details { flex: 1; min-width: 0; }
+.od-item-name {
+  font-size: 15px;
+  color: #2c1810;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.od-item-variant {
+  font-size: 12px;
+  color: #8a7570;
+  margin: 0 0 10px;
+}
+.od-item-pricing {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.od-item-unit { font-size: 13px; color: #9a8a85; }
+.od-item-total {
+  font-family: Georgia, serif;
+  font-size: 15px;
+  color: #650d20;
+  font-weight: bold;
+}
+
+/* ── ADDRESS ── */
+.od-address { line-height: 1.8; }
+.od-addr-name { font-size: 15px; font-weight: 700; color: #2c1810; margin: 0 0 2px; }
+.od-addr-phone { font-size: 13px; color: #6b5a56; margin: 0 0 6px; }
+.od-addr-line { font-size: 13px; color: #6b5a56; margin: 0; }
+
+/* ── PAYMENT ── */
+.od-payment-info { display: flex; flex-direction: column; gap: 14px; }
+.od-pay-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #6b5a56;
+}
+.od-pay-row span:first-child { color: #9a8a85; }
+
+/* ── PRICING ── */
+.od-pricing { display: flex; flex-direction: column; gap: 12px; }
+.od-price-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6b5a56;
+}
+.od-price-row span:first-child { color: #9a8a85; }
+.od-price-row.discount span { color: #2a7a3a; }
+.od-price-divider {
+  height: 1px;
+  background: #f0e6e0;
+  margin: 4px 0;
+}
+.od-price-row.total {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #650d20;
+}
+.od-price-row.total span { color: #650d20; }
+
+/* ── BACK BUTTON ── */
+.od-back-full {
+  width: 100%;
+  background: #650d20;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+.od-back-full:hover { background: #4a0910; }
+
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .od-grid { grid-template-columns: 1fr; }
+  .od-right { grid-row: 1; }
+  .od-main { padding: 20px 16px 48px; }
+  .od-header { padding: 0 20px; }
+  .od-title-row { flex-direction: column; }
+  .od-status-group { align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .od-header { padding: 0 14px; }
+  .od-heading { font-size: 22px; }
+}
+
+/* ── ACTION MESSAGE BANNER ── */
+.od-action-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.od-action-success {
+  background: #eff8f0;
+  color: #2a7a3a;
+  border: 1px solid #b8e0c4;
+}
+.od-action-error {
+  background: #fff0f0;
+  color: #c0392b;
+  border: 1px solid #f0c4c4;
+}
+
+/* ── ORDER-LEVEL ACTION BUTTONS ── */
+.od-order-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.od-btn-cancel-order {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1.5px solid #c0392b;
+  color: #c0392b;
+  border-radius: 22px;
+  padding: 9px 20px;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.od-btn-cancel-order:hover { background: #c0392b; color: #fff; }
+
+.od-btn-return-order {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1.5px solid #0060a0;
+  color: #0060a0;
+  border-radius: 22px;
+  padding: 9px 20px;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.od-btn-return-order:hover { background: #0060a0; color: #fff; }
+
+/* ── CANCELLATION / RETURN INFO BANNERS ── */
+.od-cancel-info,
+.od-return-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.od-cancel-info { background: #fff0f0; color: #c0392b; }
+.od-return-info { background: #f0f8ff; color: #0060a0; }
+
+/* ── RETURN BADGE (order + item level) ── */
+.od-return-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.ret-requested { background: #fff7e6; color: #a06000; }
+.ret-approved  { background: #eff8f0; color: #2a7a3a; }
+.ret-rejected  { background: #fff0f0; color: #c0392b; }
+
+/* ── ITEM HEADER ROW ── */
+.od-item-name-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* ── ITEM STATUS BADGES ── */
+.od-item-status-badge {
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.item-active          { background: #eff8f0; color: #2a7a3a; }
+.item-cancelled       { background: #fff0f0; color: #c0392b; }
+.item-return-req      { background: #fff7e6; color: #a06000; }
+.item-returned        { background: #f0f8ff; color: #0060a0; }
+
+/* ── INACTIVE ITEM (cancelled/returned) ── */
+.od-item-inactive {
+  opacity: 0.55;
+}
+.od-item-inactive .od-item-img,
+.od-item-inactive .od-item-img-ph {
+  filter: grayscale(0.6);
+}
+
+/* ── ITEM REASON LINES ── */
+.od-item-reason {
+  font-size: 11px;
+  margin: 6px 0 0;
+  font-style: italic;
+}
+.cancelled-reason { color: #c0392b; }
+.return-reason    { color: #0060a0; }
+
+/* ── PER-ITEM ACTION BUTTONS ── */
+.od-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.od-item-cancel-btn,
+.od-item-return-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 16px;
+  padding: 6px 14px;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  background: none;
+}
+.od-item-cancel-btn {
+  border: 1.5px solid #c0392b;
+  color: #c0392b;
+}
+.od-item-cancel-btn:hover { background: #c0392b; color: #fff; }
+
+.od-item-return-btn {
+  border: 1.5px solid #0060a0;
+  color: #0060a0;
+}
+.od-item-return-btn:hover { background: #0060a0; color: #fff; }
+
+/* ── MODAL ── */
+.od-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 10, 10, 0.45);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
+.od-modal {
+  background: #fff;
+  border-radius: 18px;
+  padding: 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 60px rgba(70, 20, 30, 0.18);
+}
+.od-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.od-modal-header h3 {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  color: #2c1810;
+  margin: 0;
+}
+.od-modal-icon { color: #c0392b; flex-shrink: 0; }
+.od-modal-msg {
+  color: #6b5a56;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+.od-modal-field label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #9a8a85;
+  margin-bottom: 6px;
+}
+.od-modal-field textarea {
+  width: 100%;
+  border: 1.5px solid #e0d4cc;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #2c1810;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.od-modal-field textarea:focus {
+  outline: none;
+  border-color: #650d20;
+}
+.od-modal-field-error {
+  color: #c0392b;
+  font-size: 11px;
+  margin-top: 4px;
+}
+.od-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+.od-modal-cancel-btn {
+  background: #f2e8e2;
+  color: #6b5a56;
+  border: none;
+  border-radius: 22px;
+  padding: 10px 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.od-modal-cancel-btn:hover:not(:disabled) { background: #e8d8d0; }
+.od-modal-confirm-btn {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 10px 22px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.od-modal-confirm-btn:hover:not(:disabled) { background: #a02020; }
+.od-modal-cancel-btn:disabled,
+.od-modal-confirm-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
