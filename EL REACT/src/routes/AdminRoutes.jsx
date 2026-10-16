@@ -1,0 +1,50 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import AdminLogin from "../components/admin/AdminLogin";
+import ProtectedAdminRoute from "../components/admin/ProtectedAdminRoute";
+import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../components/admin/AdminDashboard";
+import UserManagement from "../components/admin/UserManagement";
+import CategoryManagement from "../components/admin/CategoryManagement";
+import ProductManagement from "../components/admin/ProductManagement";
+import AddProduct from "../components/admin/AddProduct";
+import EditProduct from "../components/admin/EditProduct";
+import VariantManagement from "../components/admin/VariantManagement";
+import AddVariant from "../components/admin/AddVariant";
+import EditVariant from "../components/admin/EditVariant";
+
+function AdminRoutes() {
+  return (
+    <Routes>
+      {/* Public Admin Route - Without Admin Navbar */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+
+      {/* Protected Admin Routes - Wrapped with Unified Admin Navbar Layout */}
+      <Route
+        element={
+          <ProtectedAdminRoute>
+            <AdminLayout />
+          </ProtectedAdminRoute>
+        }
+      >
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin/products" element={<ProductManagement />} />
+        <Route path="/admin/products/add" element={<AddProduct />} />
+        <Route path="/admin/products/edit/:id" element={<EditProduct />} />
+        <Route path="/admin/variants" element={<VariantManagement />} />
+        <Route path="/admin/variants/add" element={<AddVariant />} />
+        <Route
+          path="/admin/variants/edit/:productId/:variantId"
+          element={<EditVariant />}
+        />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/categories" element={<CategoryManagement />} />
+      </Route>
+
+      {/* Fallback for any unknown /admin sub-routes */}
+      <Route path="*" element={<Navigate to="/admin" replace />} />
+    </Routes>
+  );
+}
+
+export default AdminRoutes;

@@ -72,9 +72,10 @@ export const updateProfileImage = (formData) =>
 // CHANGE EMAIL
 // =========================
 
-export const sendEmailChangeOTP = (newEmail) =>
+export const sendEmailChangeOTP = (newEmail, currentPassword = "") =>
   PROFILE_API.post("/email/send-otp", {
     newEmail,
+    currentPassword,
   });
 
 export const verifyEmailChangeOTP = (otp) =>

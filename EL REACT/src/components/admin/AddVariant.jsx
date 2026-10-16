@@ -282,6 +282,8 @@ const AddVariant = () => {
         const backTarget = selectedProductId
           ? `/admin/variants?productId=${selectedProductId}&productName=${encodeURIComponent(prodName)}`
           : "/admin/variants";
+        localStorage.setItem("elarque_last_update", Date.now().toString());
+        window.dispatchEvent(new CustomEvent("elarque:data-updated"));
         navigate(backTarget, {
           state: {
             productId: selectedProductId,

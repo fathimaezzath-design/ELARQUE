@@ -9,10 +9,8 @@ import {
   XCircle,
   Clock,
   Truck,
-<<<<<<< Updated upstream
   RotateCcw,
   AlertTriangle,
-=======
   Download,
   Loader2,
   User,
@@ -21,7 +19,6 @@ import {
   Ticket,
   LogOut,
   ShoppingBag,
->>>>>>> Stashed changes
 } from "lucide-react";
 import {
   getOrderDetails,
@@ -31,6 +28,7 @@ import {
   requestItemReturn,
 } from "../../services/orderService";
 import { getProfile } from "../../services/authService";
+import Navbar from "../common/Navbar";
 import "./OrderDetails.css";
 
 // =====================================================
@@ -163,12 +161,7 @@ function OrderDetails() {
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
   const [actionMsg, setActionMsg] = useState({ text: "", type: "" });
-<<<<<<< Updated upstream
-
-  // Modal state
   const [modal, setModal] = useState(null);
-  // { type: "cancelOrder"|"cancelItem"|"returnOrder"|"returnItem", itemId?, busy }
-=======
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -187,7 +180,6 @@ function OrderDetails() {
         }
       });
   }, [navigate]);
->>>>>>> Stashed changes
 
   // ── Fetch order ───────────────────────────────────
   const fetchOrder = useCallback(async () => {
@@ -228,9 +220,6 @@ function OrderDetails() {
     setTimeout(() => setActionMsg({ text: "", type: "" }), 5000);
   };
 
-<<<<<<< Updated upstream
-  // ── ACTION HANDLERS ───────────────────────────────
-=======
   // ── Logout ────────────────────────────────────────
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -239,10 +228,19 @@ function OrderDetails() {
   };
 
   // ── Download Invoice handler ──────────────────────
-  const handleDownloadInvoice = async () => {
-    if (!order || downloadingInvoice) return;
->>>>>>> Stashed changes
+  const handleDownloadInvoice = () => {
+    if (!order) return;
+    setDownloadingInvoice(true);
+    try {
+      window.print();
+    } catch (err) {
+      console.error("Print invoice error:", err);
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  };
 
+  // ── Action Handlers ───────────────────────────────
   const handleCancelOrder = async (reason) => {
     setModal((m) => ({ ...m, busy: true }));
     try {
@@ -298,45 +296,51 @@ function OrderDetails() {
   };
 
   const modalConfig = modal
-    ? {
-        cancelOrder: {
-          title: "Cancel Order",
-          message: "Are you sure you want to cancel this entire order? This action cannot be undone.",
+    ? modal.type === "cancelOrder"
+      ? {
+          title: "Cancel Full Order",
+          message: `Are you sure you want to cancel order #${order?.orderNumber}? This action cannot be reversed.`,
           reasonLabel: "Cancellation Reason",
           reasonRequired: false,
           onConfirm: handleCancelOrder,
-        },
-        cancelItem: {
+        }
+      : modal.type === "cancelItem"
+      ? {
           title: "Cancel Item",
-          message: "Are you sure you want to cancel this item? Stock will be restored.",
+          message: "Are you sure you want to cancel this specific item from your order?",
           reasonLabel: "Cancellation Reason",
           reasonRequired: false,
           onConfirm: handleCancelItem,
-        },
-        returnOrder: {
+        }
+      : modal.type === "returnOrder"
+      ? {
           title: "Request Order Return",
-          message: "Please provide a reason for returning this order. Our team will review your request.",
-          reasonLabel: "Return Reason",
+          message: "Please let us know why you wish to return this order. Our concierge team will review your request.",
+          reasonLabel: "Reason for Return",
           reasonRequired: true,
           onConfirm: handleReturnOrder,
-        },
-        returnItem: {
+        }
+      : modal.type === "returnItem"
+      ? {
           title: "Request Item Return",
-          message: "Please provide a reason for returning this item. Our team will review your request.",
-          reasonLabel: "Return Reason",
+          message: "Please let us know why you wish to return this item.",
+          reasonLabel: "Reason for Return",
           reasonRequired: true,
           onConfirm: handleReturnItem,
-        },
-      }[modal.type]
+        }
+      : null
     : null;
 
   // ── Loading ───────────────────────────────────────
   if (loading) {
     return (
-      <div className="od-loading">
-        <div className="od-loading-inner">
-          <div className="od-logo" onClick={() => navigate("/")}>ELARQUE</div>
-          <p>Loading order details…</p>
+      <div className="od-page">
+        <Navbar />
+        <div className="od-loading">
+          <div className="od-loading-inner">
+            <Loader2 size={32} className="od-spinner" />
+            <p>Retrieving order details…</p>
+          </div>
         </div>
       </div>
     );
@@ -345,10 +349,8 @@ function OrderDetails() {
   // ── Error ─────────────────────────────────────────
   if (error) {
     return (
-      <div className="od-error-page">
-        <div className="od-error-header">
-          <div className="od-logo" onClick={() => navigate("/")}>ELARQUE</div>
-        </div>
+      <div className="od-page">
+        <Navbar />
         <div className="od-error-box">
           <XCircle size={40} className="od-error-icon" />
           <h2>Order Not Found</h2>
@@ -376,6 +378,8 @@ function OrderDetails() {
 
   return (
     <div className="od-page">
+      {/* ── CONSISTENT CUSTOMER NAVBAR ── */}
+      <Navbar />
 
       {/* ── MODAL ── */}
       {modal && modalConfig && (
@@ -386,32 +390,10 @@ function OrderDetails() {
         />
       )}
 
-      {/* ── HEADER ── */}
-      <header className="od-header">
-        <div className="od-logo" onClick={() => navigate("/")}>ELARQUE</div>
-
-        <nav className="od-nav">
-          <span onClick={() => navigate("/")}>MAIN</span>
-          <span onClick={() => navigate("/collections")}>COLLECTIONS</span>
-          <span onClick={() => navigate("/collections?sort=bestseller")}>BEST SELLERS</span>
-          <span onClick={() => navigate("/collections?sort=new")}>NEW ARRIVALS</span>
-        </nav>
-
-        <div className="od-header-icons">
-          <Heart size={19} onClick={() => navigate("/wishlist")} style={{ cursor: "pointer" }} />
-          <Wallet size={19} onClick={() => navigate("/wallet")} style={{ cursor: "pointer" }} />
-          <div className="od-header-user" onClick={() => navigate("/profile")}>
-            <User size={17} />
-          </div>
-        </div>
-      </header>
-
       <div className="od-layout">
-
         {/* ── SIDEBAR ── */}
         <aside className="od-sidebar">
           <div className="od-sidebar-card">
-
             {/* Avatar */}
             <div className="od-sidebar-avatar">
               {user?.profileImage ? (
@@ -467,52 +449,20 @@ function OrderDetails() {
                 <LogOut size={16} /><span>SIGN OUT</span>
               </button>
             </div>
-
           </div>
         </aside>
 
-<<<<<<< Updated upstream
-        {/* ── PAGE TITLE ── */}
-        <div className="od-title-row">
-          <div>
-            <p className="od-eyebrow">ORDER DETAILS <span>•</span> PURCHASE RECORD</p>
-            <h1 className="od-heading">#{order.orderNumber}</h1>
-            <p className="od-date">Placed on {formatDate(order.orderDate)}</p>
-          </div>
-
-          <div className="od-status-group">
-            <span className={`od-badge ${orderCfg.cls}`}>
-              {orderCfg.icon} {orderCfg.label}
-            </span>
-            <span className={`od-pay-badge ${paymentCfg.cls}`}>
-              {paymentCfg.label}
-            </span>
-            {orderReturnBadge && (
-              <span className={`od-return-badge ${orderReturnBadge.cls}`}>
-                <RotateCcw size={12} /> {orderReturnBadge.label}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* ── ORDER-LEVEL ACTIONS ── */}
-        {(canCancelOrder || canReturnOrder) && (
-          <div className="od-order-actions">
-=======
         {/* ── MAIN CONTENT ── */}
         <main className="od-main">
-
-          {/* ── ACTION MESSAGE ── */}
+          {/* Action Message */}
           {actionMsg.text && (
             <div className={`od-action-msg od-action-${actionMsg.type}`}>
-              {actionMsg.type === "success"
-                ? <CheckCircle size={15} />
-                : <XCircle size={15} />}
+              {actionMsg.type === "success" ? <CheckCircle size={15} /> : <XCircle size={15} />}
               {actionMsg.text}
             </div>
           )}
 
-          {/* ── PAGE TITLE ── */}
+          {/* Page Title */}
           <div className="od-title-row">
             <div>
               <p className="od-eyebrow">ORDER DETAILS <span>•</span> PURCHASE RECORD</p>
@@ -522,7 +472,7 @@ function OrderDetails() {
                 </button>
                 <h1 className="od-heading">#{order.orderNumber}</h1>
               </div>
-              <p className="od-date">Placed on {formatDate(order.createdAt)}</p>
+              <p className="od-date">Placed on {formatDate(order.orderDate || order.createdAt)}</p>
             </div>
 
             <div className="od-status-group">
@@ -532,18 +482,22 @@ function OrderDetails() {
               <span className={`od-pay-badge ${paymentCfg.cls}`}>
                 {paymentCfg.label}
               </span>
+              {orderReturnBadge && (
+                <span className={`od-return-badge ${orderReturnBadge.cls}`}>
+                  <RotateCcw size={12} /> {orderReturnBadge.label}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* ── ORDER-LEVEL ACTIONS ── */}
+          {/* Order Actions */}
           <div className="od-order-actions">
-            {/* Download Invoice – always available */}
             <button
               className="od-btn-download-invoice"
               id="download-invoice-btn"
               onClick={handleDownloadInvoice}
               disabled={downloadingInvoice}
-              title="Download tax invoice PDF"
+              title="Download or Print Invoice"
             >
               {downloadingInvoice ? (
                 <>
@@ -551,27 +505,21 @@ function OrderDetails() {
                 </>
               ) : (
                 <>
-                  <Download size={15} /> Download Invoice PDF
+                  <Download size={15} /> Download Invoice
                 </>
               )}
             </button>
 
->>>>>>> Stashed changes
             {canCancelOrder && (
               <button
                 className="od-btn-cancel-order"
                 id="cancel-order-btn"
-<<<<<<< Updated upstream
                 onClick={() => setModal({ type: "cancelOrder", busy: false })}
-=======
-                disabled
-                title="Order cancellation is not yet supported."
->>>>>>> Stashed changes
               >
                 <XCircle size={15} /> Cancel Order
               </button>
             )}
-<<<<<<< Updated upstream
+
             {canReturnOrder && (
               <button
                 className="od-btn-return-order"
@@ -582,220 +530,142 @@ function OrderDetails() {
               </button>
             )}
           </div>
-        )}
 
-        {/* Cancellation info */}
-        {order.cancellationReason && (
-          <div className="od-cancel-info">
-            <XCircle size={14} />
-            <span>Cancelled: {order.cancellationReason}</span>
-          </div>
-        )}
-        {order.returnReason && order.returnStatus !== "None" && (
-          <div className="od-return-info">
-            <RotateCcw size={14} />
-            <span>Return reason: {order.returnReason}</span>
-          </div>
-        )}
-=======
-          </div>
->>>>>>> Stashed changes
-
+          {/* Cancellation / Return Notes */}
+          {order.cancellationReason && (
+            <div className="od-cancel-info">
+              <XCircle size={14} />
+              <span>Cancelled: {order.cancellationReason}</span>
+            </div>
+          )}
+          {order.returnReason && order.returnStatus !== "None" && (
+            <div className="od-return-info">
+              <RotateCcw size={14} />
+              <span>Return reason: {order.returnReason}</span>
+            </div>
+          )}
 
           <div className="od-grid">
-
-            {/* ── LEFT COLUMN ── */}
+            {/* Left Column: Items + Address */}
             <div className="od-left">
-
               {/* ITEMS */}
               <div className="od-card">
                 <h2 className="od-card-title">
-                  <Package size={17} /> Items Ordered
+                  <Package size={17} /> Items Ordered ({order.items?.length || 0})
                 </h2>
 
-<<<<<<< Updated upstream
-              <div className="od-items-list">
-                {order.items?.map((item) => {
-                  const iCfg = itemStatusConfig[item.itemStatus] || itemStatusConfig.Active;
-                  const isActive = item.itemStatus === "Active";
-
-                  const canCancelThisItem =
-                    isActive && CANCELLABLE_ORDER_STATUSES.includes(order.orderStatus);
-                  const canReturnThisItem =
-                    isActive &&
-                    RETURNABLE_ORDER_STATUSES.includes(order.orderStatus) &&
-                    item.returnStatus === "None";
-
-                  const itemRetBadge = returnStatusBadge[item.returnStatus];
-
-                  return (
-                    <div
-                      key={item._id}
-                      className={`od-item ${item.itemStatus !== "Active" ? "od-item-inactive" : ""}`}
-                    >
-                      {/* Image */}
-                      {item.productImage ? (
-                        <img
-                          src={
-                            item.productImage.startsWith("http")
-                              ? item.productImage
-                              : `http://localhost:5000${item.productImage}`
-                          }
-                          alt={item.productName}
-=======
                 <div className="od-items-list">
-                  {order.items?.map((item) => (
-                    <div key={item._id} className="od-item">
-                      {/* Image */}
-                      {item.coverImage ? (
-                        <img
-                          src={
-                            item.coverImage.startsWith("http")
-                              ? item.coverImage
-                              : `http://localhost:5000${item.coverImage}`
-                          }
-                          alt={item.name}
->>>>>>> Stashed changes
-                          className="od-item-img"
-                        />
-                      ) : (
-                        <div className="od-item-img-ph">
-                          <Package size={22} />
-                        </div>
-                      )}
+                  {order.items?.map((item) => {
+                    const iCfg = itemStatusConfig[item.itemStatus] || itemStatusConfig.Active;
+                    const isActive = item.itemStatus === "Active";
 
-                      {/* Details */}
-                      <div className="od-item-details">
-                        <div className="od-item-name-row">
-<<<<<<< Updated upstream
-                          <p className="od-item-name">{item.productName}</p>
-                          <span className={`od-item-status-badge ${iCfg.cls}`}>
-                            {iCfg.label}
-                          </span>
-                        </div>
+                    const canCancelThisItem =
+                      isActive && CANCELLABLE_ORDER_STATUSES.includes(order.orderStatus);
+                    const canReturnThisItem =
+                      isActive &&
+                      RETURNABLE_ORDER_STATUSES.includes(order.orderStatus) &&
+                      item.returnStatus === "None";
 
-                        {(item.variant?.size || item.variant?.color) && (
-                          <p className="od-item-variant">
-                            {[item.variant.size, item.variant.color].filter(Boolean).join(" · ")}
-=======
-                          <p className="od-item-name">{item.name}</p>
-                        </div>
+                    const itemRetBadge = returnStatusBadge[item.returnStatus];
+                    const itemImage = item.productImage || item.coverImage;
 
-                        {(item.size || item.color) && (
-                          <p className="od-item-variant">
-                            {[item.size, item.color].filter(Boolean).join(" · ")}
->>>>>>> Stashed changes
-                          </p>
-                        )}
-
-                        <div className="od-item-pricing">
-                          <span className="od-item-unit">
-                            {formatCurrency(item.price)} × {item.quantity}
-                          </span>
-                          <span className="od-item-total">
-<<<<<<< Updated upstream
-                            {formatCurrency(item.itemTotal)}
-                          </span>
-                        </div>
-
-                        {/* Item cancellation / return info */}
-                        {item.cancellationReason && (
-                          <p className="od-item-reason cancelled-reason">
-                            Cancellation reason: {item.cancellationReason}
-                          </p>
-                        )}
-                        {item.returnReason && item.returnStatus !== "None" && (
-                          <p className="od-item-reason return-reason">
-                            Return reason: {item.returnReason}
-                          </p>
-                        )}
-                        {itemRetBadge && (
-                          <span className={`od-return-badge ${itemRetBadge.cls}`}>
-                            <RotateCcw size={11} /> {itemRetBadge.label}
-                          </span>
-                        )}
-
-                        {/* Per-item action buttons */}
-                        {(canCancelThisItem || canReturnThisItem) && (
-                          <div className="od-item-actions">
-                            {canCancelThisItem && (
-                              <button
-                                className="od-item-cancel-btn"
-                                id={`cancel-item-${item._id}`}
-                                onClick={() => setModal({ type: "cancelItem", itemId: item._id, busy: false })}
-                              >
-                                <XCircle size={13} /> Cancel Item
-                              </button>
-                            )}
-                            {canReturnThisItem && (
-                              <button
-                                className="od-item-return-btn"
-                                id={`return-item-${item._id}`}
-                                onClick={() => setModal({ type: "returnItem", itemId: item._id, busy: false })}
-                              >
-                                <RotateCcw size={13} /> Return Item
-                              </button>
-                            )}
+                    return (
+                      <div
+                        key={item._id}
+                        className={`od-item ${item.itemStatus !== "Active" ? "od-item-inactive" : ""}`}
+                      >
+                        {/* Image */}
+                        {itemImage ? (
+                          <img
+                            src={
+                              itemImage.startsWith("http")
+                                ? itemImage
+                                : `http://localhost:5000${itemImage}`
+                            }
+                            alt={item.productName || item.name}
+                            className="od-item-img"
+                          />
+                        ) : (
+                          <div className="od-item-img-ph">
+                            <Package size={22} />
                           </div>
                         )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
 
+                        {/* Details */}
+                        <div className="od-item-details">
+                          <div className="od-item-name-row">
+                            <p className="od-item-name">{item.productName || item.name}</p>
+                            <span className={`od-item-status-badge ${iCfg.cls}`}>
+                              {iCfg.label}
+                            </span>
+                          </div>
 
-            {/* DELIVERY ADDRESS */}
-            <div className="od-card">
-              <h2 className="od-card-title">
-                <MapPin size={17} /> Delivery Address
-              </h2>
+                          {(item.variant?.size || item.variant?.color || item.size || item.color) && (
+                            <p className="od-item-variant">
+                              {[
+                                item.variant?.size || item.size,
+                                item.variant?.color || item.color,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          )}
 
-              <div className="od-address">
-                <p className="od-addr-name">{addr.fullName}</p>
-                <p className="od-addr-phone">{addr.phone}</p>
-                <p className="od-addr-line">
-                  {[addr.house, addr.street].filter(Boolean).join(", ")}
-                </p>
-                <p className="od-addr-line">
-                  {[addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")}
-                </p>
-              </div>
-            </div>
+                          <div className="od-item-pricing">
+                            <span className="od-item-unit">
+                              {formatCurrency(item.price)} × {item.quantity}
+                            </span>
+                            <span className="od-item-total">
+                              {formatCurrency(item.itemTotal || (item.price * item.quantity))}
+                            </span>
+                          </div>
 
-          </div>
+                          {/* Item cancellation / return info */}
+                          {item.cancellationReason && (
+                            <p className="od-item-reason cancelled-reason">
+                              Cancellation reason: {item.cancellationReason}
+                            </p>
+                          )}
+                          {item.returnReason && item.returnStatus !== "None" && (
+                            <p className="od-item-reason return-reason">
+                              Return reason: {item.returnReason}
+                            </p>
+                          )}
+                          {itemRetBadge && (
+                            <span className={`od-return-badge ${itemRetBadge.cls}`}>
+                              <RotateCcw size={11} /> {itemRetBadge.label}
+                            </span>
+                          )}
 
-
-          {/* ── RIGHT COLUMN ── */}
-          <div className="od-right">
-
-            {/* PAYMENT */}
-            <div className="od-card">
-              <h2 className="od-card-title">
-                <CreditCard size={17} /> Payment
-              </h2>
-
-              <div className="od-payment-info">
-                <div className="od-pay-row">
-                  <span>Method</span>
-                  <span>{order.paymentMethod}</span>
-                </div>
-                <div className="od-pay-row">
-                  <span>Status</span>
-                  <span className={`od-pay-badge ${paymentCfg.cls}`}>
-                    {paymentCfg.label}
-                  </span>
-=======
-                            {formatCurrency(item.lineTotal)}
-                          </span>
+                          {/* Per-item action buttons */}
+                          {(canCancelThisItem || canReturnThisItem) && (
+                            <div className="od-item-actions">
+                              {canCancelThisItem && (
+                                <button
+                                  className="od-item-cancel-btn"
+                                  id={`cancel-item-${item._id}`}
+                                  onClick={() => setModal({ type: "cancelItem", itemId: item._id, busy: false })}
+                                >
+                                  <XCircle size={13} /> Cancel Item
+                                </button>
+                              )}
+                              {canReturnThisItem && (
+                                <button
+                                  className="od-item-return-btn"
+                                  id={`return-item-${item._id}`}
+                                  onClick={() => setModal({ type: "returnItem", itemId: item._id, busy: false })}
+                                >
+                                  <RotateCcw size={13} /> Return Item
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
-
 
               {/* DELIVERY ADDRESS */}
               <div className="od-card">
@@ -814,113 +684,75 @@ function OrderDetails() {
                   </p>
                 </div>
               </div>
-
             </div>
 
-
-            {/* ── RIGHT COLUMN ── */}
+            {/* Right Column: Payment + Summary */}
             <div className="od-right">
-
               {/* PAYMENT */}
               <div className="od-card">
                 <h2 className="od-card-title">
-                  <CreditCard size={17} /> Payment
+                  <CreditCard size={17} /> Payment Information
                 </h2>
 
                 <div className="od-payment-info">
                   <div className="od-pay-row">
-                    <span>Method</span>
-                    <span>{order.paymentMethod}</span>
+                    <span>Payment Method</span>
+                    <strong style={{ letterSpacing: "1px" }}>{order.paymentMethod}</strong>
                   </div>
                   <div className="od-pay-row">
-                    <span>Status</span>
+                    <span>Payment Status</span>
                     <span className={`od-pay-badge ${paymentCfg.cls}`}>
                       {paymentCfg.label}
                     </span>
                   </div>
->>>>>>> Stashed changes
                 </div>
               </div>
-
 
               {/* PRICING SUMMARY */}
               <div className="od-card od-pricing-card">
-                <h2 className="od-card-title">Order Summary</h2>
+                <h2 className="od-card-title">Order Valuation</h2>
 
-<<<<<<< Updated upstream
-              <div className="od-pricing">
-                <div className="od-price-row">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(order.subtotal)}</span>
-                </div>
-
-                {order.discount > 0 && (
-                  <div className="od-price-row discount">
-                    <span>Discount</span>
-                    <span>−{formatCurrency(order.discount)}</span>
-=======
                 <div className="od-pricing">
                   <div className="od-price-row">
                     <span>Subtotal</span>
-                    <span>{formatCurrency(pricing.subtotal)}</span>
->>>>>>> Stashed changes
+                    <span>{formatCurrency(order.subtotal || order.totalAmount)}</span>
                   </div>
 
-<<<<<<< Updated upstream
-                <div className="od-price-row">
-                  <span>Shipping</span>
-                  <span>
-                    {order.shippingCharge > 0
-                      ? formatCurrency(order.shippingCharge)
-                      : "FREE"}
-                  </span>
-                </div>
-=======
-                  {pricing.packagingFee > 0 && (
-                    <div className="od-price-row">
-                      <span>Packaging</span>
-                      <span>{formatCurrency(pricing.packagingFee)}</span>
+                  {order.discount > 0 && (
+                    <div className="od-price-row discount">
+                      <span>Privilege Discount</span>
+                      <span>−{formatCurrency(order.discount)}</span>
                     </div>
                   )}
->>>>>>> Stashed changes
 
                   <div className="od-price-row">
-                    <span>Shipping</span>
+                    <span>White-Glove Shipping</span>
                     <span>
-                      {pricing.shippingFee > 0
-                        ? formatCurrency(pricing.shippingFee)
-                        : "FREE"}
+                      {order.shippingCharge > 0
+                        ? formatCurrency(order.shippingCharge)
+                        : "COMPLIMENTARY"}
                     </span>
                   </div>
 
-<<<<<<< Updated upstream
-                <div className="od-price-row total">
-                  <span>Total</span>
-                  <span>{formatCurrency(order.totalAmount)}</span>
-=======
                   <div className="od-price-divider" />
 
                   <div className="od-price-row total">
-                    <span>Total</span>
-                    <span>{formatCurrency(pricing.total)}</span>
+                    <span>Total Amount</span>
+                    <span>{formatCurrency(order.totalAmount)}</span>
                   </div>
->>>>>>> Stashed changes
                 </div>
+
+                {/* BACK BUTTON */}
+                <button
+                  className="od-back-full"
+                  onClick={() => navigate("/orders")}
+                  id="back-to-orders-bottom"
+                >
+                  ← BACK TO MY ORDERS
+                </button>
               </div>
-
-
-              {/* BACK BUTTON */}
-              <button
-                className="od-back-full"
-                onClick={() => navigate("/orders")}
-                id="back-to-orders-bottom"
-              >
-                ← BACK TO MY ORDERS
-              </button>
-
             </div>
           </div>
-
         </main>
       </div>
     </div>

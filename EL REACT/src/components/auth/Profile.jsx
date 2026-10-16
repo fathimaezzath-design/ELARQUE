@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { getProfile } from "../../services/authService";
+import Navbar from "../common/Navbar";
 
 function Profile() {
   const navigate = useNavigate();
@@ -260,58 +261,9 @@ function Profile() {
     <div className="profile-page">
 
       {/* =====================================================
-          HEADER
+          NAVBAR
       ===================================================== */}
-
-      <header className="profile-header">
-
-        <div
-          className="profile-logo"
-          onClick={() => navigate("/")}
-        >
-          ELARQUE
-        </div>
-
-        <nav className="profile-nav">
-
-          <span onClick={() => navigate("/")}>
-            MAIN
-          </span>
-
-          <span>
-            COLLECTIONS
-          </span>
-
-          <span>
-            BEST SELLERS
-          </span>
-
-          <span>
-            CATEGORIES
-          </span>
-
-          <span>
-            NEW ARRIVALS
-          </span>
-
-        </nav>
-
-        <div className="profile-header-icons">
-
-          <Heart size={19} />
-
-          <Wallet size={19} />
-
-          <div
-            className="header-user"
-            onClick={() => navigate("/profile")}
-          >
-            <User size={17} />
-          </div>
-
-        </div>
-
-      </header>
+      <Navbar />
 
 
       {/* =====================================================

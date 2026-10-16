@@ -326,6 +326,8 @@ const ProductManagement = () => {
       }
 
       setProductToDelete(null);
+      localStorage.setItem("elarque_last_update", Date.now().toString());
+      window.dispatchEvent(new CustomEvent("elarque:data-updated"));
       fetchProducts();
     } catch (err) {
       console.error("Delete product error:", err);
@@ -350,6 +352,8 @@ const ProductManagement = () => {
         );
       }
       showToast(`Updated status for ${selectedIds.length} products.`);
+      localStorage.setItem("elarque_last_update", Date.now().toString());
+      window.dispatchEvent(new CustomEvent("elarque:data-updated"));
       fetchProducts();
     } catch (err) {
       console.error("Batch status error:", err);

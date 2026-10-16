@@ -4,6 +4,7 @@ const router = express.Router();
 const protect = require("../middlewares/authMiddleware");
 
 const {
+  createOrder,
   getMyOrders,
   getOrderDetails,
   cancelOrder,
@@ -11,6 +12,9 @@ const {
   requestOrderReturn,
   requestItemReturn,
 } = require("../controllers/orderController");
+
+// Create a new order
+router.post("/", protect, createOrder);
 
 // Get all orders for the authenticated user
 router.get("/", protect, getMyOrders);

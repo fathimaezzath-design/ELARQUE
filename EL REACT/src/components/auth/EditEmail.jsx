@@ -3,15 +3,29 @@ import { useNavigate } from "react-router-dom";
 import {
   Mail,
   LockKeyhole,
+  Lock,
   ArrowRight,
 } from "lucide-react";
 
 import { sendEmailChangeOTP } from "../../services/authService";
+import Navbar from "../common/Navbar";
 
 function EditEmail() {
   const navigate = useNavigate();
 
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const isGoogleUser = Boolean(
+    storedUser.isGoogleUser || storedUser.authProvider === "google"
+  );
+
   const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -35,15 +49,20 @@ function EditEmail() {
       return;
     }
 
+    if (!isGoogleUser && !currentPassword) {
+      setError("Please enter your current password to verify your identity.");
+      return;
+    }
+
     try {
       setLoading(true);
 
       const response =
-        await sendEmailChangeOTP(normalizedEmail);
+        await sendEmailChangeOTP(normalizedEmail, currentPassword);
 
       navigate("/verify-email", {
         state: {
-          email: response.data.email,
+          email: response.data?.email || normalizedEmail,
         },
       });
     } catch (error) {
@@ -64,58 +83,7 @@ function EditEmail() {
   return (
     <>
       <div className="edit-email-page">
-
-        {/* TOP STRIP */}
-        <div className="top-strip"></div>
-
-        {/* NAVBAR */}
-        <header className="edit-navbar">
-
-          <div className="logo">
-            ELARQUE
-          </div>
-
-          <nav className="nav-links">
-
-            <span>MAIN</span>
-
-            <span>COLLECTIONS</span>
-
-            <span className="two-line">
-              BEST
-              <br />
-              SELLERS
-            </span>
-
-            <span>CATEGORIES</span>
-
-            <span className="two-line">
-              NEW
-              <br />
-              ARRIVALS
-            </span>
-
-          </nav>
-
-          <div className="nav-icons">
-
-            <div className="nav-heart">
-              ♡
-              <small>2</small>
-            </div>
-
-            <div className="nav-bag">
-              ♧
-              <small>1</small>
-            </div>
-
-            <div className="profile-icon">
-              ♙
-            </div>
-
-          </div>
-
-        </header>
+        <Navbar />
 
         {/* MAIN */}
         <main className="edit-main">
@@ -152,11 +120,9 @@ function EditEmail() {
 
             {/* DESCRIPTION */}
             <p className="edit-description">
-              Enter your new email address.
+              Enter your new email address and verify with your current password.
               <br />
-              We will send a confidential
-              verification code to confirm
-              the change.
+              We will send a confidential verification code to confirm the change.
             </p>
 
             {/* FORM */}
@@ -184,13 +150,39 @@ function EditEmail() {
 
                 </div>
 
-                {error && (
-                  <p className="email-error">
-                    {error}
-                  </p>
-                )}
-
               </div>
+
+              {!isGoogleUser && (
+                <div className="email-input-section" style={{ marginTop: "16px" }}>
+
+                  <label>
+                    CURRENT PASSWORD
+                  </label>
+
+                  <div className="email-input-box">
+
+                    <Lock size={19} />
+
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      placeholder="Enter your current password"
+                      onChange={(e) => {
+                        setCurrentPassword(e.target.value);
+                        setError("");
+                      }}
+                    />
+
+                  </div>
+
+                </div>
+              )}
+
+              {error && (
+                <p className="email-error" style={{ marginTop: "12px" }}>
+                  {error}
+                </p>
+              )}
 
               {/* SEND BUTTON */}
               <button

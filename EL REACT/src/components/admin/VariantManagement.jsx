@@ -264,6 +264,8 @@ const VariantManagement = () => {
         showNotice(
           `Variant "${deletedColor} (${deletedSize})" of "${prodName}" deleted successfully.`
         );
+        localStorage.setItem("elarque_last_update", Date.now().toString());
+        window.dispatchEvent(new CustomEvent("elarque:data-updated"));
 
         // Requirement 7: If the deleted row was the only row on the current page, move to valid page
         if (variants.length === 1 && currentPage > 1) {

@@ -14,6 +14,18 @@ const authHeader = () => {
 };
 
 /* =========================
+   CREATE ORDER
+========================= */
+
+export const createOrder = (addressId, paymentMethod = "COD") => {
+  return API.post(
+    "/",
+    { addressId, paymentMethod },
+    { headers: authHeader() }
+  );
+};
+
+/* =========================
    GET MY ORDERS
 ========================= */
 

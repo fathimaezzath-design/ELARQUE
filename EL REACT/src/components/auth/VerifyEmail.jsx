@@ -20,6 +20,7 @@ import {
   verifyEmailChangeOTP,
   sendEmailChangeOTP,
 } from "../../services/authService";
+import Navbar from "../common/Navbar";
 
 function VerifyEmail() {
   const navigate = useNavigate();
@@ -213,58 +214,7 @@ function VerifyEmail() {
   return (
     <>
       <div className="verify-email-page">
-
-        {/* TOP STRIP */}
-        <div className="top-strip"></div>
-
-        {/* NAVBAR */}
-        <header className="verify-navbar">
-
-          <div className="logo">
-            ELARQUE
-          </div>
-
-          <nav className="nav-links">
-
-            <span>MAIN</span>
-
-            <span>COLLECTIONS</span>
-
-            <span className="two-line">
-              BEST
-              <br />
-              SELLERS
-            </span>
-
-            <span>CATEGORIES</span>
-
-            <span className="two-line">
-              NEW
-              <br />
-              ARRIVALS
-            </span>
-
-          </nav>
-
-          <div className="nav-icons">
-
-            <div className="nav-heart">
-              ♡
-              <small>2</small>
-            </div>
-
-            <div className="nav-bag">
-              ♧
-              <small>1</small>
-            </div>
-
-            <div className="profile-icon">
-              ♙
-            </div>
-
-          </div>
-
-        </header>
+        <Navbar />
 
         {/* MAIN */}
         <main className="verify-main">

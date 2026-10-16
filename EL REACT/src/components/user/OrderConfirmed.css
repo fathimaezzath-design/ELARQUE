@@ -1,0 +1,429 @@
+/* =====================================================================
+   OrderConfirmed.css — ELARQUE Order Confirmation Page
+   Luxury fashion aesthetic: cream bg, deep burgundy, warm serif headings
+   ===================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap");
+
+/* ── Root Layout ── */
+.el-oc-root {
+  min-height: 100vh;
+  background: #faf6f1;
+  display: flex;
+  flex-direction: column;
+  font-family: "Inter", sans-serif;
+}
+
+.el-oc-main {
+  flex: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+  width: 100%;
+}
+
+/* ── Hero: Confirmation Header ── */
+.el-oc-hero {
+  text-align: center;
+  padding: 56px 24px 48px;
+  border-bottom: 1px solid #e8dfd5;
+  margin-bottom: 48px;
+}
+
+.el-oc-hero-icon-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4a0f19 0%, #7a1a2a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  box-shadow: 0 8px 24px rgba(74, 15, 25, 0.25);
+}
+
+.el-oc-check-icon {
+  color: #faf6f1;
+}
+
+.el-oc-hero-text {
+  margin-bottom: 28px;
+}
+
+.el-oc-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: #4a0f19;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.el-oc-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 500;
+  color: #1a0a0e;
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+
+.el-oc-subtitle {
+  font-size: 0.93rem;
+  color: #6b5a4e;
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.el-oc-order-ref {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid #e8dfd5;
+  border-radius: 12px;
+  padding: 16px 28px;
+  box-shadow: 0 2px 8px rgba(74, 15, 25, 0.06);
+}
+
+.el-oc-ref-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #9a8070;
+  text-transform: uppercase;
+}
+
+.el-oc-ref-value {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #4a0f19;
+  letter-spacing: 0.05em;
+}
+
+.el-oc-ref-date {
+  font-size: 0.75rem;
+  color: #9a8070;
+}
+
+/* ── Body: Two-column layout ── */
+.el-oc-body {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 28px;
+  align-items: start;
+}
+
+/* ── Card ── */
+.el-oc-card {
+  background: #fff;
+  border: 1px solid #e8dfd5;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(74, 15, 25, 0.05);
+  margin-bottom: 20px;
+}
+
+.el-oc-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f0eae1;
+}
+
+.el-oc-card-icon {
+  color: #4a0f19;
+  flex-shrink: 0;
+}
+
+.el-oc-card-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1a0a0e;
+  margin: 0;
+}
+
+/* ── Items List ── */
+.el-oc-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.el-oc-item-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.el-oc-item-img-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+}
+
+.el-oc-item-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #e8dfd5;
+}
+
+.el-oc-item-img-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: #f5ede6;
+  border: 1px solid #e8dfd5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9a8070;
+}
+
+.el-oc-item-qty-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4a0f19;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-oc-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.el-oc-item-name {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #1a0a0e;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.el-oc-item-meta {
+  font-size: 0.78rem;
+  color: #9a8070;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.el-oc-meta-sep {
+  color: #c8b8a8;
+}
+
+.el-oc-item-price {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #1a0a0e;
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* ── Address Block ── */
+.el-oc-address-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.el-oc-addr-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1a0a0e;
+  margin: 0;
+}
+
+.el-oc-addr-line {
+  font-size: 0.85rem;
+  color: #6b5a4e;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Pricing ── */
+.el-oc-pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.el-oc-price-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: #6b5a4e;
+}
+
+.el-oc-price-row span:last-child {
+  font-weight: 500;
+  color: #1a0a0e;
+}
+
+.el-oc-free {
+  color: #2a7a3a !important;
+}
+
+.el-oc-price-divider {
+  height: 1px;
+  background: #e8dfd5;
+  margin: 4px 0;
+}
+
+.el-oc-price-total {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a0a0e !important;
+}
+
+.el-oc-price-total span:first-child {
+  font-weight: 600;
+  color: #1a0a0e;
+}
+
+.el-oc-price-total span:last-child {
+  color: #4a0f19;
+}
+
+/* ── Payment + Status ── */
+.el-oc-payment-row,
+.el-oc-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid #f0eae1;
+  margin-top: 4px;
+}
+
+.el-oc-payment-label,
+.el-oc-status-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9a8070;
+}
+
+.el-oc-payment-value {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #1a0a0e;
+}
+
+.el-oc-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.el-oc-status-placed {
+  background: #f0f7ff;
+  color: #1a5a9a;
+  border: 1px solid #c0d8f0;
+}
+
+.el-oc-status-processing {
+  background: #fff8e6;
+  color: #8a5a00;
+  border: 1px solid #e8d0a0;
+}
+
+.el-oc-status-shipped {
+  background: #f0f7e6;
+  color: #2a6a10;
+  border: 1px solid #b0d890;
+}
+
+.el-oc-status-delivered {
+  background: #e8f5e8;
+  color: #1a5a1a;
+  border: 1px solid #90c890;
+}
+
+.el-oc-status-cancelled {
+  background: #fdf0f0;
+  color: #8a1a1a;
+  border: 1px solid #e8b0b0;
+}
+
+/* ── CTA Actions ── */
+.el-oc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.el-oc-btn-continue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #4a0f19 0%, #7a1a2a 100%);
+  color: #faf6f1;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-align: center;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.el-oc-btn-continue:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.el-oc-assurance {
+  font-size: 0.76rem;
+  color: #9a8070;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .el-oc-main {
+    padding: 32px 16px 60px;
+  }
+
+  .el-oc-body {
+    grid-template-columns: 1fr;
+  }
+
+  .el-oc-hero {
+    padding: 36px 16px 36px;
+  }
+}

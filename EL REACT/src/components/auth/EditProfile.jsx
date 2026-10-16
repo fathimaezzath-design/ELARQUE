@@ -13,6 +13,9 @@ import {
   Camera,
   ArrowLeft,
   Save,
+  CheckCircle2,
+  X,
+  ShieldCheck,
 } from "lucide-react";
 
 import {
@@ -20,7 +23,10 @@ import {
   updateProfile,
   updateProfileImage,
   changePassword,
+  sendEmailChangeOTP,
+  verifyEmailChangeOTP,
 } from "../../services/profileService";
+import Navbar from "../common/Navbar";
 
 
 const EditProfile = () => {
@@ -74,6 +80,136 @@ const EditProfile = () => {
 
   const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
+
+  /* =========================
+     CHANGE EMAIL MODAL STATE
+  ========================= */
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailStep, setEmailStep] = useState(1); // 1 = details, 2 = otp
+  const [newEmailInput, setNewEmailInput] = useState("");
+  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+  const [showCurrentPasswordModal, setShowCurrentPasswordModal] = useState(false);
+  const [emailOtpInput, setEmailOtpInput] = useState("");
+  const [emailModalError, setEmailModalError] = useState("");
+  const [emailModalNotice, setEmailModalNotice] = useState("");
+  const [emailModalLoading, setEmailModalLoading] = useState(false);
+  const [emailTimer, setEmailTimer] = useState(60);
+
+  useEffect(() => {
+    if (emailStep !== 2 || emailTimer <= 0) return;
+    const interval = setInterval(() => setEmailTimer((t) => t - 1), 1000);
+    return () => clearInterval(interval);
+  }, [emailStep, emailTimer]);
+
+  const handleOpenEmailModal = () => {
+    setEmailModalOpen(true);
+    setEmailStep(1);
+    setNewEmailInput("");
+    setCurrentPasswordInput("");
+    setEmailOtpInput("");
+    setEmailModalError("");
+    setEmailModalNotice("");
+  };
+
+  const handleCloseEmailModal = () => {
+    if (emailModalLoading) return;
+    setEmailModalOpen(false);
+    setEmailModalError("");
+    setEmailModalNotice("");
+  };
+
+  const handleSendEmailOTP = async (e) => {
+    e.preventDefault();
+    setEmailModalError("");
+    setEmailModalNotice("");
+
+    const norm = newEmailInput.trim().toLowerCase();
+    if (!norm) {
+      setEmailModalError("Please enter your new email address.");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(norm)) {
+      setEmailModalError("Please enter a valid email address.");
+      return;
+    }
+    if (formData.email && norm === formData.email.toLowerCase()) {
+      setEmailModalError("This is already your current email address.");
+      return;
+    }
+    if (!currentPasswordInput) {
+      setEmailModalError("Current account password is required.");
+      return;
+    }
+
+    try {
+      setEmailModalLoading(true);
+      const res = await sendEmailChangeOTP(norm, currentPasswordInput);
+      setEmailStep(2);
+      setEmailTimer(60);
+      setEmailModalNotice(res?.data?.message || `Verification code sent to ${norm}`);
+    } catch (err) {
+      console.error("SEND EMAIL OTP ERROR:", err);
+      setEmailModalError(
+        err.response?.data?.message || "Failed to send verification code. Please check your password."
+      );
+    } finally {
+      setEmailModalLoading(false);
+    }
+  };
+
+  const handleVerifyEmailOTP = async (e) => {
+    e.preventDefault();
+    setEmailModalError("");
+    setEmailModalNotice("");
+
+    const code = emailOtpInput.trim();
+    if (code.length !== 6) {
+      setEmailModalError("Please enter the complete 6-digit verification code.");
+      return;
+    }
+
+    try {
+      setEmailModalLoading(true);
+      const res = await verifyEmailChangeOTP(code);
+      const updatedEmail = res?.data?.email || newEmailInput.trim().toLowerCase();
+      setFormData((prev) => ({ ...prev, email: updatedEmail }));
+
+      try {
+        const cached = JSON.parse(localStorage.getItem("user") || "{}");
+        cached.email = updatedEmail;
+        localStorage.setItem("user", JSON.stringify(cached));
+      } catch (err) {
+        // ignore
+      }
+
+      alert("Email address updated successfully!");
+      setEmailModalOpen(false);
+    } catch (err) {
+      console.error("VERIFY EMAIL OTP ERROR:", err);
+      setEmailModalError(
+        err.response?.data?.message || "Invalid or expired verification code."
+      );
+    } finally {
+      setEmailModalLoading(false);
+    }
+  };
+
+  const handleResendEmailOTP = async () => {
+    if (emailTimer > 0 || emailModalLoading) return;
+    setEmailModalError("");
+    setEmailModalNotice("");
+    try {
+      setEmailModalLoading(true);
+      const res = await sendEmailChangeOTP(newEmailInput.trim().toLowerCase(), currentPasswordInput);
+      setEmailTimer(60);
+      setEmailModalNotice(res?.data?.message || "Verification code resent.");
+    } catch (err) {
+      setEmailModalError(err.response?.data?.message || "Failed to resend code.");
+    } finally {
+      setEmailModalLoading(false);
+    }
+  };
 
 
   /* =========================
@@ -241,17 +377,6 @@ const EditProfile = () => {
       }
     }
 
-    if (formData.address.pincode.trim()) {
-      if (
-        !/^[0-9]{6}$/.test(
-          formData.address.pincode
-        )
-      ) {
-        newErrors.pincode =
-          "Enter a valid 6 digit pincode";
-      }
-    }
-
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
@@ -285,20 +410,6 @@ const EditProfile = () => {
           formData.dateOfBirth || null,
 
         gender: formData.gender || "",
-
-        address: {
-          street:
-            formData.address.street.trim(),
-
-          city:
-            formData.address.city.trim(),
-
-          state:
-            formData.address.state.trim(),
-
-          pincode:
-            formData.address.pincode.trim(),
-        },
       };
 
       const response =
@@ -490,6 +601,10 @@ const EditProfile = () => {
       <style>{styles}</style>
 
       <div className="edit-profile-page">
+        {/* =========================
+            CONSISTENT CUSTOMER NAVBAR
+        ========================= */}
+        <Navbar />
 
         {/* =========================
             HEADER
@@ -655,9 +770,19 @@ const EditProfile = () => {
 
               <div className="form-group">
 
-                <label>
-                  Email Address
-                </label>
+                <div className="email-header-row">
+                  <label>
+                    Email Address
+                  </label>
+
+                  <button
+                    type="button"
+                    className="change-email-pill"
+                    onClick={handleOpenEmailModal}
+                  >
+                    Change Email
+                  </button>
+                </div>
 
                 <div className="input-wrapper disabled-input">
 
@@ -674,8 +799,7 @@ const EditProfile = () => {
                 </div>
 
                 <small className="field-note">
-                  Email address cannot be
-                  changed here.
+                  To change your registered email, click Change Email (requires current password &amp; OTP).
                 </small>
 
               </div>
@@ -800,164 +924,7 @@ const EditProfile = () => {
           </div>
 
 
-          {/* =========================
-              ADDRESS
-          ========================= */}
 
-          <div className="profile-section">
-
-            <div className="section-heading">
-
-              <MapPin size={20} />
-
-              <div>
-
-                <h2>
-                  Address
-                </h2>
-
-                <p>
-                  Add your current address details
-                </p>
-
-              </div>
-
-            </div>
-
-
-            <div className="form-grid">
-
-              {/* STREET */}
-
-              <div className="form-group full-width">
-
-                <label>
-                  Street Address
-                </label>
-
-                <div className="input-wrapper">
-
-                  <MapPin size={18} />
-
-                  <input
-                    type="text"
-                    name="street"
-                    value={
-                      formData.address.street
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter your street address"
-                  />
-
-                </div>
-
-              </div>
-
-
-              {/* CITY */}
-
-              <div className="form-group">
-
-                <label>
-                  City
-                </label>
-
-                <div className="input-wrapper">
-
-                  <MapPin size={18} />
-
-                  <input
-                    type="text"
-                    name="city"
-                    value={
-                      formData.address.city
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter city"
-                  />
-
-                </div>
-
-              </div>
-
-
-              {/* STATE */}
-
-              <div className="form-group">
-
-                <label>
-                  State
-                </label>
-
-                <div className="input-wrapper">
-
-                  <MapPin size={18} />
-
-                  <input
-                    type="text"
-                    name="state"
-                    value={
-                      formData.address.state
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter state"
-                  />
-
-                </div>
-
-              </div>
-
-
-              {/* PINCODE */}
-
-              <div className="form-group">
-
-                <label>
-                  Pincode
-                </label>
-
-                <div
-                  className={`input-wrapper ${
-                    errors.pincode
-                      ? "input-error"
-                      : ""
-                  }`}
-                >
-
-                  <MapPin size={18} />
-
-                  <input
-                    type="text"
-                    name="pincode"
-                    value={
-                      formData.address.pincode
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter pincode"
-                    maxLength={6}
-                  />
-
-                </div>
-
-                {errors.pincode && (
-                  <span className="error-text">
-                    {errors.pincode}
-                  </span>
-                )}
-
-              </div>
-
-            </div>
-
-          </div>
 
 
           {/* =========================
@@ -1251,6 +1218,170 @@ const EditProfile = () => {
 
         </form>
 
+        {/* =========================
+            EMAIL CHANGE MODAL
+        ========================= */}
+        {emailModalOpen && (
+          <div className="email-modal-backdrop" onClick={handleCloseEmailModal}>
+            <div className="email-modal-card" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="email-modal-close"
+                onClick={handleCloseEmailModal}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="email-modal-icon-wrap">
+                <Mail size={24} />
+              </div>
+
+              <p className="email-modal-eyebrow">SECURITY PRIVILEGE</p>
+
+              {emailStep === 1 ? (
+                <>
+                  <h2 className="email-modal-title">Change Account Email</h2>
+                  <p className="email-modal-desc">
+                    To protect your account, enter your new email and verify your current password.
+                  </p>
+
+                  {emailModalError && (
+                    <div className="email-modal-err">{emailModalError}</div>
+                  )}
+
+                  <form onSubmit={handleSendEmailOTP}>
+                    <div className="email-modal-field">
+                      <label>NEW EMAIL ADDRESS</label>
+                      <div className="email-modal-input-box">
+                        <Mail size={17} />
+                        <input
+                          type="email"
+                          value={newEmailInput}
+                          onChange={(e) => {
+                            setNewEmailInput(e.target.value);
+                            setEmailModalError("");
+                          }}
+                          placeholder="Enter your new email"
+                          autoFocus
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="email-modal-field">
+                      <label>CURRENT ACCOUNT PASSWORD</label>
+                      <div className="email-modal-input-box">
+                        <Lock size={17} />
+                        <input
+                          type={showCurrentPasswordModal ? "text" : "password"}
+                          value={currentPasswordInput}
+                          onChange={(e) => {
+                            setCurrentPasswordInput(e.target.value);
+                            setEmailModalError("");
+                          }}
+                          placeholder="Enter your current password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="modal-eye-btn"
+                          onClick={() => setShowCurrentPasswordModal(!showCurrentPasswordModal)}
+                        >
+                          {showCurrentPasswordModal ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="email-modal-submit-btn"
+                      disabled={emailModalLoading}
+                    >
+                      {emailModalLoading ? "SENDING VERIFICATION CODE…" : "SEND VERIFICATION CODE"}
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <h2 className="email-modal-title">Verify New Email</h2>
+                  <p className="email-modal-desc">
+                    Enter the 6-digit confidential code sent to{" "}
+                    <strong>{newEmailInput}</strong>.
+                  </p>
+
+                  {emailModalNotice && (
+                    <div className="email-modal-notice">{emailModalNotice}</div>
+                  )}
+                  {emailModalError && (
+                    <div className="email-modal-err">{emailModalError}</div>
+                  )}
+
+                  <form onSubmit={handleVerifyEmailOTP}>
+                    <div className="email-modal-field">
+                      <label>6-DIGIT VERIFICATION CODE</label>
+                      <div className="email-modal-input-box">
+                        <ShieldCheck size={17} />
+                        <input
+                          type="text"
+                          maxLength={6}
+                          value={emailOtpInput}
+                          onChange={(e) => {
+                            setEmailOtpInput(e.target.value.replace(/\D/g, ""));
+                            setEmailModalError("");
+                          }}
+                          placeholder="000000"
+                          style={{
+                            letterSpacing: "6px",
+                            fontSize: "18px",
+                            fontWeight: "bold",
+                            textAlign: "center",
+                          }}
+                          autoFocus
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="email-modal-submit-btn"
+                      disabled={emailModalLoading}
+                    >
+                      {emailModalLoading ? "VERIFYING…" : "VERIFY & UPDATE EMAIL"}
+                    </button>
+
+                    <div
+                      style={{
+                        marginTop: "16px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="email-modal-link-btn"
+                        onClick={() => setEmailStep(1)}
+                      >
+                        ← Back to edit email
+                      </button>
+                      <button
+                        type="button"
+                        className="email-modal-link-btn"
+                        onClick={handleResendEmailOTP}
+                        disabled={emailTimer > 0 || emailModalLoading}
+                      >
+                        {emailTimer > 0 ? `Resend code in ${emailTimer}s` : "Resend code"}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
     </>
   );
@@ -1262,6 +1393,194 @@ const EditProfile = () => {
 ========================================================= */
 
 const styles = `
+  .email-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .change-email-pill {
+    background: #650d20;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 3px 12px;
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .change-email-pill:hover {
+    background: #4a0910;
+  }
+  .email-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(30, 8, 14, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .email-modal-card {
+    background: #fffdfb;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 480px;
+    padding: 36px 32px 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    position: relative;
+    text-align: center;
+    border: 1px solid #ebdcd5;
+  }
+  .email-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: #f7f0ea;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #650d20;
+  }
+  .email-modal-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #650d20;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .email-modal-eyebrow {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: #8c6820;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  .email-modal-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 30px;
+    color: #4a0f19;
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+  .email-modal-desc {
+    font-size: 13px;
+    color: #6d5b58;
+    line-height: 1.5;
+    margin: 0 0 22px;
+  }
+  .email-modal-field {
+    text-align: left;
+    margin-bottom: 18px;
+  }
+  .email-modal-field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    font-weight: 600;
+    color: #7d6b67;
+    margin-bottom: 6px;
+  }
+  .email-modal-input-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #d8ccc7;
+    border-radius: 12px;
+    padding: 0 14px;
+    height: 48px;
+    transition: border-color 0.2s;
+  }
+  .email-modal-input-box:focus-within {
+    border-color: #650d20;
+    box-shadow: 0 0 0 2px rgba(101, 13, 32, 0.1);
+  }
+  .email-modal-input-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: #2c1810;
+  }
+  .modal-eye-btn {
+    background: none;
+    border: none;
+    color: #7d6b67;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  .email-modal-err {
+    background: #fdeeed;
+    color: #c0392b;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .email-modal-notice {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .email-modal-submit-btn {
+    width: 100%;
+    height: 46px;
+    background: #650d20;
+    color: #fff;
+    border: none;
+    border-radius: 23px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 6px;
+  }
+  .email-modal-submit-btn:hover {
+    background: #4a0910;
+  }
+  .email-modal-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .email-modal-link-btn {
+    background: none;
+    border: none;
+    font-size: 12px;
+    color: #650d20;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+  }
+  .email-modal-link-btn:disabled {
+    color: #a0908c;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
   .edit-profile-page {
     min-height: 100vh;
     background: #faf6f1;

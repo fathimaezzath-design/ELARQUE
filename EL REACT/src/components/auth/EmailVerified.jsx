@@ -1,6 +1,7 @@
 import React from "react";
 import { Mail, ArrowRight, LockKeyhole } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Navbar from "../common/Navbar";
 
 function EmailVerified() {
   const navigate = useNavigate();
@@ -562,75 +563,7 @@ function EmailVerified() {
       `}</style>
 
       <div className="verified-page">
-
-        {/* TOP BAR */}
-        <div className="top-bar"></div>
-
-        {/* NAVBAR */}
-        <header className="verified-navbar">
-          <div className="navbar-inner">
-
-            <div className="brand">
-              ELARQUE
-            </div>
-
-            <nav className="nav-links">
-              <a href="/" className="nav-link">
-                MAIN
-              </a>
-
-              <a href="#" className="nav-link">
-                COLLECTIONS
-              </a>
-
-              <a href="#" className="nav-link">
-                BEST
-                <br />
-                SELLERS
-              </a>
-
-              <a href="#" className="nav-link">
-                CATEGORIES
-              </a>
-
-              <a href="#" className="nav-link">
-                NEW
-                <br />
-                ARRIVALS
-              </a>
-            </nav>
-
-            <div className="nav-icons">
-
-              <div className="nav-icon">
-                <span style={{ fontSize: "22px" }}>
-                  ♡
-                </span>
-
-                <span className="badge">
-                  2
-                </span>
-              </div>
-
-              <div className="nav-icon">
-                <span style={{ fontSize: "20px" }}>
-                  ♧
-                </span>
-
-                <span className="badge">
-                  1
-                </span>
-              </div>
-
-              <div className="profile-icon">
-                <span style={{ fontSize: "17px" }}>
-                  ♙
-                </span>
-              </div>
-
-            </div>
-          </div>
-        </header>
+        <Navbar />
 
         {/* MAIN */}
         <main className="verified-content">

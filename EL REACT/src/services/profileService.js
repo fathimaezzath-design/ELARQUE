@@ -64,11 +64,12 @@ export const changePassword = (data) => {
    EMAIL CHANGE
 ========================= */
 
-export const sendEmailChangeOTP = (newEmail) => {
+export const sendEmailChangeOTP = (newEmail, currentPassword = "") => {
   return API.post(
     "/email/send-otp",
     {
       newEmail,
+      currentPassword,
     },
     {
       headers: authHeader(),
