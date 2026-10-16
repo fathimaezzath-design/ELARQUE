@@ -14,6 +14,7 @@ import {
   Edit3,
   Copy,
   ShieldCheck,
+  ShoppingBag,
 } from "lucide-react";
 
 import { getProfile } from "../../services/authService";
@@ -385,6 +386,19 @@ function Profile() {
                 <span className="menu-arrow">
                   →
                 </span>
+              </button>
+
+
+              <button
+                className="sidebar-item"
+                onClick={() => navigate("/orders")}
+              >
+                <ShoppingBag size={17} />
+
+                <span>
+                  MY ORDERS
+                </span>
+
               </button>
 
 

@@ -76,9 +76,224 @@ async function restoreItemStock(item) {
   try {
     let updatedProduct = null;
 
+<<<<<<< Updated upstream
     // Strategy 1: Match by variant ObjectId
     if (variantId && mongoose.Types.ObjectId.isValid(variantId)) {
       updatedProduct = await Product.findOneAndUpdate(
+=======
+    // -----------------------------------------------------------------------
+    // 2. Validate Address & Ownership
+    // -----------------------------------------------------------------------
+    const { addressId, paymentMethod = "COD" } = req.body;
+    if (!addressId || !mongoose.Types.ObjectId.isValid(addressId)) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid delivery address ID is required to place an order.",
+      });
+    }
+
+    const address = await Address.findOne({
+      _id: addressId,
+      userId,
+    });
+
+    if (!address) {
+      return res.status(404).json({
+        success: false,
+        message: "Selected delivery address was not found or does not belong to your account.",
+      });
+    }
+
+    // Validate payment method against supported enum
+    const allowedPaymentMethods = ["COD", "ONLINE", "WALLET"];
+    if (!allowedPaymentMethods.includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid payment method "${paymentMethod}". Allowed methods: ${allowedPaymentMethods.join(", ")}.`,
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // 3. Retrieve Customer Cart & Reject Empty
+    // -----------------------------------------------------------------------
+    const cart = await Cart.findOne({ userId });
+    if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Your shopping bag is empty. Please add silhouettes before checkout.",
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // 4. Duplicate Submission Guard (e.g. rapid double-click within 4 seconds)
+    // -----------------------------------------------------------------------
+    const recentDuplicate = await Order.findOne({
+      userId,
+      createdAt: { $gte: new Date(Date.now() - 4000) },
+    });
+    if (recentDuplicate) {
+      return res.status(429).json({
+        success: false,
+        message: "A recent order submission is already being processed. Please check your order history.",
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // 5. Authoritatively Validate Catalog & Calculate Pricing
+    // -----------------------------------------------------------------------
+    const validatedItems = [];
+    let subtotal = 0;
+
+    for (const item of cart.items) {
+      if (
+        !item.productId ||
+        !mongoose.Types.ObjectId.isValid(item.productId) ||
+        !item.variantId ||
+        !mongoose.Types.ObjectId.isValid(item.variantId)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Cart contains invalid product or variant identifiers.",
+        });
+      }
+
+      const qty = Number(item.quantity) || 1;
+      if (!Number.isInteger(qty) || qty < 1) {
+        return res.status(400).json({
+          success: false,
+          message: "Cart item quantity must be an integer greater than zero.",
+        });
+      }
+
+      // Query active, non-deleted product with active category
+      const product = await Product.findOne({
+        _id: item.productId,
+        isDeleted: false,
+        status: "active",
+      }).populate({
+        path: "categoryId",
+        select: "_id name status isDeleted",
+      });
+
+      if (!product) {
+        return res.status(400).json({
+          success: false,
+          message: `Garment "${item.name || "Unknown"}" is no longer active or has been archived from the atelier catalog.`,
+        });
+      }
+
+      if (
+        !product.categoryId ||
+        product.categoryId.isDeleted ||
+        product.categoryId.status !== "active"
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `Category for garment "${product.name}" is currently unavailable.`,
+        });
+      }
+
+      // Locate variant
+      const variant = (product.variants || []).find(
+        (v) => v._id && v._id.toString() === item.variantId.toString()
+      );
+
+      if (!variant) {
+        return res.status(400).json({
+          success: false,
+          message: `Selected variant (Size: ${item.size}, Color: ${item.color}) for "${product.name}" no longer exists.`,
+        });
+      }
+
+      const currentStock = Number(variant.stock) || 0;
+      if (currentStock <= 0) {
+        return res.status(409).json({
+          success: false,
+          message: `Garment "${product.name}" (${variant.size} / ${variant.color}) is currently out of stock.`,
+        });
+      }
+
+      if (qty > currentStock) {
+        return res.status(409).json({
+          success: false,
+          message: `Requested quantity (${qty}) for "${product.name}" (${variant.size} / ${variant.color}) exceeds available stock (${currentStock}).`,
+        });
+      }
+
+      // Server-authoritative effective unit price (respecting variant pricing)
+      const baseVariantPrice =
+        variant.price !== undefined && variant.price !== null
+          ? Number(variant.price)
+          : Number(product.price);
+      const saleVariantPrice =
+        variant.salePrice !== undefined && variant.salePrice !== null
+          ? Number(variant.salePrice)
+          : product.salePrice;
+
+      const effectivePrice =
+        saleVariantPrice !== undefined &&
+        saleVariantPrice !== null &&
+        Number(saleVariantPrice) < Number(baseVariantPrice)
+          ? Number(saleVariantPrice)
+          : Number(baseVariantPrice);
+
+      const lineTotal = effectivePrice * qty;
+      subtotal += lineTotal;
+
+      // Select variant-specific cover image if available
+      let coverImage = null;
+      if (Array.isArray(variant.images) && variant.images.length > 0) {
+        coverImage = variant.images[0];
+      } else if (product.coverImage) {
+        coverImage = product.coverImage;
+      } else if (Array.isArray(product.images) && product.images.length > 0) {
+        coverImage = product.images[0];
+      }
+
+      validatedItems.push({
+        productId: product._id,
+        variantId: variant._id,
+        name: product.name,
+        size: variant.size,
+        color: variant.color,
+        coverImage,
+        price: effectivePrice,
+        quantity: qty,
+        lineTotal,
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // 6. Aggregate Variant Requirements (handles duplicate cart lines)
+    // -----------------------------------------------------------------------
+    const variantRequirements = new Map();
+    for (const item of validatedItems) {
+      const key = `${item.productId.toString()}_${item.variantId.toString()}`;
+      if (variantRequirements.has(key)) {
+        variantRequirements.get(key).totalQuantity += item.quantity;
+      } else {
+        variantRequirements.set(key, {
+          productId: item.productId,
+          variantId: item.variantId,
+          totalQuantity: item.quantity,
+          name: item.name,
+          size: item.size,
+          color: item.color,
+        });
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // 7. Atomic Conditional Stock Reservation & Failure Recovery
+    // -----------------------------------------------------------------------
+    let reservationFailedRequirement = null;
+
+    for (const requirement of variantRequirements.values()) {
+      // Conditional atomic decrement: $elemMatch ensures variant ID and sufficient
+      // stock are verified on the SAME array element, and the $ positional operator
+      // then unambiguously targets that matched element for the $inc.
+      const updatedProduct = await Product.findOneAndUpdate(
+>>>>>>> Stashed changes
         {
           _id: productId,
           "variants._id": variantId,

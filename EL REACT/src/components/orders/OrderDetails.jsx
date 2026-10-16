@@ -9,8 +9,19 @@ import {
   XCircle,
   Clock,
   Truck,
+<<<<<<< Updated upstream
   RotateCcw,
   AlertTriangle,
+=======
+  Download,
+  Loader2,
+  User,
+  Heart,
+  Wallet,
+  Ticket,
+  LogOut,
+  ShoppingBag,
+>>>>>>> Stashed changes
 } from "lucide-react";
 import {
   getOrderDetails,
@@ -19,6 +30,7 @@ import {
   requestOrderReturn,
   requestItemReturn,
 } from "../../services/orderService";
+import { getProfile } from "../../services/authService";
 import "./OrderDetails.css";
 
 // =====================================================
@@ -151,10 +163,31 @@ function OrderDetails() {
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
   const [actionMsg, setActionMsg] = useState({ text: "", type: "" });
+<<<<<<< Updated upstream
 
   // Modal state
   const [modal, setModal] = useState(null);
   // { type: "cancelOrder"|"cancelItem"|"returnOrder"|"returnItem", itemId?, busy }
+=======
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // ── Fetch profile for sidebar ─────────────────────
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) { navigate("/login"); return; }
+
+    getProfile()
+      .then((res) => setUser(res.data.user))
+      .catch((err) => {
+        if (err.response?.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+        }
+      });
+  }, [navigate]);
+>>>>>>> Stashed changes
 
   // ── Fetch order ───────────────────────────────────
   const fetchOrder = useCallback(async () => {
@@ -195,7 +228,20 @@ function OrderDetails() {
     setTimeout(() => setActionMsg({ text: "", type: "" }), 5000);
   };
 
+<<<<<<< Updated upstream
   // ── ACTION HANDLERS ───────────────────────────────
+=======
+  // ── Logout ────────────────────────────────────────
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  // ── Download Invoice handler ──────────────────────
+  const handleDownloadInvoice = async () => {
+    if (!order || downloadingInvoice) return;
+>>>>>>> Stashed changes
 
   const handleCancelOrder = async (reason) => {
     setModal((m) => ({ ...m, busy: true }));
@@ -343,23 +389,89 @@ function OrderDetails() {
       {/* ── HEADER ── */}
       <header className="od-header">
         <div className="od-logo" onClick={() => navigate("/")}>ELARQUE</div>
-        <button className="od-back-btn" onClick={() => navigate("/orders")} id="back-to-orders-top">
-          <ArrowLeft size={15} /> MY ORDERS
-        </button>
+
+        <nav className="od-nav">
+          <span onClick={() => navigate("/")}>MAIN</span>
+          <span onClick={() => navigate("/collections")}>COLLECTIONS</span>
+          <span onClick={() => navigate("/collections?sort=bestseller")}>BEST SELLERS</span>
+          <span onClick={() => navigate("/collections?sort=new")}>NEW ARRIVALS</span>
+        </nav>
+
+        <div className="od-header-icons">
+          <Heart size={19} onClick={() => navigate("/wishlist")} style={{ cursor: "pointer" }} />
+          <Wallet size={19} onClick={() => navigate("/wallet")} style={{ cursor: "pointer" }} />
+          <div className="od-header-user" onClick={() => navigate("/profile")}>
+            <User size={17} />
+          </div>
+        </div>
       </header>
 
-      <main className="od-main">
+      <div className="od-layout">
 
-        {/* ── ACTION MESSAGE ── */}
-        {actionMsg.text && (
-          <div className={`od-action-msg od-action-${actionMsg.type}`}>
-            {actionMsg.type === "success"
-              ? <CheckCircle size={15} />
-              : <XCircle size={15} />}
-            {actionMsg.text}
+        {/* ── SIDEBAR ── */}
+        <aside className="od-sidebar">
+          <div className="od-sidebar-card">
+
+            {/* Avatar */}
+            <div className="od-sidebar-avatar">
+              {user?.profileImage ? (
+                <img
+                  src={`http://localhost:5000${user.profileImage}`}
+                  alt="Profile"
+                  className="od-sidebar-avatar-img"
+                />
+              ) : (
+                <div className="od-sidebar-avatar-placeholder">
+                  {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
+                </div>
+              )}
+            </div>
+
+            <h2 className="od-sidebar-name">{user?.fullName || "User"}</h2>
+            <p className="od-sidebar-label">ELARQUE PRIVATE CLIENT</p>
+
+            <div className="od-sidebar-divider" />
+
+            {/* Menu */}
+            <div className="od-sidebar-menu">
+              <button className="od-sidebar-item" onClick={() => navigate("/profile")}>
+                <User size={16} /><span>MY PROFILE</span>
+              </button>
+
+              <button className="od-sidebar-item active" onClick={() => navigate("/orders")}>
+                <ShoppingBag size={16} /><span>MY ORDERS</span>
+                <span className="od-menu-arrow">→</span>
+              </button>
+
+              <button className="od-sidebar-item" onClick={() => navigate("/wishlist")}>
+                <Heart size={16} /><span>WISHLIST</span>
+                {user?.wishlistCount > 0 && (
+                  <strong>{user.wishlistCount}</strong>
+                )}
+              </button>
+
+              <button className="od-sidebar-item" onClick={() => navigate("/wallet")}>
+                <Wallet size={16} /><span>WALLET</span>
+                {user?.wallet > 0 && <strong>₹{user.wallet}</strong>}
+              </button>
+
+              <button className="od-sidebar-item" onClick={() => navigate("/coupons")}>
+                <Ticket size={16} /><span>COUPONS</span>
+              </button>
+
+              <button className="od-sidebar-item" onClick={() => navigate("/addresses")}>
+                <MapPin size={16} /><span>SAVED ADDRESSES</span>
+              </button>
+
+              <button className="od-sidebar-item od-logout" onClick={handleLogout}>
+                <LogOut size={16} /><span>SIGN OUT</span>
+              </button>
+            </div>
+
           </div>
-        )}
+        </aside>
 
+<<<<<<< Updated upstream
         {/* ── PAGE TITLE ── */}
         <div className="od-title-row">
           <div>
@@ -386,15 +498,80 @@ function OrderDetails() {
         {/* ── ORDER-LEVEL ACTIONS ── */}
         {(canCancelOrder || canReturnOrder) && (
           <div className="od-order-actions">
+=======
+        {/* ── MAIN CONTENT ── */}
+        <main className="od-main">
+
+          {/* ── ACTION MESSAGE ── */}
+          {actionMsg.text && (
+            <div className={`od-action-msg od-action-${actionMsg.type}`}>
+              {actionMsg.type === "success"
+                ? <CheckCircle size={15} />
+                : <XCircle size={15} />}
+              {actionMsg.text}
+            </div>
+          )}
+
+          {/* ── PAGE TITLE ── */}
+          <div className="od-title-row">
+            <div>
+              <p className="od-eyebrow">ORDER DETAILS <span>•</span> PURCHASE RECORD</p>
+              <div className="od-heading-row">
+                <button className="od-back-btn" onClick={() => navigate("/orders")} id="back-to-orders-top">
+                  <ArrowLeft size={15} /> MY ORDERS
+                </button>
+                <h1 className="od-heading">#{order.orderNumber}</h1>
+              </div>
+              <p className="od-date">Placed on {formatDate(order.createdAt)}</p>
+            </div>
+
+            <div className="od-status-group">
+              <span className={`od-badge ${orderCfg.cls}`}>
+                {orderCfg.icon} {orderCfg.label}
+              </span>
+              <span className={`od-pay-badge ${paymentCfg.cls}`}>
+                {paymentCfg.label}
+              </span>
+            </div>
+          </div>
+
+          {/* ── ORDER-LEVEL ACTIONS ── */}
+          <div className="od-order-actions">
+            {/* Download Invoice – always available */}
+            <button
+              className="od-btn-download-invoice"
+              id="download-invoice-btn"
+              onClick={handleDownloadInvoice}
+              disabled={downloadingInvoice}
+              title="Download tax invoice PDF"
+            >
+              {downloadingInvoice ? (
+                <>
+                  <Loader2 size={15} className="od-spinner" /> Generating Invoice…
+                </>
+              ) : (
+                <>
+                  <Download size={15} /> Download Invoice PDF
+                </>
+              )}
+            </button>
+
+>>>>>>> Stashed changes
             {canCancelOrder && (
               <button
                 className="od-btn-cancel-order"
                 id="cancel-order-btn"
+<<<<<<< Updated upstream
                 onClick={() => setModal({ type: "cancelOrder", busy: false })}
+=======
+                disabled
+                title="Order cancellation is not yet supported."
+>>>>>>> Stashed changes
               >
                 <XCircle size={15} /> Cancel Order
               </button>
             )}
+<<<<<<< Updated upstream
             {canReturnOrder && (
               <button
                 className="od-btn-return-order"
@@ -420,19 +597,23 @@ function OrderDetails() {
             <span>Return reason: {order.returnReason}</span>
           </div>
         )}
+=======
+          </div>
+>>>>>>> Stashed changes
 
 
-        <div className="od-grid">
+          <div className="od-grid">
 
-          {/* ── LEFT COLUMN ── */}
-          <div className="od-left">
+            {/* ── LEFT COLUMN ── */}
+            <div className="od-left">
 
-            {/* ITEMS */}
-            <div className="od-card">
-              <h2 className="od-card-title">
-                <Package size={17} /> Items Ordered
-              </h2>
+              {/* ITEMS */}
+              <div className="od-card">
+                <h2 className="od-card-title">
+                  <Package size={17} /> Items Ordered
+                </h2>
 
+<<<<<<< Updated upstream
               <div className="od-items-list">
                 {order.items?.map((item) => {
                   const iCfg = itemStatusConfig[item.itemStatus] || itemStatusConfig.Active;
@@ -461,6 +642,20 @@ function OrderDetails() {
                               : `http://localhost:5000${item.productImage}`
                           }
                           alt={item.productName}
+=======
+                <div className="od-items-list">
+                  {order.items?.map((item) => (
+                    <div key={item._id} className="od-item">
+                      {/* Image */}
+                      {item.coverImage ? (
+                        <img
+                          src={
+                            item.coverImage.startsWith("http")
+                              ? item.coverImage
+                              : `http://localhost:5000${item.coverImage}`
+                          }
+                          alt={item.name}
+>>>>>>> Stashed changes
                           className="od-item-img"
                         />
                       ) : (
@@ -472,6 +667,7 @@ function OrderDetails() {
                       {/* Details */}
                       <div className="od-item-details">
                         <div className="od-item-name-row">
+<<<<<<< Updated upstream
                           <p className="od-item-name">{item.productName}</p>
                           <span className={`od-item-status-badge ${iCfg.cls}`}>
                             {iCfg.label}
@@ -481,6 +677,14 @@ function OrderDetails() {
                         {(item.variant?.size || item.variant?.color) && (
                           <p className="od-item-variant">
                             {[item.variant.size, item.variant.color].filter(Boolean).join(" · ")}
+=======
+                          <p className="od-item-name">{item.name}</p>
+                        </div>
+
+                        {(item.size || item.color) && (
+                          <p className="od-item-variant">
+                            {[item.size, item.color].filter(Boolean).join(" · ")}
+>>>>>>> Stashed changes
                           </p>
                         )}
 
@@ -489,6 +693,7 @@ function OrderDetails() {
                             {formatCurrency(item.price)} × {item.quantity}
                           </span>
                           <span className="od-item-total">
+<<<<<<< Updated upstream
                             {formatCurrency(item.itemTotal)}
                           </span>
                         </div>
@@ -581,15 +786,68 @@ function OrderDetails() {
                   <span className={`od-pay-badge ${paymentCfg.cls}`}>
                     {paymentCfg.label}
                   </span>
+=======
+                            {formatCurrency(item.lineTotal)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
+
+
+              {/* DELIVERY ADDRESS */}
+              <div className="od-card">
+                <h2 className="od-card-title">
+                  <MapPin size={17} /> Delivery Address
+                </h2>
+
+                <div className="od-address">
+                  <p className="od-addr-name">{addr.fullName}</p>
+                  <p className="od-addr-phone">{addr.phone}</p>
+                  <p className="od-addr-line">
+                    {[addr.house, addr.street].filter(Boolean).join(", ")}
+                  </p>
+                  <p className="od-addr-line">
+                    {[addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")}
+                  </p>
+                </div>
+              </div>
+
             </div>
 
 
-            {/* PRICING SUMMARY */}
-            <div className="od-card od-pricing-card">
-              <h2 className="od-card-title">Order Summary</h2>
+            {/* ── RIGHT COLUMN ── */}
+            <div className="od-right">
 
+              {/* PAYMENT */}
+              <div className="od-card">
+                <h2 className="od-card-title">
+                  <CreditCard size={17} /> Payment
+                </h2>
+
+                <div className="od-payment-info">
+                  <div className="od-pay-row">
+                    <span>Method</span>
+                    <span>{order.paymentMethod}</span>
+                  </div>
+                  <div className="od-pay-row">
+                    <span>Status</span>
+                    <span className={`od-pay-badge ${paymentCfg.cls}`}>
+                      {paymentCfg.label}
+                    </span>
+                  </div>
+>>>>>>> Stashed changes
+                </div>
+              </div>
+
+
+              {/* PRICING SUMMARY */}
+              <div className="od-card od-pricing-card">
+                <h2 className="od-card-title">Order Summary</h2>
+
+<<<<<<< Updated upstream
               <div className="od-pricing">
                 <div className="od-price-row">
                   <span>Subtotal</span>
@@ -600,9 +858,15 @@ function OrderDetails() {
                   <div className="od-price-row discount">
                     <span>Discount</span>
                     <span>−{formatCurrency(order.discount)}</span>
+=======
+                <div className="od-pricing">
+                  <div className="od-price-row">
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(pricing.subtotal)}</span>
+>>>>>>> Stashed changes
                   </div>
-                )}
 
+<<<<<<< Updated upstream
                 <div className="od-price-row">
                   <span>Shipping</span>
                   <span>
@@ -611,30 +875,54 @@ function OrderDetails() {
                       : "FREE"}
                   </span>
                 </div>
+=======
+                  {pricing.packagingFee > 0 && (
+                    <div className="od-price-row">
+                      <span>Packaging</span>
+                      <span>{formatCurrency(pricing.packagingFee)}</span>
+                    </div>
+                  )}
+>>>>>>> Stashed changes
 
-                <div className="od-price-divider" />
+                  <div className="od-price-row">
+                    <span>Shipping</span>
+                    <span>
+                      {pricing.shippingFee > 0
+                        ? formatCurrency(pricing.shippingFee)
+                        : "FREE"}
+                    </span>
+                  </div>
 
+<<<<<<< Updated upstream
                 <div className="od-price-row total">
                   <span>Total</span>
                   <span>{formatCurrency(order.totalAmount)}</span>
+=======
+                  <div className="od-price-divider" />
+
+                  <div className="od-price-row total">
+                    <span>Total</span>
+                    <span>{formatCurrency(pricing.total)}</span>
+                  </div>
+>>>>>>> Stashed changes
                 </div>
               </div>
+
+
+              {/* BACK BUTTON */}
+              <button
+                className="od-back-full"
+                onClick={() => navigate("/orders")}
+                id="back-to-orders-bottom"
+              >
+                ← BACK TO MY ORDERS
+              </button>
+
             </div>
-
-
-            {/* BACK BUTTON */}
-            <button
-              className="od-back-full"
-              onClick={() => navigate("/orders")}
-              id="back-to-orders-bottom"
-            >
-              ← BACK TO MY ORDERS
-            </button>
-
           </div>
-        </div>
 
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
