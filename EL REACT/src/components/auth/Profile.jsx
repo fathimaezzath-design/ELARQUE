@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { getProfile } from "../../services/profileService";
+import { getAddresses } from "../../services/addressService";
 import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
@@ -41,6 +42,8 @@ function Profile() {
       return null;
     }
   });
+
+  const [savedAddress, setSavedAddress] = useState(null);
 
   const [loading, setLoading] = useState(() => {
     try {
@@ -67,11 +70,26 @@ function Profile() {
           return;
         }
 
-        const response = await getProfile();
+        const [profileRes, addressRes] = await Promise.allSettled([
+          getProfile(),
+          getAddresses(),
+        ]);
 
-        if (response?.data?.user) {
-          setUser(response.data.user);
-          localStorage.setItem("user", JSON.stringify(response.data.user));
+        if (profileRes.status === "fulfilled" && profileRes.value?.data?.user) {
+          const userObj = profileRes.value.data.user;
+          setUser(userObj);
+          localStorage.setItem("user", JSON.stringify(userObj));
+          if (profileRes.value.data.savedAddress) {
+            setSavedAddress(profileRes.value.data.savedAddress);
+          }
+        }
+
+        if (addressRes.status === "fulfilled" && Array.isArray(addressRes.value?.data?.addresses)) {
+          const list = addressRes.value.data.addresses;
+          if (list.length > 0) {
+            const def = list.find((a) => a.isDefault) || list[0];
+            setSavedAddress(def);
+          }
         }
       } catch (err) {
         console.warn("PROFILE FETCH NOTICE:", err);
@@ -269,6 +287,33 @@ function Profile() {
   const effectiveWishlist = effectiveUser.wishlistCount || 12;
   const effectiveOrders = effectiveUser.orderCount || 24;
 
+  const getFormattedAddress = () => {
+    if (savedAddress) {
+      const parts = [
+        savedAddress.house,
+        savedAddress.street,
+        savedAddress.city,
+        savedAddress.state,
+      ].filter((p) => p && String(p).trim().length > 0);
+      if (parts.length > 0) {
+        return `${parts.join(", ")}${savedAddress.pincode ? ` - ${savedAddress.pincode}` : ""}`;
+      }
+    }
+    if (effectiveUser?.address) {
+      const parts = [
+        effectiveUser.address.street,
+        effectiveUser.address.city,
+        effectiveUser.address.state,
+      ].filter((p) => p && String(p).trim().length > 0);
+      if (parts.length > 0) {
+        return `${parts.join(", ")}${effectiveUser.address.pincode ? ` - ${effectiveUser.address.pincode}` : ""}`;
+      }
+    }
+    return null;
+  };
+
+  const displayAddress = getFormattedAddress();
+
   return (
     <div className="el-profile-page-wrapper">
       {/* 1. TOP ANNOUNCEMENT BAR */}
@@ -327,6 +372,18 @@ function Profile() {
                   <span>MY PROFILE</span>
                 </div>
                 <span className="el-menu-arrow">→</span>
+              </button>
+
+              {/* My Orders */}
+              <button
+                type="button"
+                className="el-menu-item"
+                onClick={() => navigate("/orders")}
+              >
+                <div className="el-menu-item-left">
+                  <ShoppingBag size={15} />
+                  <span>MY ORDERS</span>
+                </div>
               </button>
 
               {/* Wishlist */}
@@ -478,7 +535,13 @@ function Profile() {
                 </div>
                 <div className="el-dossier-info">
                   <span className="el-dossier-label">MOBILE LIAISON</span>
-                  <h3 className="el-dossier-val">{effectiveUser.phoneNumber || "+91 98765 43210"}</h3>
+                  <h3 className="el-dossier-val">
+                    {effectiveUser.phoneNumber
+                      ? (effectiveUser.phoneNumber.startsWith("+")
+                          ? effectiveUser.phoneNumber
+                          : `+91 ${effectiveUser.phoneNumber}`)
+                      : "Not specified"}
+                  </h3>
                   <span className="el-dossier-sub">DIRECT SMS COUTURE ALERTS ENABLED</span>
                 </div>
               </div>
@@ -495,17 +558,27 @@ function Profile() {
                 </div>
               </div>
 
-              {/* 5. Tailoring Silhouette */}
-              <div className="el-dossier-cell">
+              {/* 5. Saved Address (Replaced Tailoring Silhouette) */}
+              <div
+                className="el-dossier-cell"
+                style={{ cursor: "pointer" }}
+                onClick={() => navigate("/addresses")}
+                title="Manage Saved Addresses"
+              >
                 <div className="el-dossier-icon-box">
-                  <Sparkles size={16} color="#650D20" />
+                  <MapPin size={16} color="#650D20" />
                 </div>
                 <div className="el-dossier-info">
-                  <span className="el-dossier-label">TAILORING SILHOUETTE</span>
-                  <h3 className="el-dossier-val">
-                    {effectiveUser.gender ? `${effectiveUser.gender} (Couture FR 36 / US 4)` : "Female (Couture FR 36 / US 4)"}
+                  <span className="el-dossier-label">CURRENT SAVED ADDRESS</span>
+                  <h3
+                    className="el-dossier-val"
+                    style={!displayAddress ? { color: "#7d706b", fontWeight: 500, fontSize: "14px" } : {}}
+                  >
+                    {displayAddress || "No address added yet"}
                   </h3>
-                  <span className="el-dossier-sub">BESPOKE FIT CARD REGISTERED</span>
+                  <span className="el-dossier-sub">
+                    {displayAddress ? "DEFAULT DISPATCH RESIDENCE" : "CLICK TO MANAGE ADDRESSES"}
+                  </span>
                 </div>
               </div>
 

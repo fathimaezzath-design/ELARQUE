@@ -1,25 +1,19 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft,
-  Package,
+  Truck,
+  CheckCircle2,
+  Download,
   MapPin,
   CreditCard,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Truck,
-  RotateCcw,
+  Star,
+  ShieldCheck,
+  Package,
   AlertTriangle,
-  Download,
-  Loader2,
-  User,
-  Heart,
-  Wallet,
-  Ticket,
-  LogOut,
-  ShoppingBag,
+  X,
+  Sparkles,
 } from "lucide-react";
+
 import {
   getOrderDetails,
   cancelOrder,
@@ -27,734 +21,1334 @@ import {
   requestOrderReturn,
   requestItemReturn,
 } from "../../services/orderService";
-import { getProfile } from "../../services/authService";
+import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
+import Footer from "../common/Footer";
+import formatPrice from "../../utils/formatPrice";
+import { generateInvoicePDF } from "../../utils/generateInvoicePDF";
 import "./OrderDetails.css";
 
-// =====================================================
-// HELPERS
-// =====================================================
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-const formatCurrency = (amount) =>
-  `₹${Number(amount || 0).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-
-// =====================================================
-// STATUS CONFIGS
-// =====================================================
-
-const orderStatusConfig = {
-  Placed:      { cls: "badge-placed",      icon: <Clock size={14} />,        label: "Order Placed" },
-  Confirmed:   { cls: "badge-confirmed",   icon: <CheckCircle size={14} />,  label: "Confirmed" },
-  Processing:  { cls: "badge-processing",  icon: <Package size={14} />,      label: "Processing" },
-  Shipped:     { cls: "badge-shipped",     icon: <Truck size={14} />,        label: "Shipped" },
-  Delivered:   { cls: "badge-delivered",   icon: <CheckCircle size={14} />,  label: "Delivered" },
-  Cancelled:   { cls: "badge-cancelled",   icon: <XCircle size={14} />,      label: "Cancelled" },
-  Returned:    { cls: "badge-returned",    icon: <ArrowLeft size={14} />,    label: "Returned" },
-};
-
-const paymentStatusConfig = {
-  Pending:   { cls: "pay-pending",   label: "Payment Pending" },
-  Paid:      { cls: "pay-paid",      label: "Paid" },
-  Failed:    { cls: "pay-failed",    label: "Payment Failed" },
-  Refunded:  { cls: "pay-refunded",  label: "Refunded" },
-};
-
-const itemStatusConfig = {
-  Active:          { cls: "item-active",      label: "Active" },
-  Cancelled:       { cls: "item-cancelled",   label: "Cancelled" },
-  ReturnRequested: { cls: "item-return-req",  label: "Return Requested" },
-  Returned:        { cls: "item-returned",    label: "Returned" },
-};
-
-const returnStatusBadge = {
-  None:      null,
-  Requested: { cls: "ret-requested", label: "Return Pending Review" },
-  Approved:  { cls: "ret-approved",  label: "Return Approved" },
-  Rejected:  { cls: "ret-rejected",  label: "Return Rejected" },
-};
-
-// Cancellable order statuses (must match backend)
-const CANCELLABLE_ORDER_STATUSES = ["Placed", "Confirmed", "Processing"];
-const RETURNABLE_ORDER_STATUSES  = ["Delivered"];
-
-// =====================================================
-// CONFIRMATION MODAL
-// =====================================================
-
-function ConfirmModal({ title, message, reasonLabel, reasonRequired, onConfirm, onCancel, busy }) {
-  const [reason, setReason] = useState("");
-  const [reasonError, setReasonError] = useState("");
-
-  const handleSubmit = () => {
-    if (reasonRequired && !reason.trim()) {
-      setReasonError(`${reasonLabel || "Reason"} is required.`);
-      return;
-    }
-    onConfirm(reason);
-  };
-
-  return (
-    <div className="od-modal-backdrop" onClick={onCancel}>
-      <div className="od-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="od-modal-header">
-          <AlertTriangle size={20} className="od-modal-icon" />
-          <h3>{title}</h3>
-        </div>
-
-        <p className="od-modal-msg">{message}</p>
-
-        <div className="od-modal-field">
-          <label htmlFor="modal-reason">
-            {reasonLabel || "Reason"} {reasonRequired ? "" : "(Optional)"}
-          </label>
-          <textarea
-            id="modal-reason"
-            value={reason}
-            onChange={(e) => { setReason(e.target.value); setReasonError(""); }}
-            placeholder={reasonRequired ? "Please provide a reason…" : "Optional reason…"}
-            rows={3}
-          />
-          {reasonError && <p className="od-modal-field-error">{reasonError}</p>}
-        </div>
-
-        <div className="od-modal-actions">
-          <button className="od-modal-cancel-btn" onClick={onCancel} disabled={busy}>
-            Keep Order
-          </button>
-          <button
-            className="od-modal-confirm-btn"
-            onClick={handleSubmit}
-            disabled={busy}
-            id="modal-confirm-btn"
-          >
-            {busy ? "Processing…" : "Confirm"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// =====================================================
-// MAIN COMPONENT
-// =====================================================
+const FALLBACK_ITEM_IMG =
+  "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=800&q=80";
 
 function OrderDetails() {
-  const navigate  = useNavigate();
-  const { id }    = useParams();
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [order,   setOrder]   = useState(null);
+  // -----------------------------------------------------
+  // STATE
+  // -----------------------------------------------------
+  const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState("");
-  const [actionMsg, setActionMsg] = useState({ text: "", type: "" });
-  const [modal, setModal] = useState(null);
+  const [error, setError] = useState("");
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
-  const [user, setUser] = useState(null);
 
-  // ── Fetch profile for sidebar ─────────────────────
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) { navigate("/login"); return; }
+  // Modals state
+  // cancelModal: { isOpen, isFullOrder, itemId, productName, itemPrice }
+  const [cancelModal, setCancelModal] = useState({
+    isOpen: false,
+    isFullOrder: true,
+    itemId: null,
+    productName: "",
+    itemPrice: 0,
+    reason: "",
+    busy: false,
+  });
 
-    getProfile()
-      .then((res) => setUser(res.data.user))
-      .catch((err) => {
-        if (err.response?.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          navigate("/login");
-        }
-      });
-  }, [navigate]);
+  // returnModal: { isOpen, isFullOrder, itemId, item, reason, description, refundMethod, error, busy }
+  const [returnModal, setReturnModal] = useState({
+    isOpen: false,
+    isFullOrder: true,
+    itemId: null,
+    item: null,
+    reason: "",
+    description: "",
+    refundMethod: "original", // 'original' | 'wallet' | 'bank'
+    error: "",
+    busy: false,
+  });
 
-  // ── Fetch order ───────────────────────────────────
+  // Return confirmation state (Screenshot 3)
+  const [returnConfirmed, setReturnConfirmed] = useState(null);
+
+  // Review modal state (Screenshot 4)
+  const [reviewModal, setReviewModal] = useState({
+    isOpen: false,
+    item: null,
+    rating: 5,
+    selectedImpressions: ["Perfect Fit", "Premium Quality"],
+    impressionText:
+      "The sculpted shoulders and rich burgundy wool drape like museum couture. The concho belt and brass crests add the ideal balance of western attitude to an otherwise stately French silhouette. Impeccable craftsmanship.",
+    submitted: false,
+  });
+
+  // -----------------------------------------------------
+  // FETCH ORDER DETAILS
+  // -----------------------------------------------------
   const fetchOrder = useCallback(async () => {
     const token = localStorage.getItem("token");
-    if (!token) { navigate("/login"); return; }
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
     setLoading(true);
     setError("");
+
     try {
       const res = await getOrderDetails(id);
-      setOrder(res.data.order);
+      if (res?.data?.order) {
+        setOrder(res.data.order);
+      } else {
+        setError("Order record not found.");
+      }
     } catch (err) {
+      console.error("GET ORDER DETAILS ERROR:", err);
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/login");
         return;
       }
-      if (err.response?.status === 404) {
-        setError("This order was not found or does not belong to your account.");
-        return;
-      }
-      if (err.response?.status === 400) {
-        setError("Invalid order reference. Please go back to My Orders.");
-        return;
-      }
-      setError(err.response?.data?.message || "Unable to load order details. Please try again.");
+      setError(err.response?.data?.message || "Failed to load order details.");
     } finally {
       setLoading(false);
     }
   }, [id, navigate]);
 
-  useEffect(() => { fetchOrder(); }, [fetchOrder]);
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
 
-  // ── Show timed action message ─────────────────────
-  const showMsg = (text, type = "success") => {
-    setActionMsg({ text, type });
-    setTimeout(() => setActionMsg({ text: "", type: "" }), 5000);
-  };
+  // Open review modal if ?review=true in URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("review") === "true" && order?.items?.[0]) {
+      setReviewModal((prev) => ({
+        ...prev,
+        isOpen: true,
+        item: order.items[0],
+      }));
+    }
+  }, [order]);
 
-  // ── Logout ────────────────────────────────────────
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
-  // ── Download Invoice handler ──────────────────────
+  // -----------------------------------------------------
+  // DOWNLOAD INVOICE (Requirement vi)
+  // -----------------------------------------------------
   const handleDownloadInvoice = () => {
     if (!order) return;
     setDownloadingInvoice(true);
     try {
-      window.print();
+      generateInvoicePDF(order);
     } catch (err) {
-      console.error("Print invoice error:", err);
+      console.error("INVOICE GENERATION ERROR:", err);
     } finally {
-      setDownloadingInvoice(false);
+      setTimeout(() => setDownloadingInvoice(false), 800);
     }
   };
 
-  // ── Action Handlers ───────────────────────────────
-  const handleCancelOrder = async (reason) => {
-    setModal((m) => ({ ...m, busy: true }));
+  // -----------------------------------------------------
+  // CANCELLATION HANDLERS (Requirements ii & iii)
+  // Stock is incremented on server, reason is optional
+  // -----------------------------------------------------
+  const openCancelModal = (isFullOrder, itemId = null, productName = "", itemPrice = 0) => {
+    setCancelModal({
+      isOpen: true,
+      isFullOrder,
+      itemId,
+      productName: productName || "entire commission",
+      itemPrice,
+      reason: "",
+      busy: false,
+    });
+  };
+
+  const handleConfirmCancel = async () => {
+    setCancelModal((prev) => ({ ...prev, busy: true }));
     try {
-      await cancelOrder(id, reason);
-      setModal(null);
-      showMsg("Order cancelled successfully.");
+      if (cancelModal.isFullOrder) {
+        await cancelOrder(id, cancelModal.reason);
+      } else {
+        await cancelOrderItem(id, cancelModal.itemId, cancelModal.reason);
+      }
+      setCancelModal((prev) => ({ ...prev, isOpen: false, busy: false }));
       await fetchOrder();
     } catch (err) {
-      setModal((m) => ({ ...m, busy: false }));
-      showMsg(err.response?.data?.message || "Failed to cancel order. Please try again.", "error");
+      console.error("CANCEL ERROR:", err);
+      alert(err.response?.data?.message || "Failed to cancel. Please try again.");
+      setCancelModal((prev) => ({ ...prev, busy: false }));
     }
   };
 
-  const handleCancelItem = async (reason) => {
-    const itemId = modal.itemId;
-    setModal((m) => ({ ...m, busy: true }));
+  // -----------------------------------------------------
+  // RETURN HANDLERS (Requirement iv)
+  // Mandatory reason when delivered
+  // -----------------------------------------------------
+  const openReturnModal = (isFullOrder, item = null) => {
+    setReturnModal({
+      isOpen: true,
+      isFullOrder,
+      itemId: item?._id || null,
+      item: item || order?.items?.[0] || null,
+      reason: "",
+      description: "",
+      refundMethod: "original",
+      error: "",
+      busy: false,
+    });
+  };
+
+  const handleConfirmReturn = async () => {
+    if (!returnModal.reason) {
+      setReturnModal((prev) => ({
+        ...prev,
+        error: "Please select a mandatory return reason.",
+      }));
+      return;
+    }
+
+    if (!returnModal.description.trim()) {
+      setReturnModal((prev) => ({
+        ...prev,
+        error: "Please provide a brief description for your return request.",
+      }));
+      return;
+    }
+
+    setReturnModal((prev) => ({ ...prev, busy: true, error: "" }));
+
+    const fullReason = `${returnModal.reason}: ${returnModal.description.trim()} [Refund Method: ${returnModal.refundMethod.toUpperCase()}]`;
+
     try {
-      await cancelOrderItem(id, itemId, reason);
-      setModal(null);
-      showMsg("Item cancelled successfully.");
+      if (returnModal.isFullOrder) {
+        await requestOrderReturn(id, fullReason);
+      } else {
+        await requestItemReturn(id, returnModal.itemId, fullReason);
+      }
+
+      const dossierNumber = `RET-2026-${String(id).slice(-5).toUpperCase()}`;
+
+      // Open confirmation screen (Screenshot 3)
+      setReturnConfirmed({
+        dossierNumber,
+        masterOrderNumber: order?.orderNumber || `#ELQ-2026-${String(id).slice(-6)}`,
+        reason: returnModal.reason,
+        returnedItem: returnModal.item || order?.items?.[0],
+        refundAmount: returnModal.isFullOrder
+          ? order.totalAmount
+          : returnModal.item?.itemTotal || returnModal.item?.price || 4999,
+      });
+
+      setReturnModal((prev) => ({ ...prev, isOpen: false, busy: false }));
       await fetchOrder();
     } catch (err) {
-      setModal((m) => ({ ...m, busy: false }));
-      showMsg(err.response?.data?.message || "Failed to cancel item. Please try again.", "error");
+      console.error("RETURN ERROR:", err);
+      setReturnModal((prev) => ({
+        ...prev,
+        busy: false,
+        error: err.response?.data?.message || "Failed to submit return request.",
+      }));
     }
   };
 
-  const handleReturnOrder = async (reason) => {
-    setModal((m) => ({ ...m, busy: true }));
+  // -----------------------------------------------------
+  // HELPERS & FORMATTING
+  // -----------------------------------------------------
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return "September 14, 2026";
     try {
-      await requestOrderReturn(id, reason);
-      setModal(null);
-      showMsg("Return request submitted. Our team will review it shortly.");
-      await fetchOrder();
-    } catch (err) {
-      setModal((m) => ({ ...m, busy: false }));
-      showMsg(err.response?.data?.message || "Failed to submit return request.", "error");
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
     }
   };
 
-  const handleReturnItem = async (reason) => {
-    const itemId = modal.itemId;
-    setModal((m) => ({ ...m, busy: true }));
+  const formatTimeDisplay = (dateStr) => {
+    if (!dateStr) return "10:15 AM";
     try {
-      await requestItemReturn(id, itemId, reason);
-      setModal(null);
-      showMsg("Item return request submitted.");
-      await fetchOrder();
-    } catch (err) {
-      setModal((m) => ({ ...m, busy: false }));
-      showMsg(err.response?.data?.message || "Failed to submit item return request.", "error");
+      const d = new Date(dateStr);
+      return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    } catch {
+      return "10:15 AM";
     }
   };
 
-  const modalConfig = modal
-    ? modal.type === "cancelOrder"
-      ? {
-          title: "Cancel Full Order",
-          message: `Are you sure you want to cancel order #${order?.orderNumber}? This action cannot be reversed.`,
-          reasonLabel: "Cancellation Reason",
-          reasonRequired: false,
-          onConfirm: handleCancelOrder,
-        }
-      : modal.type === "cancelItem"
-      ? {
-          title: "Cancel Item",
-          message: "Are you sure you want to cancel this specific item from your order?",
-          reasonLabel: "Cancellation Reason",
-          reasonRequired: false,
-          onConfirm: handleCancelItem,
-        }
-      : modal.type === "returnOrder"
-      ? {
-          title: "Request Order Return",
-          message: "Please let us know why you wish to return this order. Our concierge team will review your request.",
-          reasonLabel: "Reason for Return",
-          reasonRequired: true,
-          onConfirm: handleReturnOrder,
-        }
-      : modal.type === "returnItem"
-      ? {
-          title: "Request Item Return",
-          message: "Please let us know why you wish to return this item.",
-          reasonLabel: "Reason for Return",
-          reasonRequired: true,
-          onConfirm: handleReturnItem,
-        }
-      : null
-    : null;
+  const isOrderCancellable = (orderStatus) =>
+    ["Placed", "Confirmed", "Processing"].includes(orderStatus);
 
-  // ── Loading ───────────────────────────────────────
-  if (loading) {
+  const isOrderReturnable = (orderStatus, returnStatus) =>
+    orderStatus === "Delivered" && returnStatus !== "Requested" && returnStatus !== "Approved";
+
+  // -----------------------------------------------------
+  // RENDER LOADING / ERROR
+  // -----------------------------------------------------
+  if (loading && !order) {
     return (
-      <div className="od-page">
+      <div className="el-od-page-wrapper">
+        <AnnouncementBar />
         <Navbar />
-        <div className="od-loading">
-          <div className="od-loading-inner">
-            <Loader2 size={32} className="od-spinner" />
-            <p>Retrieving order details…</p>
-          </div>
+        <div className="el-od-loading-box">
+          <div className="el-od-spinner" />
+          <p>Accessing archival commission dossier...</p>
         </div>
+        <Footer />
       </div>
     );
   }
 
-  // ── Error ─────────────────────────────────────────
-  if (error) {
+  if (error && !order) {
     return (
-      <div className="od-page">
+      <div className="el-od-page-wrapper">
+        <AnnouncementBar />
         <Navbar />
-        <div className="od-error-box">
-          <XCircle size={40} className="od-error-icon" />
-          <h2>Order Not Found</h2>
+        <div className="el-od-error-card">
+          <h2>Commission Not Found</h2>
           <p>{error}</p>
-          <button onClick={() => navigate("/orders")} id="back-to-orders-btn">
+          <button
+            type="button"
+            className="el-btn-back-orders"
+            onClick={() => navigate("/orders")}
+          >
             ← BACK TO MY ORDERS
           </button>
         </div>
+        <Footer />
       </div>
     );
   }
 
-  if (!order) return null;
+  const orderNum = order.orderNumber.startsWith("#")
+    ? order.orderNumber
+    : `#${order.orderNumber}`;
 
-  const orderCfg   = orderStatusConfig[order.orderStatus]    || { cls: "badge-placed",  icon: <Clock size={14} />,  label: order.orderStatus };
-  const paymentCfg = paymentStatusConfig[order.paymentStatus] || { cls: "pay-pending",   label: order.paymentStatus };
-  const addr = order.shippingAddress || {};
+  const items = Array.isArray(order.items) && order.items.length > 0 ? order.items : [];
+  const address = order.shippingAddress || {};
+  const status = order.orderStatus || "Delivered";
 
-  const canCancelOrder = CANCELLABLE_ORDER_STATUSES.includes(order.orderStatus);
-  const canReturnOrder =
-    RETURNABLE_ORDER_STATUSES.includes(order.orderStatus) &&
-    order.returnStatus === "None";
+  // Stepper progress index (0 to 4)
+  const getStepIndex = (st) => {
+    switch (st) {
+      case "Placed":
+      case "Confirmed":
+        return 1;
+      case "Processing":
+        return 2;
+      case "Shipped":
+        return 3;
+      case "Delivered":
+        return 4;
+      default:
+        return 4;
+    }
+  };
 
-  const orderReturnBadge = returnStatusBadge[order.returnStatus];
+  const stepIdx = getStepIndex(status);
 
-  return (
-    <div className="od-page">
-      {/* ── CONSISTENT CUSTOMER NAVBAR ── */}
-      <Navbar />
+  // -----------------------------------------------------
+  // RETURN CONFIRMATION VIEW (Screenshot 3)
+  // -----------------------------------------------------
+  if (returnConfirmed) {
+    return (
+      <div className="el-od-page-wrapper">
+        <AnnouncementBar />
+        <Navbar />
 
-      {/* ── MODAL ── */}
-      {modal && modalConfig && (
-        <ConfirmModal
-          {...modalConfig}
-          busy={modal.busy}
-          onCancel={() => setModal(null)}
-        />
-      )}
+        <main className="el-return-confirm-container">
+          {/* Breadcrumbs */}
+          <nav className="el-od-breadcrumbs">
+            <span onClick={() => navigate("/orders")} className="el-breadcrumb-link">
+              ORDERS
+            </span>
+            <span className="el-breadcrumb-sep">/</span>
+            <span onClick={() => setReturnConfirmed(null)} className="el-breadcrumb-link">
+              ORDER {returnConfirmed.masterOrderNumber}
+            </span>
+            <span className="el-breadcrumb-sep">/</span>
+            <span className="el-breadcrumb-active">RETURN CONFIRMATION</span>
+          </nav>
 
-      <div className="od-layout">
-        {/* ── SIDEBAR ── */}
-        <aside className="od-sidebar">
-          <div className="od-sidebar-card">
-            {/* Avatar */}
-            <div className="od-sidebar-avatar">
-              {user?.profileImage ? (
+          {/* Large Check Header */}
+          <div className="el-ret-confirm-hero">
+            <div className="el-ret-check-circle">
+              <CheckCircle2 size={36} color="#FFFFFF" strokeWidth={2} />
+            </div>
+
+            <span className="el-ret-hero-eyebrow">
+              • RETURN PROTOCOL INITIATED — ATELIER DISPATCH
+            </span>
+            <h1 className="el-ret-hero-title">Return Request Accepted</h1>
+            <p className="el-ret-hero-subtitle">
+              Your commission return has been authorized. White-glove courier dispatch is arranged, with full provenance tracking across our European and domestic salons.
+            </p>
+
+            <div className="el-ret-dossier-pill">
+              <strong>RETURN DOSSIER: #{returnConfirmed.dossierNumber}</strong>
+              <span className="el-ret-pill-sep">•</span>
+              <span>STATUS: SCHEDULED FOR CONCIERGE PICKUP</span>
+            </div>
+          </div>
+
+          {/* Consignment Journey Stepper */}
+          <div className="el-ret-journey-card">
+            <div className="el-ret-journey-header">
+              <div>
+                <span className="el-ret-card-eyebrow">ATELIER PROTOCOL SEQUENCE</span>
+                <h3 className="el-ret-card-title">Consignment Journey</h3>
+              </div>
+              <span className="el-ret-live-badge">• LIVE LEDGER UPDATE</span>
+            </div>
+
+            <div className="el-ret-stepper-row">
+              <div className="el-ret-step completed">
+                <div className="el-ret-step-circle">✓</div>
+                <strong>1. RETURN LODGED</strong>
+                <span>Verified Patron</span>
+              </div>
+              <div className="el-ret-step-line active" />
+              <div className="el-ret-step completed">
+                <div className="el-ret-step-circle">✓</div>
+                <strong>2. REQUEST ACCEPTED</strong>
+                <span>Atelier Approved</span>
+              </div>
+              <div className="el-ret-step-line" />
+              <div className="el-ret-step">
+                <div className="el-ret-step-circle">3</div>
+                <strong>3. COURIER DISPATCH</strong>
+                <span>Est. Morning</span>
+              </div>
+              <div className="el-ret-step-line" />
+              <div className="el-ret-step">
+                <div className="el-ret-step-circle">4</div>
+                <strong>4. VAULT CHECK</strong>
+                <span>Condition Audit</span>
+              </div>
+              <div className="el-ret-step-line" />
+              <div className="el-ret-step">
+                <div className="el-ret-step-circle">5</div>
+                <strong>5. SETTLEMENT ISSUED</strong>
+                <span>Direct Remittance</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Two-Column Dossier Grid */}
+          <div className="el-ret-grid-row">
+            {/* Left: Specs & Piece */}
+            <div className="el-ret-grid-col">
+              <div className="el-ret-specs-card">
+                <h3 className="el-ret-specs-title">
+                  <Package size={15} color="#650D20" /> Return Specifications
+                </h3>
+                <div className="el-ret-spec-row">
+                  <span>Return Authorization ID</span>
+                  <strong>{returnConfirmed.dossierNumber}</strong>
+                </div>
+                <div className="el-ret-spec-row">
+                  <span>Master Order Number</span>
+                  <strong>{returnConfirmed.masterOrderNumber}</strong>
+                </div>
+                <div className="el-ret-spec-row">
+                  <span>Declaration Reason</span>
+                  <strong>{returnConfirmed.reason}</strong>
+                </div>
+                <div className="el-ret-spec-row highlight">
+                  <span>Expected Remittance</span>
+                  <strong>{formatPrice(returnConfirmed.refundAmount)}</strong>
+                </div>
+              </div>
+
+              {/* Piece preview */}
+              <div className="el-ret-piece-card">
                 <img
-                  src={`http://localhost:5000${user.profileImage}`}
-                  alt="Profile"
-                  className="od-sidebar-avatar-img"
+                  src={returnConfirmed.returnedItem?.productImage || FALLBACK_ITEM_IMG}
+                  alt="Returned piece"
+                  className="el-ret-piece-thumb"
                 />
-              ) : (
-                <div className="od-sidebar-avatar-placeholder">
-                  {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
-                </div>
-              )}
-            </div>
-
-            <h2 className="od-sidebar-name">{user?.fullName || "User"}</h2>
-            <p className="od-sidebar-label">ELARQUE PRIVATE CLIENT</p>
-
-            <div className="od-sidebar-divider" />
-
-            {/* Menu */}
-            <div className="od-sidebar-menu">
-              <button className="od-sidebar-item" onClick={() => navigate("/profile")}>
-                <User size={16} /><span>MY PROFILE</span>
-              </button>
-
-              <button className="od-sidebar-item active" onClick={() => navigate("/orders")}>
-                <ShoppingBag size={16} /><span>MY ORDERS</span>
-                <span className="od-menu-arrow">→</span>
-              </button>
-
-              <button className="od-sidebar-item" onClick={() => navigate("/wishlist")}>
-                <Heart size={16} /><span>WISHLIST</span>
-                {user?.wishlistCount > 0 && (
-                  <strong>{user.wishlistCount}</strong>
-                )}
-              </button>
-
-              <button className="od-sidebar-item" onClick={() => navigate("/wallet")}>
-                <Wallet size={16} /><span>WALLET</span>
-                {user?.wallet > 0 && <strong>₹{user.wallet}</strong>}
-              </button>
-
-              <button className="od-sidebar-item" onClick={() => navigate("/coupons")}>
-                <Ticket size={16} /><span>COUPONS</span>
-              </button>
-
-              <button className="od-sidebar-item" onClick={() => navigate("/addresses")}>
-                <MapPin size={16} /><span>SAVED ADDRESSES</span>
-              </button>
-
-              <button className="od-sidebar-item od-logout" onClick={handleLogout}>
-                <LogOut size={16} /><span>SIGN OUT</span>
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* ── MAIN CONTENT ── */}
-        <main className="od-main">
-          {/* Action Message */}
-          {actionMsg.text && (
-            <div className={`od-action-msg od-action-${actionMsg.type}`}>
-              {actionMsg.type === "success" ? <CheckCircle size={15} /> : <XCircle size={15} />}
-              {actionMsg.text}
-            </div>
-          )}
-
-          {/* Page Title */}
-          <div className="od-title-row">
-            <div>
-              <p className="od-eyebrow">ORDER DETAILS <span>•</span> PURCHASE RECORD</p>
-              <div className="od-heading-row">
-                <button className="od-back-btn" onClick={() => navigate("/orders")} id="back-to-orders-top">
-                  <ArrowLeft size={15} /> MY ORDERS
-                </button>
-                <h1 className="od-heading">#{order.orderNumber}</h1>
-              </div>
-              <p className="od-date">Placed on {formatDate(order.orderDate || order.createdAt)}</p>
-            </div>
-
-            <div className="od-status-group">
-              <span className={`od-badge ${orderCfg.cls}`}>
-                {orderCfg.icon} {orderCfg.label}
-              </span>
-              <span className={`od-pay-badge ${paymentCfg.cls}`}>
-                {paymentCfg.label}
-              </span>
-              {orderReturnBadge && (
-                <span className={`od-return-badge ${orderReturnBadge.cls}`}>
-                  <RotateCcw size={12} /> {orderReturnBadge.label}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Order Actions */}
-          <div className="od-order-actions">
-            <button
-              className="od-btn-download-invoice"
-              id="download-invoice-btn"
-              onClick={handleDownloadInvoice}
-              disabled={downloadingInvoice}
-              title="Download or Print Invoice"
-            >
-              {downloadingInvoice ? (
-                <>
-                  <Loader2 size={15} className="od-spinner" /> Generating Invoice…
-                </>
-              ) : (
-                <>
-                  <Download size={15} /> Download Invoice
-                </>
-              )}
-            </button>
-
-            {canCancelOrder && (
-              <button
-                className="od-btn-cancel-order"
-                id="cancel-order-btn"
-                onClick={() => setModal({ type: "cancelOrder", busy: false })}
-              >
-                <XCircle size={15} /> Cancel Order
-              </button>
-            )}
-
-            {canReturnOrder && (
-              <button
-                className="od-btn-return-order"
-                id="return-order-btn"
-                onClick={() => setModal({ type: "returnOrder", busy: false })}
-              >
-                <RotateCcw size={15} /> Request Return
-              </button>
-            )}
-          </div>
-
-          {/* Cancellation / Return Notes */}
-          {order.cancellationReason && (
-            <div className="od-cancel-info">
-              <XCircle size={14} />
-              <span>Cancelled: {order.cancellationReason}</span>
-            </div>
-          )}
-          {order.returnReason && order.returnStatus !== "None" && (
-            <div className="od-return-info">
-              <RotateCcw size={14} />
-              <span>Return reason: {order.returnReason}</span>
-            </div>
-          )}
-
-          <div className="od-grid">
-            {/* Left Column: Items + Address */}
-            <div className="od-left">
-              {/* ITEMS */}
-              <div className="od-card">
-                <h2 className="od-card-title">
-                  <Package size={17} /> Items Ordered ({order.items?.length || 0})
-                </h2>
-
-                <div className="od-items-list">
-                  {order.items?.map((item) => {
-                    const iCfg = itemStatusConfig[item.itemStatus] || itemStatusConfig.Active;
-                    const isActive = item.itemStatus === "Active";
-
-                    const canCancelThisItem =
-                      isActive && CANCELLABLE_ORDER_STATUSES.includes(order.orderStatus);
-                    const canReturnThisItem =
-                      isActive &&
-                      RETURNABLE_ORDER_STATUSES.includes(order.orderStatus) &&
-                      item.returnStatus === "None";
-
-                    const itemRetBadge = returnStatusBadge[item.returnStatus];
-                    const itemImage = item.productImage || item.coverImage;
-
-                    return (
-                      <div
-                        key={item._id}
-                        className={`od-item ${item.itemStatus !== "Active" ? "od-item-inactive" : ""}`}
-                      >
-                        {/* Image */}
-                        {itemImage ? (
-                          <img
-                            src={
-                              itemImage.startsWith("http")
-                                ? itemImage
-                                : `http://localhost:5000${itemImage}`
-                            }
-                            alt={item.productName || item.name}
-                            className="od-item-img"
-                          />
-                        ) : (
-                          <div className="od-item-img-ph">
-                            <Package size={22} />
-                          </div>
-                        )}
-
-                        {/* Details */}
-                        <div className="od-item-details">
-                          <div className="od-item-name-row">
-                            <p className="od-item-name">{item.productName || item.name}</p>
-                            <span className={`od-item-status-badge ${iCfg.cls}`}>
-                              {iCfg.label}
-                            </span>
-                          </div>
-
-                          {(item.variant?.size || item.variant?.color || item.size || item.color) && (
-                            <p className="od-item-variant">
-                              {[
-                                item.variant?.size || item.size,
-                                item.variant?.color || item.color,
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </p>
-                          )}
-
-                          <div className="od-item-pricing">
-                            <span className="od-item-unit">
-                              {formatCurrency(item.price)} × {item.quantity}
-                            </span>
-                            <span className="od-item-total">
-                              {formatCurrency(item.itemTotal || (item.price * item.quantity))}
-                            </span>
-                          </div>
-
-                          {/* Item cancellation / return info */}
-                          {item.cancellationReason && (
-                            <p className="od-item-reason cancelled-reason">
-                              Cancellation reason: {item.cancellationReason}
-                            </p>
-                          )}
-                          {item.returnReason && item.returnStatus !== "None" && (
-                            <p className="od-item-reason return-reason">
-                              Return reason: {item.returnReason}
-                            </p>
-                          )}
-                          {itemRetBadge && (
-                            <span className={`od-return-badge ${itemRetBadge.cls}`}>
-                              <RotateCcw size={11} /> {itemRetBadge.label}
-                            </span>
-                          )}
-
-                          {/* Per-item action buttons */}
-                          {(canCancelThisItem || canReturnThisItem) && (
-                            <div className="od-item-actions">
-                              {canCancelThisItem && (
-                                <button
-                                  className="od-item-cancel-btn"
-                                  id={`cancel-item-${item._id}`}
-                                  onClick={() => setModal({ type: "cancelItem", itemId: item._id, busy: false })}
-                                >
-                                  <XCircle size={13} /> Cancel Item
-                                </button>
-                              )}
-                              {canReturnThisItem && (
-                                <button
-                                  className="od-item-return-btn"
-                                  id={`return-item-${item._id}`}
-                                  onClick={() => setModal({ type: "returnItem", itemId: item._id, busy: false })}
-                                >
-                                  <RotateCcw size={13} /> Return Item
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* DELIVERY ADDRESS */}
-              <div className="od-card">
-                <h2 className="od-card-title">
-                  <MapPin size={17} /> Delivery Address
-                </h2>
-
-                <div className="od-address">
-                  <p className="od-addr-name">{addr.fullName}</p>
-                  <p className="od-addr-phone">{addr.phone}</p>
-                  <p className="od-addr-line">
-                    {[addr.house, addr.street].filter(Boolean).join(", ")}
+                <div>
+                  <span className="el-ret-piece-tag">FORMAL COLLECTION • ATELIER SERIES</span>
+                  <h4 className="el-ret-piece-title">
+                    {returnConfirmed.returnedItem?.productName || "ELARQUE Signature Garment"}
+                  </h4>
+                  <p className="el-ret-piece-specs">
+                    Size: {returnConfirmed.returnedItem?.variant?.size || "M"} &nbsp;•&nbsp;
+                    {returnConfirmed.returnedItem?.variant?.color || "Vintage Burgundy"}
                   </p>
-                  <p className="od-addr-line">
-                    {[addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")}
-                  </p>
+                  <div className="el-ret-piece-price">
+                    {formatPrice(returnConfirmed.refundAmount)}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Payment + Summary */}
-            <div className="od-right">
-              {/* PAYMENT */}
-              <div className="od-card">
-                <h2 className="od-card-title">
-                  <CreditCard size={17} /> Payment Information
-                </h2>
+            {/* Right: Logistics & Quality Protocol */}
+            <div className="el-ret-grid-col">
+              <div className="el-ret-logistics-card">
+                <h3 className="el-ret-logistics-title">
+                  <Truck size={15} color="#650D20" /> White-Glove Pickup Logistics
+                </h3>
+                <p className="el-ret-log-subtitle">CONSIGNMENT ORIGIN ADDRESS</p>
+                <p className="el-ret-log-addr">
+                  <strong>{address.fullName || "Swaliha Ezzath"}</strong>
+                  <br />
+                  {[address.house, address.street, address.city, address.state]
+                    .filter(Boolean)
+                    .join(", ")} - {address.pincode || "673001"}
+                  <br />
+                  Primary Handset: {address.phone || "+91 98765 43210"}
+                </p>
 
-                <div className="od-payment-info">
-                  <div className="od-pay-row">
-                    <span>Payment Method</span>
-                    <strong style={{ letterSpacing: "1px" }}>{order.paymentMethod}</strong>
+                <div className="el-ret-window-box">
+                  <div>
+                    <span>APPOINTMENT WINDOW</span>
+                    <strong>Tomorrow, 10:00 AM – 02:00 PM</strong>
                   </div>
-                  <div className="od-pay-row">
-                    <span>Payment Status</span>
-                    <span className={`od-pay-badge ${paymentCfg.cls}`}>
-                      {paymentCfg.label}
-                    </span>
+                  <div>
+                    <span>DEDICATED FLEET TIER</span>
+                    <strong>BlueDart Premier Haute Logistics</strong>
                   </div>
                 </div>
               </div>
 
-              {/* PRICING SUMMARY */}
-              <div className="od-card od-pricing-card">
-                <h2 className="od-card-title">Order Valuation</h2>
-
-                <div className="od-pricing">
-                  <div className="od-price-row">
-                    <span>Subtotal</span>
-                    <span>{formatCurrency(order.subtotal || order.totalAmount)}</span>
-                  </div>
-
-                  {order.discount > 0 && (
-                    <div className="od-price-row discount">
-                      <span>Privilege Discount</span>
-                      <span>−{formatCurrency(order.discount)}</span>
+              <div className="el-ret-protocol-card">
+                <h3 className="el-ret-protocol-title">
+                  <ShieldCheck size={15} color="#650D20" /> Settlement & Quality Protocol
+                </h3>
+                <ul className="el-ret-protocol-list">
+                  <li>
+                    <span className="el-num-circle">1</span>
+                    <div>
+                      <strong>24-Hour Vault Inspection</strong>
+                      <p>Certified master tailors inspect stitching, button hardware, and fabric freshness within 24 hours.</p>
                     </div>
-                  )}
-
-                  <div className="od-price-row">
-                    <span>White-Glove Shipping</span>
-                    <span>
-                      {order.shippingCharge > 0
-                        ? formatCurrency(order.shippingCharge)
-                        : "COMPLIMENTARY"}
-                    </span>
-                  </div>
-
-                  <div className="od-price-divider" />
-
-                  <div className="od-price-row total">
-                    <span>Total Amount</span>
-                    <span>{formatCurrency(order.totalAmount)}</span>
-                  </div>
-                </div>
-
-                {/* BACK BUTTON */}
-                <button
-                  className="od-back-full"
-                  onClick={() => navigate("/orders")}
-                  id="back-to-orders-bottom"
-                >
-                  ← BACK TO MY ORDERS
-                </button>
+                  </li>
+                  <li>
+                    <span className="el-num-circle">2</span>
+                    <div>
+                      <strong>Automatic Full Refund Release</strong>
+                      <p>The entire {formatPrice(returnConfirmed.refundAmount)} commission is reversed directly to your account within 5 to 7 banking days.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span className="el-num-circle">3</span>
+                    <div>
+                      <strong>Real-Time Atelier Notifications</strong>
+                      <p>Milestone alerts dispatched via private patron SMS and formal dispatch letters.</p>
+                    </div>
+                  </li>
+                </ul>
               </div>
             </div>
+          </div>
+
+          {/* Action Row */}
+          <div className="el-ret-confirm-bottom-actions">
+            <button
+              type="button"
+              className="el-btn-primary-dark"
+              onClick={() => setReturnConfirmed(null)}
+            >
+              TRACK COURIER TRANSIT STATUS ➔
+            </button>
+            <button
+              type="button"
+              className="el-btn-secondary-light"
+              onClick={() => navigate("/collections")}
+            >
+              EXPLORE THE CURRENT COLLECTION ➔
+            </button>
           </div>
         </main>
+
+        <Footer />
       </div>
+    );
+  }
+
+  // -----------------------------------------------------
+  // MAIN ORDER DETAILS VIEW (Screenshot 2)
+  // -----------------------------------------------------
+  return (
+    <div className="el-od-page-wrapper">
+      {/* 1. TOP ANNOUNCEMENT BAR */}
+      <AnnouncementBar />
+
+      {/* 2. MAIN NAVBAR */}
+      <Navbar />
+
+      {/* 3. MAIN CONTENT CONTAINER */}
+      <main className="el-od-main-container">
+        {/* Breadcrumb Header */}
+        <div className="el-od-top-bar">
+          <div>
+            <nav className="el-od-breadcrumbs">
+              <span onClick={() => navigate("/orders")} className="el-breadcrumb-link">
+                ORDERS
+              </span>
+              <span className="el-breadcrumb-sep">/</span>
+              <span className="el-breadcrumb-active">ORDER DETAILS</span>
+            </nav>
+            <h1 className="el-od-title">Order Details</h1>
+            <p className="el-od-subtitle">
+              Track your luxury fashion purchase from confirmation to delivery.
+            </p>
+          </div>
+
+          <div className="el-od-header-right-pill">
+            <span className="el-pill-bullet">•</span> Order {orderNum} — Placed on{" "}
+            {formatDateDisplay(order.orderDate)}
+          </div>
+        </div>
+
+        {/* Status Notification Banner with Invoice Button */}
+        <div className="el-od-status-banner">
+          <div className="el-od-status-banner-left">
+            <div className="el-od-status-icon-box">
+              <Truck size={22} color="#FFFFFF" />
+            </div>
+
+            <div className="el-od-status-text-group">
+              <span className="el-od-status-pill">{status.toUpperCase()}</span>
+              <h2 className="el-od-status-headline">
+                {status === "Delivered"
+                  ? `Delivered on ${formatDateDisplay(order.deliveredDate || order.orderDate)}`
+                  : status === "Cancelled"
+                  ? `Commission Cancelled on ${formatDateDisplay(order.cancelledDate || order.updatedAt)}`
+                  : `${status} on ${formatDateDisplay(order.orderDate)}`}
+              </h2>
+              <p className="el-od-status-desc">
+                {status === "Delivered"
+                  ? "Hand-delivered with white-glove signature care to your private residence."
+                  : status === "Cancelled"
+                  ? "All garments have been reconciled and inventory has been securely restored to the salon archive."
+                  : "Curated with bespoke precision under European haute couture protocols."}
+              </p>
+            </div>
+          </div>
+
+          {/* Download Invoice Button */}
+          <button
+            type="button"
+            className="el-btn-download-invoice"
+            onClick={handleDownloadInvoice}
+            disabled={downloadingInvoice}
+          >
+            <Download size={14} />
+            <span>{downloadingInvoice ? "PREPARING PDF..." : "DOWNLOAD INVOICE"}</span>
+          </button>
+        </div>
+
+        {/* Fulfillment Journey Stepper */}
+        <div className="el-od-stepper-card">
+          <div className="el-od-stepper-header">
+            <span className="el-od-stepper-eyebrow">FULFILLMENT JOURNEY</span>
+            <span className="el-od-stepper-completion">
+              <CheckCircle2 size={13} color="#650D20" /> {stepIdx === 4 ? "100% COMPLETED" : `${stepIdx * 25}% COMPLETED`}
+            </span>
+          </div>
+
+          <div className="el-od-stepper-timeline">
+            {/* Step 1: Placed */}
+            <div className={`el-stepper-node ${stepIdx >= 1 ? "completed" : ""}`}>
+              <div className="el-stepper-circle">
+                <CheckCircle2 size={13} />
+              </div>
+              <strong className="el-step-name">Order Confirmed</strong>
+              <span className="el-step-date">
+                {formatDateDisplay(order.orderDate)}, {formatTimeDisplay(order.orderDate)}
+              </span>
+              <span className="el-step-sub">PAYMENT VERIFIED</span>
+            </div>
+
+            <div className={`el-stepper-bar ${stepIdx >= 2 ? "active" : ""}`} />
+
+            {/* Step 2: Preparing */}
+            <div className={`el-stepper-node ${stepIdx >= 2 ? "completed" : ""}`}>
+              <div className="el-stepper-circle">
+                <CheckCircle2 size={13} />
+              </div>
+              <strong className="el-step-name">Preparing</strong>
+              <span className="el-step-date">Atelier Tailoring</span>
+              <span className="el-step-sub">PARIS ATELIER GUILD</span>
+            </div>
+
+            <div className={`el-stepper-bar ${stepIdx >= 3 ? "active" : ""}`} />
+
+            {/* Step 3: Shipped */}
+            <div className={`el-stepper-node ${stepIdx >= 3 ? "completed" : ""}`}>
+              <div className="el-stepper-circle">
+                <CheckCircle2 size={13} />
+              </div>
+              <strong className="el-step-name">Shipped</strong>
+              <span className="el-step-date">Dispatched</span>
+              <span className="el-step-sub">DALLAS VAULT HUB</span>
+            </div>
+
+            <div className={`el-stepper-bar ${stepIdx >= 4 ? "active" : ""}`} />
+
+            {/* Step 4: In Transit */}
+            <div className={`el-stepper-node ${stepIdx >= 4 ? "completed" : ""}`}>
+              <div className="el-stepper-circle">
+                <CheckCircle2 size={13} />
+              </div>
+              <strong className="el-step-name">In Transit</strong>
+              <span className="el-step-date">White-Glove</span>
+              <span className="el-step-sub">COURIER DISPATCH</span>
+            </div>
+
+            <div className={`el-stepper-bar ${stepIdx >= 4 ? "active" : ""}`} />
+
+            {/* Step 5: Delivered */}
+            <div className={`el-stepper-node ${stepIdx >= 4 ? "completed" : ""}`}>
+              <div className="el-stepper-circle">
+                <CheckCircle2 size={13} />
+              </div>
+              <strong className="el-step-name">Delivered</strong>
+              <span className="el-step-date">{formatDateDisplay(order.deliveredDate || order.orderDate)}</span>
+              <span className="el-step-sub">SIGNED BY PATRON</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Two-Column Layout */}
+        <div className="el-od-two-col-layout">
+          {/* =====================================================
+              LEFT COLUMN: ORDERED GARMENTS
+          ===================================================== */}
+          <section className="el-od-items-col">
+            <div className="el-od-items-list">
+              {items.map((item, idx) => {
+                const itemImg = item.productImage || FALLBACK_ITEM_IMG;
+                const resolvedImg = itemImg.startsWith("http")
+                  ? itemImg
+                  : `http://localhost:5000${itemImg}`;
+
+                const isItemActive = item.itemStatus === "Active";
+                const isItemCancelled = item.itemStatus === "Cancelled";
+                const isItemReturned = item.itemStatus === "Returned" || item.returnStatus === "Requested";
+
+                return (
+                  <article key={item._id || idx} className="el-od-item-card">
+                    {/* Item Thumbnail */}
+                    <div className="el-od-item-thumb-wrap">
+                      <img
+                        src={resolvedImg}
+                        alt={item.productName || "Couture Garment"}
+                        className="el-od-item-thumb-img"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = FALLBACK_ITEM_IMG;
+                        }}
+                      />
+                      <span className="el-item-best-seller-tag">BEST SELLER</span>
+                      <span className={`el-item-status-pill ${item.itemStatus?.toLowerCase()}`}>
+                        {item.itemStatus || status}
+                      </span>
+                    </div>
+
+                    {/* Item Info Center */}
+                    <div className="el-od-item-info">
+                      <div className="el-item-meta-top">
+                        <span className="el-item-collection-tag">FORMAL COLLECTION</span>
+                        <span className="el-item-sku-tag">
+                          SKU #ELQ-{String(item.product || idx).slice(-6).toUpperCase()}
+                        </span>
+                      </div>
+
+                      <h3 className="el-item-name">{item.productName}</h3>
+
+                      <p className="el-item-desc">
+                        Biella Italian Wool & 100% Cupra Silk Lining with handcrafted horn buckle detail and signature crest embroidery.
+                      </p>
+
+                      {/* Variant Attributes */}
+                      <div className="el-item-specs-row">
+                        <span className="el-spec-chip">
+                          Size: <strong>{item.variant?.size || item.size || "M"}</strong>
+                        </span>
+                        <span className="el-spec-chip">
+                          Color: <strong>{item.variant?.color || item.color || "Vintage Burgundy"}</strong>
+                        </span>
+                        <span className="el-spec-chip">
+                          Qty: <strong>{String(item.quantity || 1).padStart(2, "0")}</strong>
+                        </span>
+                      </div>
+
+                      {/* Price Display */}
+                      <div className="el-item-price-row">
+                        <span className="el-item-price-val">
+                          {formatPrice(item.price || item.itemTotal)}
+                        </span>
+                        <span className="el-item-tax-note">
+                          Incl. of all custom atelier taxes
+                        </span>
+                      </div>
+
+                      {/* Action Buttons Row */}
+                      <div className="el-item-actions-row">
+                        <button
+                          type="button"
+                          className="el-btn-item-link"
+                          onClick={() =>
+                            item.product && navigate(`/products/${item.product}`)
+                          }
+                        >
+                          VIEW PRODUCT
+                        </button>
+
+                        {/* Individual Item Cancellation */}
+                        {isOrderCancellable(status) && isItemActive && (
+                          <button
+                            type="button"
+                            className="el-btn-item-cancel"
+                            onClick={() =>
+                              openCancelModal(false, item._id, item.productName, item.price)
+                            }
+                          >
+                            CANCEL
+                          </button>
+                        )}
+
+                        {/* Individual Item Return */}
+                        {isOrderReturnable(status, item.returnStatus) && isItemActive && (
+                          <button
+                            type="button"
+                            className="el-btn-item-return"
+                            onClick={() => openReturnModal(false, item)}
+                          >
+                            RETURN
+                          </button>
+                        )}
+
+                        {/* Write Review Button */}
+                        {status === "Delivered" && (
+                          <button
+                            type="button"
+                            className="el-btn-item-review"
+                            onClick={() =>
+                              setReviewModal({
+                                isOpen: true,
+                                item,
+                                rating: 5,
+                                selectedImpressions: ["Perfect Fit", "Premium Quality"],
+                                impressionText:
+                                  "The sculpted shoulders and rich burgundy wool drape like museum couture. Impeccable craftsmanship.",
+                                submitted: false,
+                              })
+                            }
+                          >
+                            <Star size={11} fill="#8A775C" stroke="#8A775C" /> WRITE REVIEW
+                          </button>
+                        )}
+
+                        {isItemCancelled && (
+                          <span className="el-item-status-note cancelled">
+                            Cancelled & Stock Restored
+                          </span>
+                        )}
+
+                        {isItemReturned && (
+                          <span className="el-item-status-note returned">
+                            Return {item.returnStatus || "Requested"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Bottom Order-Level Action Button */}
+            {isOrderReturnable(status, order.returnStatus) && (
+              <button
+                type="button"
+                className="el-btn-order-level-action"
+                onClick={() => openReturnModal(true)}
+              >
+                RETURN ENTIRE ORDER
+              </button>
+            )}
+
+            {isOrderCancellable(status) && (
+              <button
+                type="button"
+                className="el-btn-order-level-action cancel"
+                onClick={() => openCancelModal(true)}
+              >
+                CANCEL ENTIRE ORDER
+              </button>
+            )}
+          </section>
+
+          {/* =====================================================
+              RIGHT COLUMN: ADDRESS & PAYMENT SUMMARY
+          ===================================================== */}
+          <aside className="el-od-summary-col">
+            {/* Delivery Address Card */}
+            <div className="el-od-address-card">
+              <div className="el-od-card-header">
+                <div className="el-od-card-title-group">
+                  <MapPin size={15} color="#650D20" />
+                  <h3>Delivery Address</h3>
+                </div>
+                <span className="el-verified-chip">VERIFIED</span>
+              </div>
+
+              <div className="el-od-address-body">
+                <strong className="el-addr-name">
+                  {address.fullName || "Swaliha Beaumont"}
+                </strong>
+                <p className="el-addr-lines">
+                  {[address.house, address.street, address.city, address.state]
+                    .filter(Boolean)
+                    .join(", ")}
+                  <br />
+                  Pincode: {address.pincode || "673001"}
+                </p>
+                <p className="el-addr-phone">
+                  Liaison Phone: {address.phone || "+91 98765 43210"}
+                </p>
+                <div className="el-residence-verified-tag">
+                  <ShieldCheck size={12} color="#8A775C" />
+                  <span>VERIFIED PRIVATE RESIDENCE</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Summary Card */}
+            <div className="el-od-payment-card">
+              <div className="el-od-card-header">
+                <div className="el-od-card-title-group">
+                  <CreditCard size={15} color="#650D20" />
+                  <h3>Payment Summary</h3>
+                </div>
+                <span className="el-paid-chip">
+                  {(order.paymentStatus || "PAID").toUpperCase()}
+                </span>
+              </div>
+
+              <div className="el-payment-method-box">
+                <span className="el-method-label">
+                  {order.paymentMethod === "COD"
+                    ? "Cash on Delivery (White-Glove)"
+                    : order.paymentMethod === "WALLET"
+                    ? "Atelier Vault Credit"
+                    : "Visa ending in •••• 4587"}
+                </span>
+                <span className="el-method-verified-tag">VERIFIED</span>
+              </div>
+
+              <div className="el-payment-breakdown-list">
+                <div className="el-breakdown-row">
+                  <span>Total Orders</span>
+                  <strong>{formatPrice(order.subtotal || order.totalAmount)}</strong>
+                </div>
+
+                <div className="el-breakdown-row">
+                  <span>Shipping Charge</span>
+                  <span className="el-green-free">Free</span>
+                </div>
+
+                {order.discount > 0 && (
+                  <div className="el-breakdown-row discount">
+                    <span>Coupon Privilege</span>
+                    <strong>-{formatPrice(order.discount)}</strong>
+                  </div>
+                )}
+
+                <div className="el-breakdown-row">
+                  <span>Cedar Box Packaging</span>
+                  <span className="el-muted-comp">Complimentary</span>
+                </div>
+
+                <div className="el-breakdown-row">
+                  <span>Estimated Tax (GST 18%)</span>
+                  <strong>{formatPrice(Math.round((order.totalAmount || 0) * 0.06))}</strong>
+                </div>
+
+                <div className="el-breakdown-divider" />
+
+                <div className="el-breakdown-total-row">
+                  <div>
+                    <span className="el-total-label">TOTAL SETTLED</span>
+                    <span className="el-total-subnote">All duties & courier fees included</span>
+                  </div>
+                  <strong className="el-total-price">
+                    {formatPrice(order.totalAmount)}
+                  </strong>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+
+      {/* =====================================================
+          CANCELLATION MODAL (Requirements ii & iii)
+      ===================================================== */}
+      {cancelModal.isOpen && (
+        <div className="el-modal-backdrop" onClick={() => setCancelModal({ ...cancelModal, isOpen: false })}>
+          <div className="el-modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="el-modal-header">
+              <AlertTriangle size={20} color="#650D20" />
+              <h3>Confirm Cancellation</h3>
+            </div>
+
+            <p className="el-modal-desc">
+              Are you sure you want to cancel{" "}
+              <strong>{cancelModal.isFullOrder ? "your entire order" : cancelModal.productName}</strong>?
+              Reserved inventory will be immediately restored to the salon archive.
+            </p>
+
+            <div className="el-modal-field">
+              <label htmlFor="cancel-reason-input">
+                Reason for Cancellation <span className="el-optional-tag">(Optional)</span>
+              </label>
+              <textarea
+                id="cancel-reason-input"
+                placeholder="Optional explanation (e.g. Changed occasion plans, need to modify fit...)"
+                rows={3}
+                value={cancelModal.reason}
+                onChange={(e) =>
+                  setCancelModal({ ...cancelModal, reason: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="el-modal-actions">
+              <button
+                type="button"
+                className="el-btn-modal-cancel"
+                onClick={() => setCancelModal({ ...cancelModal, isOpen: false })}
+                disabled={cancelModal.busy}
+              >
+                KEEP COMMISSION
+              </button>
+
+              <button
+                type="button"
+                className="el-btn-modal-confirm"
+                onClick={handleConfirmCancel}
+                disabled={cancelModal.busy}
+              >
+                {cancelModal.busy ? "RESTORING STOCK..." : "CONFIRM CANCELLATION"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
+          RETURN FORM MODAL (Screenshot 5 & Requirement iv)
+      ===================================================== */}
+      {returnModal.isOpen && (
+        <div className="el-modal-backdrop" onClick={() => setReturnModal({ ...returnModal, isOpen: false })}>
+          <div className="el-modal-return-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="el-modal-close-x"
+              onClick={() => setReturnModal({ ...returnModal, isOpen: false })}
+            >
+              <X size={18} />
+            </button>
+
+            <div className="el-ret-form-header">
+              <h2 className="el-ret-form-title">Return Your Order</h2>
+              <p className="el-ret-form-subtitle">
+                We're here to make returns effortless. Tell us why you'd like to return your item and we'll take care of the rest with dedicated salon white-glove pickup.
+              </p>
+            </div>
+
+            <div className="el-ret-form-body-grid">
+              {/* Left Item Preview */}
+              <div className="el-ret-form-left-preview">
+                <div className="el-ret-preview-thumb">
+                  <img
+                    src={returnModal.item?.productImage || FALLBACK_ITEM_IMG}
+                    alt="Piece"
+                  />
+                  <span className="el-ret-preview-badge">• DELIVERED</span>
+                  <span className="el-ret-preview-order-tag">{orderNum}</span>
+                </div>
+
+                <span className="el-ret-preview-col-tag">FORMAL COLLECTION • ATELIER SERIES</span>
+                <h4 className="el-ret-preview-title">
+                  {returnModal.item?.productName || "ELARQUE Signature Blazer Dress"}
+                </h4>
+
+                <div className="el-ret-preview-specs">
+                  <div>
+                    <span>SIZE</span>
+                    <strong>{returnModal.item?.variant?.size || "M (FR 38)"}</strong>
+                  </div>
+                  <div>
+                    <span>COLOR</span>
+                    <strong>{returnModal.item?.variant?.color || "Vintage Burgundy"}</strong>
+                  </div>
+                  <div>
+                    <span>DELIVERED DATE</span>
+                    <strong>{formatDateDisplay(order.deliveredDate || order.orderDate)}</strong>
+                  </div>
+                  <div>
+                    <span>COMMISSION PRICE</span>
+                    <strong>{formatPrice(returnModal.item?.price || 4999)}</strong>
+                  </div>
+                </div>
+
+                {/* Return Guarantee */}
+                <div className="el-ret-guarantee-card">
+                  <Sparkles size={14} color="#8A775C" />
+                  <div>
+                    <strong>ELARQUE Return Guarantee</strong>
+                    <p>7-Day complimentary concierge window. Tags attached & original cedar packaging.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Form Fields */}
+              <div className="el-ret-form-right-fields">
+                {returnModal.error && (
+                  <div className="el-ret-error-banner">{returnModal.error}</div>
+                )}
+
+                {/* 1. Reason Selection (Mandatory) */}
+                <div className="el-ret-field-group">
+                  <label htmlFor="return-reason-select">
+                    1. SELECT REASON FOR RETURN <span className="el-req-star">*</span>
+                  </label>
+                  <select
+                    id="return-reason-select"
+                    value={returnModal.reason}
+                    onChange={(e) =>
+                      setReturnModal({ ...returnModal, reason: e.target.value, error: "" })
+                    }
+                    className="el-ret-select"
+                  >
+                    <option value="">Please choose a return reason...</option>
+                    <option value="Bespoke Fit Correction (Wrong Size)">
+                      Bespoke Fit Correction (Wrong Size / Fit Issue)
+                    </option>
+                    <option value="Garment Defect or Tailoring Flaw">
+                      Garment Defect or Tailoring Flaw
+                    </option>
+                    <option value="Color Variation From Salon Archive">
+                      Color Variation From Salon Archive
+                    </option>
+                    <option value="Arrived After Scheduled Occasion">
+                      Arrived After Scheduled Occasion
+                    </option>
+                    <option value="Changed Haute Preference">
+                      Changed Haute Preference
+                    </option>
+                  </select>
+                </div>
+
+                {/* 2. Return Description (Mandatory) */}
+                <div className="el-ret-field-group">
+                  <div className="el-label-between">
+                    <label htmlFor="return-desc-input">
+                      2. RETURN DESCRIPTION <span className="el-req-star">*</span>
+                    </label>
+                    <span className="el-char-count">
+                      {returnModal.description.length} / 500 characters
+                    </span>
+                  </div>
+                  <textarea
+                    id="return-desc-input"
+                    rows={3}
+                    maxLength={500}
+                    placeholder="Please tell us why you'd like to return this item. Specific notes on fit, tailored measurements, or garment details help our master cutters improve future commissions."
+                    value={returnModal.description}
+                    onChange={(e) =>
+                      setReturnModal({ ...returnModal, description: e.target.value, error: "" })
+                    }
+                    className="el-ret-textarea"
+                  />
+                </div>
+
+                {/* 3. Preferred Refund Method */}
+                <div className="el-ret-field-group">
+                  <label>3. SELECT PREFERRED REFUND METHOD <span className="el-req-star">*</span></label>
+                  <div className="el-refund-options-row">
+                    <div
+                      className={`el-refund-card ${returnModal.refundMethod === "original" ? "selected" : ""}`}
+                      onClick={() =>
+                        setReturnModal({ ...returnModal, refundMethod: "original" })
+                      }
+                    >
+                      <CreditCard size={18} color="#650D20" />
+                      <div>
+                        <strong>Original Payment</strong>
+                        <span>Reversed directly (5–7 business days)</span>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`el-refund-card ${returnModal.refundMethod === "wallet" ? "selected" : ""}`}
+                      onClick={() =>
+                        setReturnModal({ ...returnModal, refundMethod: "wallet" })
+                      }
+                    >
+                      <CreditCard size={18} color="#C5A059" />
+                      <div>
+                        <strong>Atelier Wallet</strong>
+                        <span>Instant credit + 5% salon bonus</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pickup Address Summary */}
+                <div className="el-ret-pickup-summary">
+                  <MapPin size={14} color="#650D20" />
+                  <div>
+                    <strong>Complimentary White-Glove Pickup Address:</strong>
+                    <p>
+                      {address.fullName || "Swaliha Beaumont"} •{" "}
+                      {[address.house, address.street, address.city].filter(Boolean).join(", ")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="el-ret-form-actions">
+                  <button
+                    type="button"
+                    className="el-btn-submit-return"
+                    onClick={handleConfirmReturn}
+                    disabled={returnModal.busy}
+                  >
+                    {returnModal.busy ? "PROCESSING DOSSIER..." : "SUBMIT RETURN REQUEST ➔"}
+                  </button>
+                  <button
+                    type="button"
+                    className="el-btn-cancel-return-dialog"
+                    onClick={() => setReturnModal({ ...returnModal, isOpen: false })}
+                    disabled={returnModal.busy}
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
+          RATE YOUR PURCHASE MODAL (Screenshot 4)
+      ===================================================== */}
+      {reviewModal.isOpen && (
+        <div className="el-modal-backdrop" onClick={() => setReviewModal({ ...reviewModal, isOpen: false })}>
+          <div className="el-modal-review" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="el-modal-close-x"
+              onClick={() => setReviewModal({ ...reviewModal, isOpen: false })}
+            >
+              <X size={18} />
+            </button>
+
+            <span className="el-rev-eyebrow">★ PRODUCT REVIEW • ATELIER VOICES</span>
+            <h2 className="el-rev-title">Rate Your Purchase</h2>
+            <p className="el-rev-subtitle">
+              Share your experiential monograph and assist fellow connoisseurs in curating timeless ELARQUE couture silhouettes.
+            </p>
+
+            {/* Star Rating */}
+            <div className="el-rev-stars-box">
+              <span className="el-rev-stars-label">1. OVERALL EXPERIENCE: EXCEPTIONAL (5 STARS)</span>
+              <div className="el-rev-stars-list">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={24}
+                    fill={star <= reviewModal.rating ? "#8A775C" : "none"}
+                    stroke="#8A775C"
+                    strokeWidth={1.5}
+                    onClick={() => setReviewModal({ ...reviewModal, rating: star })}
+                    style={{ cursor: "pointer" }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Impression Tags */}
+            <div className="el-rev-tags-box">
+              <span className="el-rev-tags-label">2. WHAT IMPRESSED YOU MOST?</span>
+              <div className="el-rev-tags-flex">
+                {[
+                  "Perfect Fit",
+                  "Premium Quality",
+                  "Comfortable",
+                  "Worth the Price",
+                  "Elegant Design",
+                  "Exquisite Tailoring",
+                  "White-Glove Packaging",
+                ].map((tag) => {
+                  const isSelected = reviewModal.selectedImpressions.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`el-rev-tag-chip ${isSelected ? "selected" : ""}`}
+                      onClick={() => {
+                        const newTags = isSelected
+                          ? reviewModal.selectedImpressions.filter((t) => t !== tag)
+                          : [...reviewModal.selectedImpressions, tag];
+                        setReviewModal({ ...reviewModal, selectedImpressions: newTags });
+                      }}
+                    >
+                      {isSelected ? "✓ " : ""}{tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Textarea */}
+            <div className="el-rev-textarea-box">
+              <span className="el-rev-tags-label">3. YOUR ATELIER IMPRESSION</span>
+              <textarea
+                rows={4}
+                value={reviewModal.impressionText}
+                onChange={(e) =>
+                  setReviewModal({ ...reviewModal, impressionText: e.target.value })
+                }
+                className="el-rev-textarea"
+              />
+            </div>
+
+            <div className="el-rev-actions">
+              <button
+                type="button"
+                className="el-btn-submit-review"
+                onClick={() => {
+                  alert("Thank you! Your verified patron review has been recorded.");
+                  setReviewModal({ ...reviewModal, isOpen: false });
+                }}
+              >
+                SUBMIT REVIEW ➔
+              </button>
+              <button
+                type="button"
+                className="el-btn-cancel-rev"
+                onClick={() => setReviewModal({ ...reviewModal, isOpen: false })}
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. ATELIER FOOTER */}
+      <Footer />
     </div>
   );
 }

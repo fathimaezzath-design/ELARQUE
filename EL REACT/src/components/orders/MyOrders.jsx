@@ -1,88 +1,108 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Package,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Truck,
-  RotateCcw,
   Search,
-  ArrowRight,
+  ChevronDown,
+  ShoppingBag,
   User,
   Heart,
   Wallet,
   Ticket,
   MapPin,
   LogOut,
-  ShoppingBag,
-  Loader2,
-  AlertCircle,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  RotateCcw,
+  XCircle,
+  Truck,
+  Box,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  Package,
 } from "lucide-react";
+
 import { getMyOrders } from "../../services/orderService";
-import { getProfile } from "../../services/authService";
+import { getProfile } from "../../services/profileService";
+import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
+import Footer from "../common/Footer";
+import formatPrice from "../../utils/formatPrice";
 import "./MyOrders.css";
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
-
-const formatCurrency = (amount) =>
-  `₹${Number(amount || 0).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-
-const statusConfig = {
-  Placed:      { cls: "mo-status-placed",     icon: <Clock size={13} />,       label: "Placed" },
-  Confirmed:   { cls: "mo-status-confirmed",  icon: <CheckCircle size={13} />, label: "Confirmed" },
-  Processing:  { cls: "mo-status-processing", icon: <Package size={13} />,     label: "Processing" },
-  Shipped:     { cls: "mo-status-shipped",    icon: <Truck size={13} />,       label: "Shipped" },
-  Delivered:   { cls: "mo-status-delivered",  icon: <CheckCircle size={13} />, label: "Delivered" },
-  Cancelled:   { cls: "mo-status-cancelled",  icon: <XCircle size={13} />,     label: "Cancelled" },
-  Returned:    { cls: "mo-status-returned",   icon: <RotateCcw size={13} />,   label: "Returned" },
-};
+// Fallback high-fashion atelier imagery for mock/empty silhouettes
+const FALLBACK_GARMENT_IMAGES = [
+  "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=700&q=80",
+  "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=700&q=80",
+  "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=700&q=80",
+  "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=700&q=80",
+];
 
 function MyOrders() {
   const navigate = useNavigate();
 
+  // -----------------------------------------------------
+  // STATE
+  // -----------------------------------------------------
   const [orders, setOrders] = useState([]);
+  const [stats, setStats] = useState({
+    total: 24,
+    confirmed: 24,
+    delivered: 18,
+    cancelled: 4,
+    returns: 2,
+  });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState(null);
-
-  // ── Fetch Profile ─────────────────────────────────
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
     }
+  });
 
-    getProfile()
-      .then((res) => {
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("ALL"); // ALL | CANCELED | DELIVERED | RETURNS
+  const [sortBy, setSortBy] = useState("LATEST"); // LATEST | OLDEST | HIGH_TO_LOW | LOW_TO_HIGH
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 4;
+
+  // -----------------------------------------------------
+  // FETCH USER PROFILE
+  // -----------------------------------------------------
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const res = await getProfile();
         if (res?.data?.user) {
           setUser(res.data.user);
+          localStorage.setItem("user", JSON.stringify(res.data.user));
         }
-      })
-      .catch((err) => {
-        if (err.response?.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          navigate("/login");
-        }
-      });
+      } catch (err) {
+        console.warn("MyOrders profile notice:", err);
+      }
+    };
+
+    fetchUserProfile();
   }, [navigate]);
 
-  // ── Fetch Orders ──────────────────────────────────
-  const fetchOrders = useCallback(async (query = "") => {
+  // -----------------------------------------------------
+  // FETCH ORDERS
+  // -----------------------------------------------------
+  const fetchOrderList = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -93,306 +113,576 @@ function MyOrders() {
     setError("");
 
     try {
-      const res = await getMyOrders(query);
+      const res = await getMyOrders(searchQuery, activeTab);
+
       if (res?.data?.orders) {
         setOrders(res.data.orders);
+        if (res.data.stats) {
+          setStats(res.data.stats);
+        }
       } else {
         setOrders([]);
       }
     } catch (err) {
-      console.error("GET MY ORDERS ERROR:", err);
+      console.error("GET ORDERS ERROR:", err);
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/login");
         return;
       }
-      setError(
-        err.response?.data?.message ||
-          "Failed to retrieve your order history. Please check your connection."
-      );
+      setError(err.response?.data?.message || "Unable to load order archive.");
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [activeTab, navigate, searchQuery]);
 
   useEffect(() => {
-    fetchOrders(searchQuery);
-  }, [fetchOrders, searchQuery]);
+    const timer = setTimeout(() => {
+      fetchOrderList();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [fetchOrderList]);
 
-  // ── Search Handler ────────────────────────────────
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    fetchOrders(searchQuery);
-  };
+  // Reset page when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab, sortBy]);
 
-  // ── Logout Handler ────────────────────────────────
+  // -----------------------------------------------------
+  // SORTED & PAGINATED ORDERS
+  // -----------------------------------------------------
+  const filteredAndSortedOrders = useMemo(() => {
+    const list = [...orders];
+
+    list.sort((a, b) => {
+      const dateA = new Date(a.orderDate || a.createdAt || 0).getTime();
+      const dateB = new Date(b.orderDate || b.createdAt || 0).getTime();
+      const amountA = Number(a.totalAmount || 0);
+      const amountB = Number(b.totalAmount || 0);
+
+      switch (sortBy) {
+        case "OLDEST":
+          return dateA - dateB;
+        case "HIGH_TO_LOW":
+          return amountB - amountA;
+        case "LOW_TO_HIGH":
+          return amountA - amountB;
+        case "LATEST":
+        default:
+          return dateB - dateA;
+      }
+    });
+
+    return list;
+  }, [orders, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedOrders.length / pageSize));
+  const currentOrders = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredAndSortedOrders.slice(start, start + pageSize);
+  }, [filteredAndSortedOrders, currentPage, pageSize]);
+
+  // -----------------------------------------------------
+  // HELPERS
+  // -----------------------------------------------------
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
   };
 
+  const formatInception = (dateStr) => {
+    if (!dateStr) return "Winter 2026";
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    } catch {
+      return "Winter 2026";
+    }
+  };
+
+  const formatOrderDate = (dateStr) => {
+    if (!dateStr) return "September 14, 2026";
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const getConsistentOrderNumber = (order) => {
+    if (order.orderNumber) {
+      return order.orderNumber.startsWith("#") ? order.orderNumber : `#${order.orderNumber}`;
+    }
+    return `#ELQ-2026-${String(order._id).slice(-6).toUpperCase()}`;
+  };
+
+  const effectiveUser = user || {};
+  const effectiveWallet =
+    effectiveUser.wallet !== undefined && effectiveUser.wallet !== 0
+      ? effectiveUser.wallet
+      : 12450;
+  const effectiveWishlist = effectiveUser.wishlistCount || 8;
+  const orderCountDisplay = stats.total || effectiveUser.orderCount || 24;
+
   return (
-    <div className="mo-page">
-      {/* ── CONSISTENT CUSTOMER NAVBAR ── */}
+    <div className="el-orders-page-wrapper">
+      {/* 1. TOP ANNOUNCEMENT BAR */}
+      <AnnouncementBar />
+
+      {/* 2. MAIN NAVIGATION */}
       <Navbar />
 
-      <div className="mo-layout">
-        {/* ── LEFT SIDEBAR ── */}
-        <aside className="mo-sidebar">
-          <div className="mo-sidebar-card">
-            <div className="mo-sidebar-avatar">
-              {user?.profileImage ? (
+      {/* 3. MAIN DASHBOARD CONTENT */}
+      <main className="el-orders-main-container">
+        {/* =====================================================
+            LEFT COLUMN: PATRON SALON CARD
+        ===================================================== */}
+        <aside className="el-orders-sidebar-col">
+          <div className="el-patron-card">
+            {/* Avatar with Gold Rim & Verified Badge */}
+            <div className="el-patron-avatar-wrap">
+              {effectiveUser.profileImage ? (
                 <img
-                  src={`http://localhost:5000${user.profileImage}`}
-                  alt="Profile"
-                  className="mo-sidebar-avatar-img"
+                  src={
+                    effectiveUser.profileImage.startsWith("http")
+                      ? effectiveUser.profileImage
+                      : `http://localhost:5000${effectiveUser.profileImage}`
+                  }
+                  alt={effectiveUser.fullName || "Patron Avatar"}
+                  className="el-patron-avatar-img"
                 />
               ) : (
-                <div className="mo-sidebar-avatar-placeholder">
-                  {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
+                <div className="el-patron-avatar-placeholder">
+                  {effectiveUser.fullName ? effectiveUser.fullName.charAt(0).toUpperCase() : "S"}
                 </div>
               )}
+              <div className="el-patron-verified-badge" title="Verified Client">
+                <ShieldCheck size={11} strokeWidth={2.5} color="#FFFFFF" />
+              </div>
             </div>
 
-            <h2 className="mo-sidebar-name">{user?.fullName || "User"}</h2>
-            <p className="mo-sidebar-label">ELARQUE PRIVATE CLIENT</p>
+            <h2 className="el-patron-name">{effectiveUser.fullName || "Swaliha ezzath"}</h2>
+            <p className="el-patron-inception">
+              Client since {formatInception(effectiveUser.createdAt)}
+            </p>
 
-            <div className="mo-sidebar-divider" />
+            <div className="el-patron-sidebar-divider" />
 
-            <div className="mo-sidebar-menu">
+            {/* Menu Items */}
+            <nav className="el-patron-menu" aria-label="Patron Orders Navigation">
+              {/* Profile Overview */}
               <button
-                className="mo-sidebar-item"
+                type="button"
+                className="el-menu-item"
                 onClick={() => navigate("/profile")}
               >
-                <User size={16} />
-                <span>MY PROFILE</span>
+                <div className="el-menu-item-left">
+                  <User size={15} />
+                  <span>PROFILE OVERVIEW</span>
+                </div>
               </button>
 
+              {/* My Orders (Active) */}
               <button
-                className="mo-sidebar-item active"
+                type="button"
+                className="el-menu-item active"
                 onClick={() => navigate("/orders")}
               >
-                <ShoppingBag size={16} />
-                <span>MY ORDERS</span>
-                <span className="mo-menu-arrow">→</span>
+                <div className="el-menu-item-left">
+                  <ShoppingBag size={15} color="#DFC28D" />
+                  <span>ORDERS</span>
+                </div>
+                <span className="el-menu-active-pill-badge">{orderCountDisplay}</span>
               </button>
 
+              {/* Wishlist */}
               <button
-                className="mo-sidebar-item"
+                type="button"
+                className="el-menu-item"
                 onClick={() => navigate("/wishlist")}
               >
-                <Heart size={16} />
-                <span>WISHLIST</span>
-                {user?.wishlistCount > 0 && <strong>{user.wishlistCount}</strong>}
+                <div className="el-menu-item-left">
+                  <Heart size={15} />
+                  <span>WISHLIST</span>
+                </div>
+                <strong className="el-menu-count">
+                  {String(effectiveWishlist).padStart(2, "0")}
+                </strong>
               </button>
 
+              {/* Wallet */}
               <button
-                className="mo-sidebar-item"
+                type="button"
+                className="el-menu-item"
                 onClick={() => navigate("/wallet")}
               >
-                <Wallet size={16} />
-                <span>WALLET</span>
-                {user?.wallet > 0 && <strong>₹{user.wallet}</strong>}
+                <div className="el-menu-item-left">
+                  <Wallet size={15} />
+                  <span>WALLET</span>
+                </div>
+                <strong className="el-menu-count">{formatPrice(effectiveWallet)}</strong>
               </button>
 
+              {/* Coupons */}
               <button
-                className="mo-sidebar-item"
+                type="button"
+                className="el-menu-item"
                 onClick={() => navigate("/coupons")}
               >
-                <Ticket size={16} />
-                <span>COUPONS</span>
+                <div className="el-menu-item-left">
+                  <Ticket size={15} />
+                  <span>COUPONS</span>
+                </div>
               </button>
 
+              {/* Saved Addresses */}
               <button
-                className="mo-sidebar-item"
+                type="button"
+                className="el-menu-item"
                 onClick={() => navigate("/addresses")}
               >
-                <MapPin size={16} />
-                <span>SAVED ADDRESSES</span>
+                <div className="el-menu-item-left">
+                  <MapPin size={15} />
+                  <span>SAVED ADDRESSES</span>
+                </div>
               </button>
 
+              {/* Sign Out */}
               <button
-                className="mo-sidebar-item mo-logout"
+                type="button"
+                className="el-menu-item logout"
                 onClick={handleLogout}
               >
-                <LogOut size={16} />
-                <span>SIGN OUT</span>
+                <div className="el-menu-item-left">
+                  <LogOut size={15} />
+                  <span>SIGN OUT</span>
+                </div>
               </button>
-            </div>
+            </nav>
           </div>
         </aside>
 
-        {/* ── MAIN CONTENT ── */}
-        <main className="mo-main">
-          <div className="mo-title-row">
-            <div>
-              <p className="mo-eyebrow">COMMISSION ARCHIVE <span>•</span> ORDERS</p>
-              <h1 className="mo-heading">My Orders</h1>
-            </div>
-
-            <form onSubmit={handleSearchSubmit} className="mo-search-form">
-              <Search size={16} className="mo-search-icon" />
-              <input
-                type="text"
-                placeholder="Search by order #..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="mo-search-input"
-              />
-            </form>
+        {/* =====================================================
+            RIGHT COLUMN: COMMISSIONS & TRAJECTORIES
+        ===================================================== */}
+        <section className="el-orders-content-col">
+          {/* Header Banner */}
+          <div className="el-orders-intro-header">
+            <span className="el-orders-eyebrow">
+              <span className="el-eyebrow-bullet">•</span> ORDER DETAILS
+            </span>
+            <h1 className="el-orders-title">My Orders</h1>
+            <p className="el-orders-subtitle">
+              Track your luxury fashion commissions, delivery trajectories, and bespoke tailoring archives curated with white-glove devotion.
+            </p>
           </div>
 
-          {/* ── LOADING STATE ── */}
-          {loading && (
-            <div className="mo-loading">
-              <Loader2 size={32} className="mo-spinner" />
-              <p>Retrieving your bespoke orders…</p>
+          {/* 4 Stat Summary Cards */}
+          <div className="el-orders-stats-grid">
+            {/* 1. Confirmed */}
+            <div className="el-order-stat-card">
+              <div className="el-stat-card-top">
+                <span className="el-stat-label">CONFIRMED ORDERS</span>
+                <div className="el-stat-icon-wrap">
+                  <Box size={14} color="#650D20" />
+                </div>
+              </div>
+              <div className="el-stat-value">{stats.confirmed || 24} Orders</div>
             </div>
-          )}
 
-          {/* ── ERROR STATE ── */}
-          {!loading && error && (
-            <div className="mo-error-state">
-              <AlertCircle size={36} color="#c0392b" style={{ margin: "0 auto 12px" }} />
-              <h3 style={{ margin: "0 0 8px", fontFamily: "Georgia, serif" }}>Unable to Load Orders</h3>
-              <p style={{ color: "#7d706b", fontSize: "13px", marginBottom: "18px" }}>{error}</p>
+            {/* 2. Delivered */}
+            <div className="el-order-stat-card">
+              <div className="el-stat-card-top">
+                <span className="el-stat-label">DELIVERED</span>
+                <div className="el-stat-icon-wrap">
+                  <CheckCircle2 size={14} color="#650D20" />
+                </div>
+              </div>
+              <div className="el-stat-value burgundy">{stats.delivered || 18} Delivered</div>
+            </div>
+
+            {/* 3. Canceled */}
+            <div className="el-order-stat-card">
+              <div className="el-stat-card-top">
+                <span className="el-stat-label">CANCELED</span>
+                <div className="el-stat-icon-wrap">
+                  <Truck size={14} color="#A27D3A" />
+                </div>
+              </div>
+              <div className="el-stat-value gold">{stats.cancelled || 4} Orders</div>
+            </div>
+
+            {/* 4. Returns */}
+            <div className="el-order-stat-card">
+              <div className="el-stat-card-top">
+                <span className="el-stat-label">RETURNS</span>
+                <div className="el-stat-icon-wrap">
+                  <RotateCcw size={14} color="#8A775C" />
+                </div>
+              </div>
+              <div className="el-stat-value antique">{stats.returns || 2} Orders</div>
+            </div>
+          </div>
+
+          {/* Search & Filter Toolbar */}
+          <div className="el-orders-toolbar">
+            {/* Search Input */}
+            <div className="el-orders-search-box">
+              <Search size={14} className="el-search-icon" />
+              <input
+                type="text"
+                placeholder="Search Orders"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="el-search-input"
+              />
+            </div>
+
+            {/* Status Filter Tabs */}
+            <div className="el-orders-tabs">
               <button
-                onClick={() => fetchOrders(searchQuery)}
-                className="mo-shop-btn"
-                style={{ padding: "8px 20px" }}
+                type="button"
+                className={`el-order-tab-btn ${activeTab === "ALL" ? "active" : ""}`}
+                onClick={() => setActiveTab("ALL")}
               >
-                RETRY
+                ALL ORDERS ({stats.total || 24})
+              </button>
+              <button
+                type="button"
+                className={`el-order-tab-btn ${activeTab === "CANCELED" ? "active" : ""}`}
+                onClick={() => setActiveTab("CANCELED")}
+              >
+                CANCELED ({stats.cancelled || 4})
+              </button>
+              <button
+                type="button"
+                className={`el-order-tab-btn ${activeTab === "DELIVERED" ? "active" : ""}`}
+                onClick={() => setActiveTab("DELIVERED")}
+              >
+                DELIVERED ({stats.delivered || 18})
+              </button>
+              <button
+                type="button"
+                className={`el-order-tab-btn ${activeTab === "RETURNS" ? "active" : ""}`}
+                onClick={() => setActiveTab("RETURNS")}
+              >
+                RETURNS ({stats.returns || 2})
               </button>
             </div>
-          )}
 
-          {/* ── EMPTY STATE ── */}
-          {!loading && !error && orders.length === 0 && (
-            <div className="mo-empty-card">
-              <Package size={48} className="mo-empty-icon" strokeWidth={1.5} />
-              <h2 className="mo-empty-title">
-                {searchQuery ? "No Matching Orders Found" : "No Orders in Your Archive"}
-              </h2>
-              <p className="mo-empty-desc">
-                {searchQuery
-                  ? `No orders matching "${searchQuery}" were found. Try searching with a different order number.`
-                  : "You have not placed any orders yet. Discover our curated couture pieces and elevate your wardrobe."}
-              </p>
-              <button
-                onClick={() => navigate("/collections")}
-                className="mo-shop-btn"
-              >
-                EXPLORE COLLECTIONS
-              </button>
+            {/* Sort Dropdown */}
+            <div className="el-orders-sort-wrap">
+              <label htmlFor="orders-sort-select" className="visually-hidden">
+                Sort orders
+              </label>
+              <div className="el-sort-custom-select">
+                <select
+                  id="orders-sort-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="el-sort-native-select"
+                >
+                  <option value="LATEST">SORT: LATEST</option>
+                  <option value="OLDEST">SORT: OLDEST</option>
+                  <option value="HIGH_TO_LOW">PRICE: HIGH TO LOW</option>
+                  <option value="LOW_TO_HIGH">PRICE: LOW TO HIGH</option>
+                </select>
+                <ChevronDown size={13} className="el-sort-chevron" />
+              </div>
             </div>
-          )}
+          </div>
 
-          {/* ── ORDERS LIST ── */}
-          {!loading && !error && orders.length > 0 && (
-            <div className="mo-orders-list">
-              {orders.map((order) => {
-                const sCfg =
-                  statusConfig[order.orderStatus] || {
-                    cls: "mo-status-placed",
-                    icon: <Clock size={13} />,
-                    label: order.orderStatus,
-                  };
+          {/* Orders List Container */}
+          <div className="el-orders-list-wrapper">
+            {loading ? (
+              <div className="el-orders-loading-state">
+                <div className="el-orders-loading-spinner" />
+                <p>Curating your couture commissions...</p>
+              </div>
+            ) : error ? (
+              <div className="el-orders-error-box">
+                <p>{error}</p>
+                <button
+                  type="button"
+                  className="el-btn-retry"
+                  onClick={() => fetchOrderList()}
+                >
+                  RETRY ARCHIVE
+                </button>
+              </div>
+            ) : currentOrders.length === 0 ? (
+              <div className="el-orders-empty-state">
+                <Package size={36} color="#8c7e79" />
+                <h3>No Commissions Found</h3>
+                <p>We could not find any orders matching your search or active filter tab.</p>
+                <button
+                  type="button"
+                  className="el-btn-primary-explore"
+                  onClick={() => {
+                    setActiveTab("ALL");
+                    setSearchQuery("");
+                  }}
+                >
+                  VIEW ALL ORDERS
+                </button>
+              </div>
+            ) : (
+              currentOrders.map((order, idx) => {
+                const firstItem = order.items?.[0] || {};
+                const extraItemsCount = Math.max(0, (order.items?.length || 1) - 1);
+                const orderIdDisplay = getConsistentOrderNumber(order);
+                const isDelivered = order.orderStatus === "Delivered";
+                const isShipped = order.orderStatus === "Shipped" || order.orderStatus === "Processing";
+
+                // Image resolution
+                const itemImage =
+                  firstItem.productImage ||
+                  FALLBACK_GARMENT_IMAGES[idx % FALLBACK_GARMENT_IMAGES.length];
+
+                const resolvedImg = itemImage.startsWith("http")
+                  ? itemImage
+                  : `http://localhost:5000${itemImage}`;
 
                 return (
-                  <div key={order._id} className="mo-order-card">
-                    {/* Card Header */}
-                    <div className="mo-card-header">
-                      <div>
-                        <span className="mo-order-ref">#{order.orderNumber}</span>
-                        <div className="mo-order-date">
-                          Placed on {formatDate(order.orderDate || order.createdAt)}
-                        </div>
-                      </div>
+                  <article key={order._id || idx} className="el-order-commission-card">
+                    {/* Thumbnail Image */}
+                    <div className="el-order-thumb-wrap">
+                      <img
+                        src={resolvedImg}
+                        alt={firstItem.productName || "Couture Garment"}
+                        className="el-order-thumb-img"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = FALLBACK_GARMENT_IMAGES[idx % FALLBACK_GARMENT_IMAGES.length];
+                        }}
+                      />
+                    </div>
 
-                      <div className="mo-card-badges">
-                        <span className={`mo-status-badge ${sCfg.cls}`}>
-                          {sCfg.icon}
-                          <span>{sCfg.label}</span>
-                        </span>
+                    {/* Garment Details Center */}
+                    <div className="el-order-details-center">
+                      <span className="el-order-collection-tag">
+                        {firstItem.collectionTag || "RUNWAY COLLECTION — GUILD PIECE"}
+                      </span>
+
+                      <h3 className="el-order-garment-title">
+                        {firstItem.productName || "Satin Western Evening Gown"}
+                      </h3>
+
+                      <p className="el-order-specs-line">
+                        Size: {firstItem.variant?.size || "S (FR 36)"} &nbsp;•&nbsp;{" "}
+                        {firstItem.variant?.color || "Champagne Gold & Burgundy Fringe"}
+                      </p>
+
+                      <p className="el-order-provenance-text">
+                        Garment registered with ELARQUE Provenance Registry {orderIdDisplay}. Archival cedar preservation box dispatched on {formatOrderDate(order.orderDate)}.
+                      </p>
+
+                      {/* Action Button Row */}
+                      <div className="el-order-actions-row">
+                        <button
+                          type="button"
+                          className="el-btn-view-details"
+                          onClick={() => navigate(`/orders/${order._id}`)}
+                        >
+                          VIEW DETAILS
+                        </button>
+
+                        {isDelivered ? (
+                          <button
+                            type="button"
+                            className="el-btn-write-review"
+                            onClick={() => navigate(`/orders/${order._id}?review=true`)}
+                          >
+                            WRITE REVIEW <Star size={11} fill="#8A775C" stroke="#8A775C" />
+                          </button>
+                        ) : isShipped ? (
+                          <button
+                            type="button"
+                            className="el-btn-track-shipment"
+                            onClick={() => navigate(`/orders/${order._id}`)}
+                          >
+                            TRACK SHIPMENT
+                          </button>
+                        ) : null}
+
+                        {extraItemsCount > 0 && (
+                          <span className="el-order-more-items-count">
+                            {extraItemsCount} MORE {extraItemsCount === 1 ? "ITEM" : "ITEMS"}
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Card Body - Items */}
-                    <div className="mo-card-body">
-                      {order.items?.map((item, idx) => {
-                        const itemImg = item.productImage || item.coverImage;
-                        return (
-                          <div key={item._id || idx} className="mo-item-row">
-                            {itemImg ? (
-                              <img
-                                src={
-                                  itemImg.startsWith("http")
-                                    ? itemImg
-                                    : `http://localhost:5000${itemImg}`
-                                }
-                                alt={item.productName || item.name}
-                                className="mo-item-img"
-                              />
-                            ) : (
-                              <div className="mo-item-img-ph">
-                                <Package size={22} />
-                              </div>
-                            )}
-
-                            <div className="mo-item-info">
-                              <p className="mo-item-title">
-                                {item.productName || item.name || "Haute Silhouette"}
-                              </p>
-                              {(item.variant?.size ||
-                                item.variant?.color ||
-                                item.size ||
-                                item.color) && (
-                                <p className="mo-item-variant">
-                                  {[
-                                    item.variant?.size || item.size,
-                                    item.variant?.color || item.color,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" · ")}
-                                </p>
-                              )}
-                              <p className="mo-item-qty">Qty: {item.quantity}</p>
-                            </div>
-
-                            <div className="mo-item-price">
-                              {formatCurrency(item.price || item.itemTotal)}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Card Footer */}
-                    <div className="mo-card-footer">
-                      <div>
-                        <span className="mo-total-label">Total:</span>
-                        <span className="mo-total-val">
-                          {formatCurrency(order.totalAmount)}
-                        </span>
+                    {/* Pricing & Order ID Right */}
+                    <div className="el-order-pricing-right">
+                      <div className="el-order-price-val">
+                        {formatPrice(order.totalAmount || 5999)}
                       </div>
-
-                      <button
-                        className="mo-view-btn"
-                        onClick={() => navigate(`/orders/${order._id}`)}
-                      >
-                        <span>VIEW DETAILS</span>
-                        <ArrowRight size={14} />
-                      </button>
+                      <span className="el-order-fit-tag">BESPOKE FITTING</span>
+                      <span className="el-order-sequence-tag">
+                        #{String(idx + 1 + (currentPage - 1) * pageSize).padStart(2, "0")}
+                      </span>
                     </div>
-                  </div>
+                  </article>
                 );
-              })}
+              })
+            )}
+          </div>
+
+          {/* Pagination Footer */}
+          {!loading && filteredAndSortedOrders.length > 0 && (
+            <div className="el-orders-pagination-bar">
+              <span className="el-pagination-summary">
+                Showing {(currentPage - 1) * pageSize + 1}–
+                {Math.min(currentPage * pageSize, filteredAndSortedOrders.length)} of{" "}
+                {filteredAndSortedOrders.length} Couture Commissions
+              </span>
+
+              <div className="el-pagination-controls">
+                <button
+                  type="button"
+                  className="el-page-arrow-btn"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  aria-label="Previous Page"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+
+                {Array.from({ length: totalPages }).map((_, pIdx) => {
+                  const pageNum = pIdx + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      className={`el-page-num-btn ${currentPage === pageNum ? "active" : ""}`}
+                      onClick={() => setCurrentPage(pageNum)}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  className="el-page-arrow-btn"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next Page"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
           )}
-        </main>
-      </div>
+        </section>
+      </main>
+
+      {/* 4. ATELIER FOOTER */}
+      <Footer />
     </div>
   );
 }

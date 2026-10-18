@@ -491,27 +491,74 @@ const createOrder = async (req, res) => {
 const getMyOrders = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id || req.user?.userId;
-    const { search } = req.query;
+    const { search, status } = req.query;
 
-    const filter = { user: userId };
+    // Base user filter
+    const baseFilter = { user: userId };
+
+    // Fetch all user orders to calculate accurate stats regardless of active search/filter
+    const allUserOrders = await Order.find(baseFilter).select("orderStatus returnStatus items").lean();
+
+    const stats = {
+      total: allUserOrders.length,
+      confirmed: allUserOrders.filter((o) =>
+        ["Placed", "Confirmed", "Processing", "Shipped"].includes(o.orderStatus)
+      ).length,
+      delivered: allUserOrders.filter((o) => o.orderStatus === "Delivered").length,
+      cancelled: allUserOrders.filter(
+        (o) =>
+          o.orderStatus === "Cancelled" ||
+          (Array.isArray(o.items) && o.items.some((i) => i.itemStatus === "Cancelled"))
+      ).length,
+      returns: allUserOrders.filter(
+        (o) =>
+          o.orderStatus === "Returned" ||
+          o.returnStatus === "Requested" ||
+          o.returnStatus === "Approved" ||
+          (Array.isArray(o.items) &&
+            o.items.some((i) => i.returnStatus === "Requested" || i.returnStatus === "Approved"))
+      ).length,
+    };
+
+    // Build specific query filter
+    const queryFilter = { ...baseFilter };
 
     if (search && search.trim()) {
-      filter.orderNumber = {
-        $regex: search.trim(),
-        $options: "i",
-      };
+      const searchRegex = new RegExp(search.trim(), "i");
+      queryFilter.$or = [
+        { orderNumber: searchRegex },
+        { "items.productName": searchRegex },
+      ];
     }
 
-    const orders = await Order.find(filter)
-      .select(
-        "orderNumber orderDate orderStatus paymentStatus totalAmount items returnStatus stockRestored createdAt"
-      )
+    if (status && status !== "ALL") {
+      const upperStatus = status.toUpperCase();
+      if (upperStatus === "CONFIRMED") {
+        queryFilter.orderStatus = { $in: ["Placed", "Confirmed", "Processing", "Shipped"] };
+      } else if (upperStatus === "DELIVERED") {
+        queryFilter.orderStatus = "Delivered";
+      } else if (upperStatus === "CANCELED" || upperStatus === "CANCELLED") {
+        queryFilter.$or = [
+          { orderStatus: "Cancelled" },
+          { "items.itemStatus": "Cancelled" },
+        ];
+      } else if (upperStatus === "RETURNS" || upperStatus === "RETURNED") {
+        queryFilter.$or = [
+          { orderStatus: "Returned" },
+          { returnStatus: { $in: ["Requested", "Approved"] } },
+          { "items.returnStatus": { $in: ["Requested", "Approved"] } },
+        ];
+      }
+    }
+
+    const orders = await Order.find(queryFilter)
       .sort({ orderDate: -1, createdAt: -1 })
       .lean();
 
     return res.status(200).json({
       success: true,
       count: orders.length,
+      stats,
       orders,
     });
   } catch (error) {

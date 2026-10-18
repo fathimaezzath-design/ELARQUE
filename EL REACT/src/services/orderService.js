@@ -29,11 +29,15 @@ export const createOrder = (addressId, paymentMethod = "COD") => {
    GET MY ORDERS
 ========================= */
 
-export const getMyOrders = (search = "") => {
+export const getMyOrders = (search = "", status = "") => {
   const params = {};
 
-  if (search.trim()) {
+  if (search && search.trim()) {
     params.search = search.trim();
+  }
+
+  if (status && status.trim() && status !== "ALL") {
+    params.status = status.trim();
   }
 
   return API.get("/", {

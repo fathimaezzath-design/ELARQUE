@@ -368,10 +368,10 @@ const EditProfile = () => {
         "Phone number is required";
     } else {
       const cleanPhone = formData.phoneNumber
-        .replace(/\s|\+91/g, "")
-        .trim();
+        .replace(/\D/g, "")
+        .slice(-10);
 
-      if (!/^[0-9]{10}$/.test(cleanPhone)) {
+      if (cleanPhone.length !== 10) {
         newErrors.phoneNumber =
           "Enter a valid 10 digit phone number";
       }
@@ -398,8 +398,8 @@ const EditProfile = () => {
       setLoading(true);
 
       const cleanPhone = formData.phoneNumber
-        .replace(/\s|\+91/g, "")
-        .trim();
+        .replace(/\D/g, "")
+        .slice(-10);
 
       const payload = {
         fullName: formData.fullName.trim(),
@@ -407,7 +407,7 @@ const EditProfile = () => {
         phoneNumber: cleanPhone,
 
         dateOfBirth:
-          formData.dateOfBirth || null,
+          formData.dateOfBirth || "",
 
         gender: formData.gender || "",
       };
@@ -427,6 +427,7 @@ const EditProfile = () => {
           "user",
           JSON.stringify(updatedUser)
         );
+        window.dispatchEvent(new Event("storage"));
       }
 
       alert(
@@ -833,7 +834,7 @@ const EditProfile = () => {
                       handleChange
                     }
                     placeholder="Enter phone number"
-                    maxLength={13}
+                    maxLength={15}
                   />
 
                 </div>

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Address = require("../models/Address");
 const EmailChangeOTP = require("../models/EmailChangeOTP");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -12,7 +13,7 @@ const getUserId = (req) => req.user?.id || req.user?._id || req.user?.userId;
 exports.getProfile = async (req, res) => {
   try {
     const userId = getUserId(req);
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId).select("-password").lean();
 
     if (!user) {
       return res.status(404).json({
@@ -21,9 +22,16 @@ exports.getProfile = async (req, res) => {
       });
     }
 
+    // Retrieve default saved address for the authenticated user
+    let savedAddress = await Address.findOne({ userId, isDefault: true }).lean();
+    if (!savedAddress) {
+      savedAddress = await Address.findOne({ userId }).sort({ createdAt: -1 }).lean();
+    }
+
     return res.status(200).json({
       success: true,
       user,
+      savedAddress: savedAddress || null,
     });
   } catch (error) {
     console.error("GET PROFILE ERROR:", error);
@@ -51,36 +59,43 @@ exports.updateProfile = async (req, res) => {
       });
     }
 
-    // Phone number uniqueness check if modified
-    if (phoneNumber && phoneNumber.trim() !== user.phoneNumber) {
-      const phoneExists = await User.findOne({
-        phoneNumber: phoneNumber.trim(),
-        _id: { $ne: user._id },
-      });
-      if (phoneExists) {
-        return res.status(400).json({
-          success: false,
-          message: "This phone number is already linked to another account.",
-        });
-      }
-      user.phoneNumber = phoneNumber.trim();
+    const updateFields = {};
+
+    if (fullName !== undefined && fullName.trim()) {
+      updateFields.fullName = fullName.trim();
     }
 
-    if (fullName && fullName.trim()) {
-      user.fullName = fullName.trim();
+    if (phoneNumber !== undefined) {
+      // Clean phone number to digits only (take last 10 digits for Indian standard)
+      const cleanPhone = String(phoneNumber).replace(/\D/g, "").slice(-10);
+      if (cleanPhone) {
+        if (cleanPhone !== user.phoneNumber) {
+          const phoneExists = await User.findOne({
+            phoneNumber: cleanPhone,
+            _id: { $ne: user._id },
+          });
+          if (phoneExists) {
+            return res.status(400).json({
+              success: false,
+              message: "This phone number is already linked to another account.",
+            });
+          }
+        }
+        updateFields.phoneNumber = cleanPhone;
+      }
     }
 
     if (dateOfBirth !== undefined) {
-      user.dateOfBirth = dateOfBirth;
+      updateFields.dateOfBirth = dateOfBirth || "";
     }
 
     if (gender !== undefined) {
-      user.gender = gender;
+      updateFields.gender = gender || "";
     }
 
     // Preserve existing address if provided
     if (address && typeof address === "object") {
-      user.address = {
+      updateFields.address = {
         street: address.street !== undefined ? address.street : user.address?.street,
         city: address.city !== undefined ? address.city : user.address?.city,
         state: address.state !== undefined ? address.state : user.address?.state,
@@ -89,21 +104,23 @@ exports.updateProfile = async (req, res) => {
       };
     }
 
-    await user.save();
-
-    const sanitizedUser = user.toObject();
-    delete sanitizedUser.password;
+    // Use findByIdAndUpdate to reliably update fields in MongoDB without blocking on unrelated schema requirements
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateFields },
+      { returnDocument: "after", runValidators: false }
+    ).select("-password");
 
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully.",
-      user: sanitizedUser,
+      user: updatedUser,
     });
   } catch (error) {
     console.error("UPDATE PROFILE ERROR:", error);
     return res.status(500).json({
       success: false,
-      message: "Unable to update profile.",
+      message: error?.message || "Unable to update profile.",
     });
   }
 };
