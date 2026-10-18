@@ -19,7 +19,7 @@ const createOTP = async (userData, resendCount = 0) => {
   const otp = generateOTP();
 
   const expiresAt = new Date(
-    Date.now() + 10 * 60 * 1000
+    Date.now() + 1 * 60 * 1000
   );
 
   await OTP.create({
@@ -37,7 +37,7 @@ const createOTP = async (userData, resendCount = 0) => {
 const sendOtpMail = async (email, otp) => {
   const fromAddress = process.env.EMAIL_FROM || `"ELARQUE" <${process.env.EMAIL_USER}>`;
   
-  const textContent = `ELARQUE HAUTE COUTURE\n\nATELIER VERIFICATION CODE\n\nYour 6-digit verification code is: ${otp}\n\nThis single-use code is valid for 10 minutes.\n\nIf you did not request this invitation, please disregard this communication.\n\nELARQUE Atelier • Paris • Dallas\nTIMELESS ELEGANCE • MODERN CONFIDENCE`;
+  const textContent = `ELARQUE HAUTE COUTURE\n\nATELIER VERIFICATION CODE\n\nYour 6-digit verification code is: ${otp}\n\nThis single-use code is valid for 1 minute.\n\nIf you did not request this invitation, please disregard this communication.\n\nELARQUE Atelier • Paris • Dallas\nTIMELESS ELEGANCE • MODERN CONFIDENCE`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -67,9 +67,9 @@ const sendOtpMail = async (email, otp) => {
                 <!-- Content Area -->
                 <tr>
                   <td style="padding: 10px 40px 30px; text-align: center;">
-                    <h2 style="font-size: 22px; color: #3A0C13; margin: 0 0 12px; font-weight: 600; letter-spacing: 1px;">Client Verification Dossier</h2>
+                    <h2 style="font-size: 22px; color: #3A0C13; margin: 0 0 12px; font-weight: 600; letter-spacing: 1px;">Private Client Verification</h2>
                     <p style="font-family: 'Arial', sans-serif; font-size: 14px; line-height: 1.6; color: #555555; margin: 0 0 24px;">
-                      Welcome to the world of bespoke luxury. Please enter the following 6-digit atelier code to verify your private patron profile:
+                      Welcome to the world of bespoke luxury. Please enter the following 6-digit atelier code to complete your private client registration:
                     </p>
 
                     <!-- Code Box -->
@@ -78,7 +78,7 @@ const sendOtpMail = async (email, otp) => {
                     </div>
 
                     <p style="font-family: 'Arial', sans-serif; font-size: 12px; color: #8B7355; margin: 0 0 8px; font-weight: 600; letter-spacing: 0.5px;">
-                      &bull; VALID FOR 10 MINUTES &bull;
+                      &bull; VALID FOR 1 MINUTE &bull;
                     </p>
                     <p style="font-family: 'Arial', sans-serif; font-size: 11px; color: #999999; margin: 0; line-height: 1.5;">
                       If you did not initiate this registration request with ELARQUE, please disregard this email. Your privacy and credentials remain fully protected.

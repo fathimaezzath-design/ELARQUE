@@ -12,6 +12,8 @@ import VariantManagement from "../components/admin/VariantManagement";
 import AddVariant from "../components/admin/AddVariant";
 import EditVariant from "../components/admin/EditVariant";
 import OrderManagement from "../components/admin/OrderManagement";
+import ReturnManagement from "../components/admin/ReturnManagement";
+import UpdateReturnStatus from "../components/admin/UpdateReturnStatus";
 
 function AdminRoutes() {
   return (
@@ -30,6 +32,9 @@ function AdminRoutes() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
         <Route path="/admin/orders" element={<OrderManagement />} />
+        <Route path="/admin/returns" element={<ReturnManagement />} />
+        <Route path="/admin/returns/:id" element={<UpdateReturnStatus />} />
+        <Route path="/admin/returns/update/:id" element={<UpdateReturnStatus />} />
         <Route path="/admin/products" element={<ProductManagement />} />
         <Route path="/admin/products/add" element={<AddProduct />} />
         <Route path="/admin/products/edit/:id" element={<EditProduct />} />

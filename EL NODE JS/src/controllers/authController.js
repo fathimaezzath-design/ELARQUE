@@ -135,6 +135,24 @@ exports.verifyOTP = async (req, res) => {
     const record = await OTP.findOne({ email: cleanEmail });
 
     if (!record) {
+      // Replay / concurrent duplicate request protection: check if account was already verified
+      const alreadyVerifiedUser = await User.findOne({ email: cleanEmail });
+      if (alreadyVerifiedUser) {
+        const token = jwt.sign(
+          { id: alreadyVerifiedUser._id },
+          process.env.JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+        const userObj = alreadyVerifiedUser.toObject();
+        delete userObj.password;
+        return res.status(200).json({
+          success: true,
+          message: "Account verified successfully.",
+          token,
+          user: userObj,
+        });
+      }
+
       return res.status(400).json({
         success: false,
         message: "Verification code not found or expired. Please sign up again.",
@@ -155,6 +173,19 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
+    // Check if user already exists with email or phone before creating
+    const existingUser = await User.findOne({
+      $or: [{ email: cleanEmail }, { phoneNumber: record.phoneNumber }],
+    });
+
+    if (existingUser) {
+      await OTP.deleteMany({ email: cleanEmail });
+      return res.status(400).json({
+        success: false,
+        message: "An account with this email or phone number is already registered.",
+      });
+    }
+
     const user = await User.create({
       fullName: record.fullName,
       email: record.email,
@@ -165,7 +196,11 @@ exports.verifyOTP = async (req, res) => {
       isVerified: true,
     });
 
+    // Invalidate OTP immediately so code cannot be reused
     await OTP.deleteMany({ email: cleanEmail });
+
+    const userObj = user.toObject();
+    delete userObj.password;
 
     const token = jwt.sign(
       { id: user._id },
@@ -179,7 +214,7 @@ exports.verifyOTP = async (req, res) => {
       success: true,
       message: "Account verified successfully.",
       token,
-      user,
+      user: userObj,
     });
 
   } catch (err) {

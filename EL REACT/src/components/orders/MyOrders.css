@@ -44,6 +44,19 @@
   width: 260px;
   position: sticky;
   top: 96px;
+  align-self: flex-start;
+  max-height: calc(100vh - 116px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.el-orders-sidebar-col::-webkit-scrollbar {
+  width: 4px;
+}
+
+.el-orders-sidebar-col::-webkit-scrollbar-thumb {
+  background: rgba(223, 194, 141, 0.4);
+  border-radius: 4px;
 }
 
 .el-patron-card {
@@ -739,6 +752,8 @@
   .el-orders-sidebar-col {
     width: 100%;
     position: static;
+    max-height: none;
+    overflow-y: visible;
   }
 }
 

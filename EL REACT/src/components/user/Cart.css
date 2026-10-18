@@ -458,10 +458,22 @@
   color: var(--el-cart-burgundy);
 }
 
-/* ================= RIGHT COLUMN: ORDER OVERVIEW ================= */
 .el-cart-summary-column {
   position: sticky;
   top: 90px;
+  align-self: flex-start;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.el-cart-summary-column::-webkit-scrollbar {
+  width: 4px;
+}
+
+.el-cart-summary-column::-webkit-scrollbar-thumb {
+  background: rgba(74, 13, 27, 0.25);
+  border-radius: 4px;
 }
 
 .el-cart-summary-card {
@@ -971,6 +983,8 @@
 
   .el-cart-summary-column {
     position: static;
+    max-height: none;
+    overflow-y: visible;
   }
 }
 

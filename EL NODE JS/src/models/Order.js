@@ -75,8 +75,39 @@ const orderItemSchema = new mongoose.Schema(
 
     returnStatus: {
       type: String,
-      enum: ["None", "Requested", "Approved", "Rejected"],
+      enum: [
+        "None",
+        "Requested",
+        "Pending",
+        "Approved",
+        "Picked Up",
+        "Completed",
+        "Refunded",
+        "Rejected",
+      ],
       default: "None",
+    },
+
+    returnRequestedAt: {
+      type: Date,
+    },
+
+    returnAdminNote: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    returnRejectionReason: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    returnCustomerMessage: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     // Guard flag – set to true after stock is restored for this item.
@@ -192,7 +223,16 @@ const orderSchema = new mongoose.Schema(
     // Order-level return request (e.g. "Delivered" order return).
     returnStatus: {
       type: String,
-      enum: ["None", "Requested", "Approved", "Rejected"],
+      enum: [
+        "None",
+        "Requested",
+        "Pending",
+        "Approved",
+        "Picked Up",
+        "Completed",
+        "Refunded",
+        "Rejected",
+      ],
       default: "None",
     },
 
@@ -200,6 +240,40 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+    },
+
+    returnRequestedAt: {
+      type: Date,
+    },
+
+    returnAdminNote: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    returnRejectionReason: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    returnCustomerMessage: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    returnPickupScheduledDate: {
+      type: Date,
+    },
+
+    returnPickedUpAt: {
+      type: Date,
+    },
+
+    returnCompletedAt: {
+      type: Date,
     },
 
     // Guard: true after ALL items' stock has been restored for this order.

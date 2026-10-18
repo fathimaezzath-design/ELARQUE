@@ -28,6 +28,7 @@
   justify-content: space-between;
   box-sizing: border-box;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Custom minimal scrollbar */

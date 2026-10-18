@@ -579,7 +579,20 @@
    ============================================================ */
 .el-co-right-col {
   position: sticky;
-  top: 24px;
+  top: 96px;
+  align-self: flex-start;
+  max-height: calc(100vh - 116px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.el-co-right-col::-webkit-scrollbar {
+  width: 4px;
+}
+
+.el-co-right-col::-webkit-scrollbar-thumb {
+  background: rgba(197, 162, 101, 0.4);
+  border-radius: 4px;
 }
 
 .el-co-summary-card {
@@ -1103,6 +1116,8 @@
 
   .el-co-right-col {
     position: static;
+    max-height: none;
+    overflow-y: visible;
   }
 }
 

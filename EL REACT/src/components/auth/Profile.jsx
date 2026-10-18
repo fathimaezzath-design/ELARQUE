@@ -735,6 +735,19 @@ function Profile() {
         .el-profile-sidebar-col {
           position: sticky;
           top: 100px;
+          align-self: flex-start;
+          max-height: calc(100vh - 120px);
+          overflow-y: auto;
+          overscroll-behavior: contain;
+        }
+
+        .el-profile-sidebar-col::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        .el-profile-sidebar-col::-webkit-scrollbar-thumb {
+          background: rgba(223, 194, 141, 0.4);
+          border-radius: 4px;
         }
 
         .el-patron-card {
@@ -1256,6 +1269,8 @@ function Profile() {
 
           .el-profile-sidebar-col {
             position: static;
+            max-height: none;
+            overflow-y: visible;
           }
 
           .el-patron-card {

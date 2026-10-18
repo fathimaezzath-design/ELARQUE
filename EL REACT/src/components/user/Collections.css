@@ -390,6 +390,19 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   position: sticky;
   top: 90px;
+  align-self: flex-start;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.el-filter-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.el-filter-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(197, 162, 101, 0.4);
+  border-radius: 4px;
 }
 
 .el-sidebar-header {
@@ -1312,6 +1325,8 @@
     display: none;
     width: 100%;
     position: static;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .el-filter-sidebar.mobile-open {

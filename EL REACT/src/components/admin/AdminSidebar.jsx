@@ -237,7 +237,11 @@ const AdminSidebar = ({ mobileOpen, setMobileOpen }) => {
             </div>
 
             {/* Returns */}
-            <div className="el-sidebar-item inactive-link">
+            <Link
+              to="/admin/returns"
+              className={`el-sidebar-item ${isItemActive("/admin/returns") ? "active" : ""}`}
+              onClick={closeMobile}
+            >
               <div className="el-sidebar-item-left">
                 <span className="el-sidebar-icon">
                   <svg
@@ -256,7 +260,10 @@ const AdminSidebar = ({ mobileOpen, setMobileOpen }) => {
                 </span>
                 <span className="el-sidebar-label">Returns</span>
               </div>
-            </div>
+              <div className="el-sidebar-item-right">
+                {isItemActive("/admin/returns") && <span className="el-sidebar-active-dot" />}
+              </div>
+            </Link>
 
             {/* Sales Report */}
             <div className="el-sidebar-item inactive-link">

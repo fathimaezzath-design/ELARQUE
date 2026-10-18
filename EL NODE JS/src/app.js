@@ -15,6 +15,7 @@ const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
 const adminProductRoutes = require("./routes/adminProductRoutes");
 const adminVariantRoutes = require("./routes/adminVariantRoutes");
 const adminOrderRoutes = require("./routes/adminOrderRoutes");
+const adminReturnRoutes = require("./routes/adminReturnRoutes");
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use("/api/admin", adminProductRoutes);
 app.use("/api/admin/products", adminVariantRoutes);
 app.use("/api/admin/variants", adminVariantRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
+app.use("/api/admin/returns", adminReturnRoutes);
 
 app.get("/", (req, res) => {
   res.send("Elarque Backend Running");

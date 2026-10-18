@@ -439,7 +439,13 @@ function VerifyOTP() {
 
         <div className="otp-footer">
           <p>
-            Resend in <b>00:{String(timer).padStart(2, "0")}</b>
+            {timer > 0 ? (
+              <>
+                Resend in <b>00:{String(timer).padStart(2, "0")}</b>
+              </>
+            ) : (
+              <b style={{ color: "#7B1E2B" }}>Code expired · Click Resend Code</b>
+            )}
           </p>
 
           <button

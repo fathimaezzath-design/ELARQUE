@@ -1,0 +1,663 @@
+/* ==========================================================================
+   ELARQUE ADMIN — UPDATE RETURN STATUS STYLES
+   Haute Western Atelier Luxury UI (Matching Reference Screenshot 2)
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+.admin-status-update-page {
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(
+      ellipse 90% 70% at 50% 12%,
+      rgba(95, 14, 28, 0.22) 0%,
+      rgba(13, 4, 8, 0.96) 65%,
+      #090306 100%
+    ),
+    #090306;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #f7f1eb;
+  padding: 36px 40px 72px 40px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.admin-status-update-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Breadcrumbs */
+.admin-status-breadcrumb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.admin-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #a8927e;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.18s ease;
+}
+
+.admin-back-link:hover {
+  color: #dfc28d;
+}
+
+.admin-crumb-separator {
+  color: #6d5b50;
+}
+
+.admin-crumb-active {
+  color: #dfc28d;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.admin-status-page-heading {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 38px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: #f7f1eb;
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* ==========================================================================
+   1. TOP DOSSIER HERO CARD (SCREENSHOT 2)
+   ========================================================================== */
+.admin-dossier-hero-card {
+  background: rgba(18, 7, 13, 0.8);
+  border: 1px solid rgba(223, 194, 141, 0.16);
+  border-radius: 14px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.admin-dossier-media-col {
+  position: relative;
+  width: 84px;
+  height: 108px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #190910;
+  border: 1px solid rgba(223, 194, 141, 0.2);
+}
+
+.admin-dossier-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-dossier-size-tag {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: rgba(14, 5, 10, 0.85);
+  border: 1px solid rgba(223, 194, 141, 0.35);
+  color: #dfc28d;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.admin-dossier-content-col {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-dossier-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-dossier-number {
+  font-family: monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #dfc28d;
+  letter-spacing: 0.5px;
+}
+
+.admin-dossier-vip-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #fca5a5;
+  background: rgba(220, 38, 38, 0.18);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.admin-dossier-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #f7f1eb;
+  margin: 2px 0;
+  letter-spacing: 0.4px;
+}
+
+.admin-dossier-patron-line {
+  font-size: 12px;
+  color: #a8927e;
+  margin: 0;
+}
+
+.admin-dossier-patron-line strong {
+  color: #f7f1eb;
+}
+
+/* 4 Specs Columns on Right */
+.admin-dossier-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 32px;
+  border-left: 1px solid rgba(223, 194, 141, 0.12);
+  padding-left: 32px;
+}
+
+.admin-dossier-spec-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-spec-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: #9f8979;
+  text-transform: uppercase;
+}
+
+.admin-spec-val-primary {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f7f1eb;
+}
+
+.admin-spec-val-price {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #dfc28d;
+  line-height: 1;
+}
+
+.admin-spec-val-sub {
+  font-size: 10.5px;
+  color: #8f7969;
+}
+
+.admin-spec-seal-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ==========================================================================
+   2. CONFIGURE RETURN DISPOSITION FORM CARD
+   ========================================================================== */
+.admin-disposition-card {
+  background: rgba(18, 7, 13, 0.8);
+  border: 1px solid rgba(223, 194, 141, 0.18);
+  border-radius: 14px;
+  padding: 32px 36px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.admin-disposition-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(223, 194, 141, 0.12);
+}
+
+.admin-disposition-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 28px;
+  font-weight: 500;
+  color: #f7f1eb;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.admin-disposition-desc {
+  font-size: 12px;
+  color: #a8927e;
+  margin: 8px 0 0 0;
+  line-height: 1.6;
+  max-width: 780px;
+}
+
+.admin-disposition-step-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: #dfc28d;
+  background: rgba(223, 194, 141, 0.1);
+  border: 1px solid rgba(223, 194, 141, 0.28);
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Form Styles */
+.admin-disposition-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 26px;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-form-group.rejection-box {
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 16px;
+  border-radius: 10px;
+}
+
+.admin-form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-form-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: #d1bdae;
+  text-transform: uppercase;
+}
+
+.admin-form-label .req {
+  color: #ef4444;
+}
+
+.admin-form-label.required-red {
+  color: #f87171;
+}
+
+.admin-label-right-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #8f7969;
+  text-transform: uppercase;
+}
+
+.admin-label-right-tag.red {
+  color: #f87171;
+}
+
+.admin-form-select {
+  background: rgba(24, 9, 17, 0.85);
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  border-radius: 8px;
+  color: #f7f1eb;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 16px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-form-select:focus {
+  border-color: #dfc28d;
+  background: #1e0a15;
+  box-shadow: 0 0 12px rgba(223, 194, 141, 0.18);
+}
+
+.admin-form-textarea {
+  background: rgba(24, 9, 17, 0.85);
+  border: 1px solid rgba(223, 194, 141, 0.25);
+  border-radius: 8px;
+  color: #f7f1eb;
+  font-family: "Poppins", sans-serif;
+  font-size: 12.5px;
+  padding: 14px 16px;
+  outline: none;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.admin-form-textarea:focus {
+  border-color: #dfc28d;
+  background: #1e0a15;
+  box-shadow: 0 0 12px rgba(223, 194, 141, 0.18);
+}
+
+.admin-directive-footnote {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #8f7969;
+  margin-top: 4px;
+}
+
+/* System Ledger Telemetry Strip */
+.admin-telemetry-strip {
+  background: rgba(14, 5, 10, 0.6);
+  border: 1px solid rgba(223, 194, 141, 0.12);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-telemetry-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-telemetry-icon {
+  color: #dfc28d;
+}
+
+.admin-telemetry-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-telemetry-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #dfc28d;
+  text-transform: uppercase;
+}
+
+.admin-telemetry-node {
+  font-size: 11.5px;
+  color: #bfa895;
+}
+
+/* Toggle Switch */
+.admin-toggle-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-toggle-label {
+  font-size: 11.5px;
+  color: #d1bdae;
+}
+
+.admin-toggle-input {
+  display: none;
+}
+
+.admin-toggle-slider {
+  position: relative;
+  width: 38px;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  transition: all 0.25s ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.admin-toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-toggle-input:checked + .admin-toggle-slider {
+  background-color: #520814;
+  border: 1px solid rgba(223, 194, 141, 0.4);
+}
+
+.admin-toggle-input:checked + .admin-toggle-slider::before {
+  transform: translateX(18px);
+  background-color: #f7e7c4;
+}
+
+/* Error Note */
+.admin-disposition-error-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 12px;
+}
+
+/* Form Actions Row */
+.admin-disposition-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(223, 194, 141, 0.12);
+}
+
+.el-btn-cancel-retain {
+  background: transparent;
+  border: 1px solid rgba(223, 194, 141, 0.2);
+  color: #bfa895;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 12px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-btn-cancel-retain:hover:not(:disabled) {
+  background: rgba(223, 194, 141, 0.08);
+  color: #f7f1eb;
+  border-color: #dfc28d;
+}
+
+.el-btn-update-disposition {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #520814 0%, #3a040d 100%);
+  border: 1px solid rgba(223, 194, 141, 0.4);
+  color: #f7f1eb;
+  font-family: "Poppins", sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(82, 8, 20, 0.45);
+}
+
+.el-btn-update-disposition:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6c0d1c 0%, #4b0612 100%);
+  border-color: #dfc28d;
+  transform: translateY(-1px);
+}
+
+.admin-spin-icon {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ==========================================================================
+   3. BOTTOM METADATA CARDS (MATCHING SCREENSHOT 2)
+   ========================================================================== */
+.admin-footer-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.admin-footer-meta-card {
+  background: rgba(18, 7, 13, 0.7);
+  border: 1px solid rgba(223, 194, 141, 0.12);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+}
+
+.admin-footer-card-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  color: #9f8979;
+  text-transform: uppercase;
+}
+
+.admin-footer-card-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #f7f1eb;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.admin-footer-card-sub {
+  font-size: 11px;
+  color: #8f7969;
+  margin: 0;
+}
+
+/* Loading & Error */
+.admin-status-loading,
+.admin-status-error-card {
+  max-width: 500px;
+  margin: 80px auto;
+  text-align: center;
+  background: rgba(18, 7, 13, 0.75);
+  border: 1px solid rgba(223, 194, 141, 0.2);
+  border-radius: 14px;
+  padding: 48px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-status-loading p {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 20px;
+  color: #dfc28d;
+  font-style: italic;
+  margin: 0;
+}
+
+.el-btn-return-back {
+  background: rgba(223, 194, 141, 0.1);
+  border: 1px solid rgba(223, 194, 141, 0.3);
+  color: #dfc28d;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   4. RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .admin-dossier-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-dossier-specs-grid {
+    border-left: none;
+    border-top: 1px solid rgba(223, 194, 141, 0.12);
+    padding-left: 0;
+    padding-top: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+
+  .admin-footer-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-status-update-page {
+    padding: 24px 20px 48px;
+  }
+
+  .admin-dossier-specs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-disposition-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .el-btn-cancel-retain,
+  .el-btn-update-disposition {
+    width: 100%;
+    justify-content: center;
+  }
+}
