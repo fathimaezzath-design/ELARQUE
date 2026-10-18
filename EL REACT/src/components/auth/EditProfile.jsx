@@ -29,6 +29,30 @@ import {
 import Navbar from "../common/Navbar";
 
 
+/* =========================
+   IMAGE URL HELPER
+========================= */
+
+const getImageUrl = (image) => {
+  if (!image) {
+    return "";
+  }
+
+  if (
+    image.startsWith("http://") ||
+    image.startsWith("https://")
+  ) {
+    return image;
+  }
+
+  if (image.startsWith("/")) {
+    return `http://localhost:5000${image}`;
+  }
+
+  return `http://localhost:5000/${image}`;
+};
+
+
 const EditProfile = () => {
   const navigate = useNavigate();
 
@@ -36,26 +60,60 @@ const EditProfile = () => {
      PROFILE STATE
   ========================= */
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    dateOfBirth: "",
-    gender: "",
-    address: {
-      street: "",
-      city: "",
-      state: "",
-      pincode: "",
-    },
+  const [formData, setFormData] = useState(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem("user") || "null");
+      if (cached) {
+        return {
+          fullName: cached.fullName || "",
+          email: cached.email || "",
+          phoneNumber: cached.phoneNumber || "",
+          dateOfBirth: cached.dateOfBirth ? cached.dateOfBirth.substring(0, 10) : "",
+          gender: cached.gender || "",
+          address: {
+            street: cached.address?.street || "",
+            city: cached.address?.city || "",
+            state: cached.address?.state || "",
+            pincode: cached.address?.pincode || "",
+          },
+        };
+      }
+    } catch {}
+    return {
+      fullName: "",
+      email: "",
+      phoneNumber: "",
+      dateOfBirth: "",
+      gender: "",
+      address: {
+        street: "",
+        city: "",
+        state: "",
+        pincode: "",
+      },
+    };
   });
 
-  const [profileImage, setProfileImage] = useState("");
+  const [profileImage, setProfileImage] = useState(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem("user") || "null");
+      return cached?.profileImage ? getImageUrl(cached.profileImage) : "";
+    } catch {
+      return "";
+    }
+  });
   const [imageFile, setImageFile] = useState(null);
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(() => {
+    try {
+      return !localStorage.getItem("user");
+    } catch {
+      return true;
+    }
+  });
+  const [bannerNotice, setBannerNotice] = useState(null);
 
 
   /* =========================
@@ -213,30 +271,6 @@ const EditProfile = () => {
 
 
   /* =========================
-     IMAGE URL
-  ========================= */
-
-  const getImageUrl = (image) => {
-    if (!image) {
-      return "";
-    }
-
-    if (
-      image.startsWith("http://") ||
-      image.startsWith("https://")
-    ) {
-      return image;
-    }
-
-    if (image.startsWith("/")) {
-      return `http://localhost:5000${image}`;
-    }
-
-    return `http://localhost:5000/${image}`;
-  };
-
-
-  /* =========================
      GET PROFILE
   ========================= */
 
@@ -244,51 +278,68 @@ const EditProfile = () => {
     const fetchProfile = async () => {
       const token = localStorage.getItem("token");
 
-      if (!token) {
+      if (!token || token === "null" || token === "undefined") {
         navigate("/login");
         return;
       }
 
       try {
-        setPageLoading(true);
-
         const response = await getProfile();
 
         const user = response?.data?.user;
 
-        if (!user) {
-          throw new Error("User data not found");
+        if (user) {
+          setFormData({
+            fullName: user.fullName || "",
+            email: user.email || "",
+            phoneNumber: user.phoneNumber || "",
+            dateOfBirth: user.dateOfBirth
+              ? user.dateOfBirth.substring(0, 10)
+              : "",
+            gender: user.gender || "",
+            address: {
+              street: user.address?.street || "",
+              city: user.address?.city || "",
+              state: user.address?.state || "",
+              pincode: user.address?.pincode || "",
+            },
+          });
+
+          if (user.profileImage) {
+            setProfileImage(
+              getImageUrl(user.profileImage)
+            );
+          }
+
+          localStorage.setItem("user", JSON.stringify(user));
         }
-
-        setFormData({
-          fullName: user.fullName || "",
-          email: user.email || "",
-          phoneNumber: user.phoneNumber || "",
-          dateOfBirth: user.dateOfBirth
-            ? user.dateOfBirth.substring(0, 10)
-            : "",
-          gender: user.gender || "",
-          address: {
-            street: user.address?.street || "",
-            city: user.address?.city || "",
-            state: user.address?.state || "",
-            pincode: user.address?.pincode || "",
-          },
-        });
-
-        setProfileImage(
-          getImageUrl(user.profileImage)
-        );
       } catch (error) {
         console.error(
           "GET PROFILE ERROR:",
           error
         );
 
-        alert(
-          error?.response?.data?.message ||
-            "Unable to load profile"
-        );
+        if (error?.response?.status === 401 || error?.response?.status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+          return;
+        }
+
+        const cached = localStorage.getItem("user");
+        if (!cached) {
+          let errorMsg = "Unable to load profile from server. Please try again.";
+          if (error?.code === "ERR_NETWORK" || error?.message === "Network Error") {
+            errorMsg = "Unable to connect to the ELARQUE backend server (http://localhost:5000). Please ensure the backend server is running.";
+          } else if (error?.response?.data?.message) {
+            errorMsg = error.response.data.message;
+          }
+
+          setBannerNotice({
+            type: "error",
+            text: errorMsg,
+          });
+        }
       } finally {
         setPageLoading(false);
       }
@@ -390,12 +441,15 @@ const EditProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     if (!validateProfile()) {
       return;
     }
 
     try {
       setLoading(true);
+      setBannerNotice(null);
 
       const cleanPhone = formData.phoneNumber
         .replace(/\D/g, "")
@@ -403,24 +457,19 @@ const EditProfile = () => {
 
       const payload = {
         fullName: formData.fullName.trim(),
-
         phoneNumber: cleanPhone,
-
-        dateOfBirth:
-          formData.dateOfBirth || "",
-
+        dateOfBirth: formData.dateOfBirth || "",
         gender: formData.gender || "",
+        address: formData.address,
       };
 
-      const response =
-        await updateProfile(payload);
+      const response = await updateProfile(payload);
 
       if (imageFile) {
         await updateProfileImage(imageFile);
       }
 
-      const updatedUser =
-        response?.data?.user;
+      const updatedUser = response?.data?.user;
 
       if (updatedUser) {
         localStorage.setItem(
@@ -430,12 +479,14 @@ const EditProfile = () => {
         window.dispatchEvent(new Event("storage"));
       }
 
-      alert(
-        response?.data?.message ||
-          "Profile updated successfully"
-      );
+      setBannerNotice({
+        type: "success",
+        text: response?.data?.message || "Profile updated successfully.",
+      });
 
-      navigate("/profile");
+      setTimeout(() => {
+        navigate("/profile");
+      }, 700);
 
     } catch (error) {
       console.error(
@@ -443,10 +494,18 @@ const EditProfile = () => {
         error
       );
 
-      alert(
+      const errorMsg =
         error?.response?.data?.message ||
-          "Unable to update profile"
-      );
+        error?.response?.data?.error ||
+        (error?.code === "ERR_NETWORK" || error?.message === "Network Error"
+          ? "Unable to connect to the ELARQUE backend server (http://localhost:5000). Please ensure the backend server is running."
+          : error?.message) ||
+        "Unable to update profile. Please try again.";
+
+      setBannerNotice({
+        type: "error",
+        text: errorMsg,
+      });
     } finally {
       setLoading(false);
     }
@@ -644,6 +703,16 @@ const EditProfile = () => {
           className="edit-card"
           onSubmit={handleSubmit}
         >
+          {bannerNotice && (
+            <div className={`profile-banner ${bannerNotice.type}`}>
+              {bannerNotice.type === "success" ? (
+                <CheckCircle2 size={18} />
+              ) : (
+                <X size={18} />
+              )}
+              <span>{bannerNotice.text}</span>
+            </div>
+          )}
 
           {/* PROFILE IMAGE */}
 
@@ -1394,6 +1463,29 @@ const EditProfile = () => {
 ========================================================= */
 
 const styles = `
+  .profile-banner {
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+  }
+  .profile-banner.success {
+    background: #eef7ee;
+    border: 1px solid #c3e6cb;
+    color: #1e6930;
+  }
+  .profile-banner.error {
+    background: #fdf2f2;
+    border: 1px solid #f5c6cb;
+    color: #9c1c24;
+  }
   .email-header-row {
     display: flex;
     justify-content: space-between;

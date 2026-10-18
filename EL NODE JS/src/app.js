@@ -18,7 +18,17 @@ const adminOrderRoutes = require("./routes/adminOrderRoutes");
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests from all origins (localhost, 127.0.0.1, mobile, tools)
+      callback(null, true);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 

@@ -350,8 +350,8 @@ function SignUp() {
 
     if (!formData.password)
       newErrors.password = "Please create a password.";
-    else if (formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters long.";
+    else if (formData.password.length < 8)
+      newErrors.password = "Password must be at least 8 characters long.";
 
     if (!formData.confirmPassword)
       newErrors.confirmPassword = "Please confirm your password.";
@@ -369,26 +369,56 @@ function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     if (!validateForm()) return;
 
     try {
       setLoading(true);
       setErrors({});
 
-      await API.post("/register", formData);
+      const cleanEmail = formData.email.trim().toLowerCase();
+      const cleanPhone = formData.phoneNumber.replace(/\D/g, "").slice(-10);
+
+      const payload = {
+        fullName: formData.fullName.trim(),
+        email: cleanEmail,
+        phoneNumber: cleanPhone,
+        referralCode: formData.referralCode ? formData.referralCode.trim() : "",
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        agreedToTerms: Boolean(formData.agreedToTerms),
+      };
+
+      await API.post("/register", payload);
+
+      sessionStorage.setItem("elarque_verify_email", cleanEmail);
 
       navigate("/verify-otp", {
         state: {
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-          referralCode: formData.referralCode,
+          email: cleanEmail,
+          phoneNumber: cleanPhone,
+          referralCode: payload.referralCode,
         },
       });
     } catch (err) {
+      console.error("SIGNUP SUBMISSION ERROR:", err);
+
+      let serverMsg = "Registration failed. Please check your details and try again.";
+
+      if (err.response?.data?.message) {
+        serverMsg = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        serverMsg = err.response.data.error;
+      } else if (err.code === "ERR_NETWORK" || err.message === "Network Error") {
+        serverMsg =
+          "Unable to connect to the ELARQUE backend server (http://localhost:5000). Please ensure the backend server is running.";
+      } else if (err.message) {
+        serverMsg = err.message;
+      }
+
       setErrors({
-        server:
-          err.response?.data?.message ||
-          "Something went wrong. Please try again.",
+        server: serverMsg,
       });
     } finally {
       setLoading(false);

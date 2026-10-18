@@ -8,7 +8,7 @@ export const attachCustomerInterceptors = (axiosInstance) => {
   axiosInstance.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem("token");
-      if (token && (!config.headers || !config.headers.Authorization)) {
+      if (token && token !== "null" && token !== "undefined" && (!config.headers || !config.headers.Authorization)) {
         config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${token}`;
       }

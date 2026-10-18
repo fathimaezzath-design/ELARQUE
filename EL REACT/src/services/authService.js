@@ -12,7 +12,7 @@ const PROFILE_API = axios.create({
 PROFILE_API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
-  if (token) {
+  if (token && token !== "null" && token !== "undefined") {
     config.headers.Authorization = `Bearer ${token}`;
   }
 

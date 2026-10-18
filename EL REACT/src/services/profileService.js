@@ -10,6 +10,9 @@ attachCustomerInterceptors(API);
 // Get authentication token
 const authHeader = () => {
   const token = localStorage.getItem("token");
+  if (!token || token === "null" || token === "undefined") {
+    return {};
+  }
 
   return {
     Authorization: `Bearer ${token}`,

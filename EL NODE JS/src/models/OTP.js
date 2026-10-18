@@ -41,8 +41,20 @@ const otpSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+
+    resendCount: {
+      type: Number,
+      default: 0,
+    },
+
+    lastResentAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   { timestamps: true }
 );
+
+otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model("OTP", otpSchema);

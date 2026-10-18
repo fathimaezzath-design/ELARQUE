@@ -25,21 +25,20 @@ exports.registerUser = async (req, res) => {
       agreedToTerms,
     } = req.body;
 
-    if (!fullName)
+    const cleanFullName = (fullName || "").trim();
+    if (!cleanFullName)
       return res.status(400).json({ success: false, message: "Please enter your full name." });
 
-    if (!email)
+    const cleanEmail = (email || "").trim().toLowerCase();
+    if (!cleanEmail)
       return res.status(400).json({ success: false, message: "Please enter your email address." });
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    if (!emailRegex.test(email))
+    if (!emailRegex.test(cleanEmail))
       return res.status(400).json({ success: false, message: "Please enter a valid email address." });
 
-    if (!phoneNumber)
-      return res.status(400).json({ success: false, message: "Please enter your phone number." });
-
-    if (!/^[0-9]{10}$/.test(phoneNumber))
+    const cleanPhone = String(phoneNumber || "").replace(/\D/g, "").slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10)
       return res.status(400).json({ success: false, message: "Phone number must contain exactly 10 digits." });
 
     if (!password)
@@ -57,16 +56,14 @@ exports.registerUser = async (req, res) => {
         message: "Please accept the Terms & Privacy Policy to continue.",
       });
 
-    const emailExist = await User.findOne({ email });
-
+    const emailExist = await User.findOne({ email: cleanEmail });
     if (emailExist)
       return res.status(400).json({
         success: false,
         message: "An account with this email already exists.",
       });
 
-    const phoneExist = await User.findOne({ phoneNumber });
-
+    const phoneExist = await User.findOne({ phoneNumber: cleanPhone });
     if (phoneExist)
       return res.status(400).json({
         success: false,
@@ -76,20 +73,32 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const otp = await createOTP({
-      fullName,
-      email,
-      phoneNumber,
-      referralCode,
+      fullName: cleanFullName,
+      email: cleanEmail,
+      phoneNumber: cleanPhone,
+      referralCode: referralCode ? referralCode.trim() : "",
       password: hashedPassword,
-      agreedToTerms,
+      agreedToTerms: Boolean(agreedToTerms),
     });
 
-    await sendOtpMail(email, otp);
+    try {
+      const mailInfo = await sendOtpMail(cleanEmail, otp);
+      if (!mailInfo || !mailInfo.accepted || !mailInfo.accepted.some((a) => a.toLowerCase() === cleanEmail)) {
+        throw new Error("Recipient address was not accepted by the mail provider.");
+      }
+    } catch (mailError) {
+      console.error("[Auth Service] Failed to dispatch signup OTP email:", mailError.message || mailError);
+      await OTP.deleteMany({ email: cleanEmail });
+      return res.status(500).json({
+        success: false,
+        message: "Unable to dispatch verification email. Please verify your email address or try again.",
+      });
+    }
 
     return res.status(200).json({
       success: true,
       message: "Verification code sent to your email.",
-      email,
+      email: cleanEmail,
     });
 
   } catch (err) {
@@ -97,7 +106,7 @@ exports.registerUser = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Registration failed.",
+      message: err.message || "Registration failed.",
     });
   }
 };
@@ -107,29 +116,39 @@ exports.registerUser = async (req, res) => {
 exports.verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
+    const cleanEmail = (email || "").trim().toLowerCase();
 
-    console.log("VERIFY EMAIL:", email);
-    console.log("OTP FROM FRONTEND:", otp);
+    if (!cleanEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email address is required.",
+      });
+    }
 
-    const record = await OTP.findOne({ email });
+    if (!otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification code is required.",
+      });
+    }
 
-    console.log("OTP FROM DATABASE:", record?.otp);
+    const record = await OTP.findOne({ email: cleanEmail });
 
     if (!record) {
       return res.status(400).json({
         success: false,
-        message: "Verification code not found.",
+        message: "Verification code not found or expired. Please sign up again.",
       });
     }
 
     if (record.expiresAt < new Date()) {
       return res.status(400).json({
         success: false,
-        message: "Verification code has expired.",
+        message: "Verification code has expired. Please request a new code.",
       });
     }
 
-    if (record.otp !== otp) {
+    if (record.otp !== String(otp).trim()) {
       return res.status(400).json({
         success: false,
         message: "Invalid verification code.",
@@ -146,7 +165,7 @@ exports.verifyOTP = async (req, res) => {
       isVerified: true,
     });
 
-    await OTP.deleteMany({ email });
+    await OTP.deleteMany({ email: cleanEmail });
 
     const token = jwt.sign(
       { id: user._id },
@@ -166,6 +185,13 @@ exports.verifyOTP = async (req, res) => {
   } catch (err) {
     console.error("VERIFY OTP ERROR:", err);
 
+    if (err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "An account with this email or phone number is already registered.",
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: err.message || "Verification failed.",
@@ -178,36 +204,84 @@ exports.verifyOTP = async (req, res) => {
 exports.resendOTP = async (req, res) => {
   try {
     const { email } = req.body;
+    const cleanEmail = (email || "").trim().toLowerCase();
 
-    const record = await OTP.findOne({ email });
-
-    if (!record)
+    if (!cleanEmail) {
       return res.status(400).json({
         success: false,
-        message: "Signup session expired.",
+        message: "Email address is required.",
       });
+    }
 
-    const otp = await createOTP({
-      fullName: record.fullName,
-      email: record.email,
-      phoneNumber: record.phoneNumber,
-      referralCode: record.referralCode,
-      password: record.password,
-      agreedToTerms: record.agreedToTerms,
-    });
+    const record = await OTP.findOne({ email: cleanEmail });
 
-    await sendOtpMail(email, otp);
+    if (!record) {
+      return res.status(400).json({
+        success: false,
+        message: "Signup session expired. Please sign up again.",
+      });
+    }
 
-    res.json({
+    // Cooldown rate limit: 60 seconds
+    const COOLDOWN_SECONDS = 60;
+    if (record.lastResentAt) {
+      const timeSinceLast = (Date.now() - new Date(record.lastResentAt).getTime()) / 1000;
+      if (timeSinceLast < COOLDOWN_SECONDS) {
+        const remaining = Math.ceil(COOLDOWN_SECONDS - timeSinceLast);
+        return res.status(429).json({
+          success: false,
+          message: `Please wait ${remaining} seconds before requesting a new code.`,
+        });
+      }
+    }
+
+    // Maximum resend attempts limit (5 attempts)
+    const MAX_RESENDS = 5;
+    if ((record.resendCount || 0) >= MAX_RESENDS) {
+      return res.status(429).json({
+        success: false,
+        message: "Maximum resend attempts reached. Please register again.",
+      });
+    }
+
+    const nextResendCount = (record.resendCount || 0) + 1;
+
+    // Issue replacement OTP (invalidates previous OTP)
+    const otp = await createOTP(
+      {
+        fullName: record.fullName,
+        email: record.email,
+        phoneNumber: record.phoneNumber,
+        referralCode: record.referralCode,
+        password: record.password,
+        agreedToTerms: record.agreedToTerms,
+      },
+      nextResendCount
+    );
+
+    try {
+      const mailInfo = await sendOtpMail(cleanEmail, otp);
+      if (!mailInfo || !mailInfo.accepted || !mailInfo.accepted.some((a) => a.toLowerCase() === cleanEmail)) {
+        throw new Error("Recipient address was not accepted by the mail provider.");
+      }
+    } catch (mailError) {
+      console.error("[Auth Service] Failed to deliver resend OTP email:", mailError.message || mailError);
+      return res.status(500).json({
+        success: false,
+        message: "Unable to resend verification email. Please try again shortly.",
+      });
+    }
+
+    return res.status(200).json({
       success: true,
       message: "Verification code sent again.",
     });
   } catch (err) {
-    console.log(err);
+    console.error("[Auth Service] Resend OTP error:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Unable to resend verification code.",
+      message: err.message || "Unable to resend verification code.",
     });
   }
 };

@@ -13,6 +13,13 @@ const getUserId = (req) => req.user?.id || req.user?._id || req.user?.userId;
 exports.getProfile = async (req, res) => {
   try {
     const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
     const user = await User.findById(userId).select("-password").lean();
 
     if (!user) {
@@ -22,10 +29,15 @@ exports.getProfile = async (req, res) => {
       });
     }
 
-    // Retrieve default saved address for the authenticated user
-    let savedAddress = await Address.findOne({ userId, isDefault: true }).lean();
-    if (!savedAddress) {
-      savedAddress = await Address.findOne({ userId }).sort({ createdAt: -1 }).lean();
+    // Retrieve default saved address for the authenticated user safely
+    let savedAddress = null;
+    try {
+      savedAddress = await Address.findOne({ userId, isDefault: true }).lean();
+      if (!savedAddress) {
+        savedAddress = await Address.findOne({ userId }).sort({ createdAt: -1 }).lean();
+      }
+    } catch (addrErr) {
+      console.warn("Unable to fetch address in getProfile:", addrErr.message);
     }
 
     return res.status(200).json({
@@ -48,6 +60,12 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
     const { fullName, phoneNumber, dateOfBirth, gender, address } = req.body;
 
     const user = await User.findById(userId);
@@ -61,15 +79,16 @@ exports.updateProfile = async (req, res) => {
 
     const updateFields = {};
 
-    if (fullName !== undefined && fullName.trim()) {
-      updateFields.fullName = fullName.trim();
+    if (fullName !== undefined && String(fullName).trim()) {
+      updateFields.fullName = String(fullName).trim();
     }
 
     if (phoneNumber !== undefined) {
       // Clean phone number to digits only (take last 10 digits for Indian standard)
       const cleanPhone = String(phoneNumber).replace(/\D/g, "").slice(-10);
       if (cleanPhone) {
-        if (cleanPhone !== user.phoneNumber) {
+        const userPhoneClean = (user.phoneNumber || "").replace(/\D/g, "").slice(-10);
+        if (cleanPhone !== userPhoneClean) {
           const phoneExists = await User.findOne({
             phoneNumber: cleanPhone,
             _id: { $ne: user._id },

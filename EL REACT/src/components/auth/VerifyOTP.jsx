@@ -7,13 +7,14 @@ function VerifyOTP() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const email = location.state?.email || "";
+  const email = location.state?.email || sessionStorage.getItem("elarque_verify_email") || "";
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(60);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -183,6 +184,15 @@ function VerifyOTP() {
         margin-bottom:12px;
       }
 
+      .success-msg{
+        text-align:center;
+        color:#2E7D32;
+        font-size:13px;
+        margin-top:-8px;
+        margin-bottom:12px;
+        font-weight:500;
+      }
+
       .otp-footer{
         display:flex;
         justify-content:space-between;
@@ -309,6 +319,7 @@ function VerifyOTP() {
     newOtp[index] = value;
     setOtp(newOtp);
     setError("");
+    setSuccessMessage("");
 
     if (value && index < 5) {
       document.getElementById(`otp-${index + 1}`).focus();
@@ -331,13 +342,21 @@ function VerifyOTP() {
 
     try {
       setLoading(true);
+      setError("");
+      setSuccessMessage("");
 
       const { data } = await verifyOTP({
         email,
         otp: code,
       });
 
+      sessionStorage.removeItem("elarque_verify_email");
+
       localStorage.setItem("token", data.token);
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      window.dispatchEvent(new Event("storage"));
 
       navigate("/");
     } catch (err) {
@@ -350,12 +369,14 @@ function VerifyOTP() {
   const resend = async () => {
     try {
       setResending(true);
+      setError("");
+      setSuccessMessage("");
 
-      await resendOTP({ email });
+      const response = await resendOTP({ email });
 
       setTimer(60);
       setOtp(["", "", "", "", "", ""]);
-      setError("");
+      setSuccessMessage(response.data?.message || "A new 6-digit atelier code has been sent to your email.");
     } catch (err) {
       setError(err.response?.data?.message || "Unable to resend code.");
     } finally {
@@ -414,6 +435,7 @@ function VerifyOTP() {
         </div>
 
         {error && <div className="error">{error}</div>}
+        {successMessage && <div className="success-msg">{successMessage}</div>}
 
         <div className="otp-footer">
           <p>
