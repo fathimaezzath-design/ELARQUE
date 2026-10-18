@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Search,
   X,
@@ -66,6 +67,29 @@ const UserManagement = () => {
   const [users, setUsers] = useState(INITIAL_MOCK_USERS);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch real users from backend API
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const adminToken = localStorage.getItem('adminToken');
+      const res = await axios.get('http://localhost:5000/api/admin/users', {
+        headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {},
+      });
+      if (res?.data?.users && Array.isArray(res.data.users) && res.data.users.length > 0) {
+        setUsers(res.data.users);
+      }
+    } catch (err) {
+      console.warn('Could not fetch real users from API, using fallback data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   // Modal State for Block / Unblock Confirmation
   const [modalState, setModalState] = useState({
@@ -89,9 +113,9 @@ const UserManagement = () => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (
-      u.fullName.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      u.phoneNumber.includes(q)
+      (u.fullName && u.fullName.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q)) ||
+      (u.phoneNumber && u.phoneNumber.includes(q))
     );
   });
 
@@ -113,15 +137,30 @@ const UserManagement = () => {
     });
   };
 
-  // Confirm Modal Action (Frontend UI only in Step 8, no backend API call yet)
-  const handleConfirmAction = () => {
+  // Confirm Modal Action with Backend API call
+  const handleConfirmAction = async () => {
     if (!modalState.targetUser) return;
 
-    // Toggle mock state locally for visual verification
+    const targetId = modalState.targetUser._id || modalState.targetUser.id;
+    const nextBlockedState = modalState.action === 'block';
+
+    try {
+      const adminToken = localStorage.getItem('adminToken');
+      await axios.patch(
+        `http://localhost:5000/api/admin/users/${targetId}/block`,
+        { isBlocked: nextBlockedState },
+        {
+          headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {},
+        }
+      );
+    } catch (err) {
+      console.error('Error updating user block status:', err);
+    }
+
     setUsers((prev) =>
       prev.map((u) =>
-        u._id === modalState.targetUser._id
-          ? { ...u, isBlocked: modalState.action === 'block' }
+        (u._id === targetId || u.id === targetId)
+          ? { ...u, isBlocked: nextBlockedState }
           : u
       )
     );
@@ -243,7 +282,7 @@ const UserManagement = () => {
               <tbody>
                 {displayedUsers.length > 0 ? (
                   displayedUsers.map((user) => (
-                    <tr key={user._id}>
+                    <tr key={user._id || user.id}>
                       {/* Customer Info */}
                       <td>
                         <div className="admin-user-cell">

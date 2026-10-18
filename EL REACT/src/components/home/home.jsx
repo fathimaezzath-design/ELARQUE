@@ -56,7 +56,7 @@ function Home() {
       {/* 8. Seen Across Fashion Capitals (6 Editorial Gallery Photos) */}
       <EditorialGallerySection />
 
-      {/* 9. VIP Dispatches Newsletter ("Stay in Style") */}
+      {/* 9. VIP Dispatches Banner ("Stay in Style") */}
       <NewsletterSection />
 
       {/* 10. Footer */}

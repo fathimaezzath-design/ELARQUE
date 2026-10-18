@@ -20,13 +20,13 @@ export const attachCustomerInterceptors = (axiosInstance) => {
   axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-      if (error?.response?.status === 401) {
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
         if (
           typeof window !== "undefined" &&
           !window.location.pathname.startsWith("/login") &&
           !window.location.pathname.startsWith("/admin")
         ) {
-          // Token expired or invalid
+          // Token expired, invalid, or account suspended
           localStorage.removeItem("token");
           localStorage.removeItem("user");
         }

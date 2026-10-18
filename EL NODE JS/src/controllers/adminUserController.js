@@ -55,6 +55,7 @@ exports.getUsers = async (req, res) => {
 
     // 4. Transform to Safe Public Representation
     const safeUsers = users.map((u) => ({
+      _id: u._id.toString(),
       id: u._id.toString(),
       fullName: u.fullName || "",
       email: u.email || "",
@@ -76,6 +77,45 @@ exports.getUsers = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "An internal server error occurred while retrieving users.",
+    });
+  }
+};
+
+exports.toggleBlockUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isBlocked } = req.body;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    user.isBlocked = typeof isBlocked === "boolean" ? isBlocked : !user.isBlocked;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `User successfully ${user.isBlocked ? "blocked" : "unblocked"}.`,
+      user: {
+        id: user._id.toString(),
+        fullName: user.fullName || "",
+        email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
+        createdAt: user.createdAt,
+        isVerified: Boolean(user.isVerified),
+        isBlocked: Boolean(user.isBlocked),
+      },
+    });
+  } catch (error) {
+    console.error("Admin toggle block error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while updating user status.",
     });
   }
 };

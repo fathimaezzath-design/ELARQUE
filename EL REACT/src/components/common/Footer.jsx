@@ -66,7 +66,7 @@ function Footer() {
 
       <style>{`
         .el-footer {
-          background-color: var(--el-burgundy-darkest);
+          background-color: var(--el-burgundy-darkest, #1F0105);
           color: #FAF6F0;
           padding: 80px 0 36px;
           border-top: 1px solid rgba(255, 255, 255, 0.08);

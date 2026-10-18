@@ -11,6 +11,7 @@ import EditProduct from "../components/admin/EditProduct";
 import VariantManagement from "../components/admin/VariantManagement";
 import AddVariant from "../components/admin/AddVariant";
 import EditVariant from "../components/admin/EditVariant";
+import OrderManagement from "../components/admin/OrderManagement";
 
 function AdminRoutes() {
   return (
@@ -28,6 +29,7 @@ function AdminRoutes() {
       >
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin/orders" element={<OrderManagement />} />
         <Route path="/admin/products" element={<ProductManagement />} />
         <Route path="/admin/products/add" element={<AddProduct />} />
         <Route path="/admin/products/edit/:id" element={<EditProduct />} />

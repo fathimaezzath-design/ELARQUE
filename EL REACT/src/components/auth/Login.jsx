@@ -324,6 +324,9 @@ padding:34px;
       const { data } = await loginUser(formData);
 
       localStorage.setItem("token", data.token);
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
 
       navigate("/");
     } catch (err) {

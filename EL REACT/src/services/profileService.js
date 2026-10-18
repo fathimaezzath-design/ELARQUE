@@ -1,8 +1,11 @@
 import axios from "axios";
+import { attachCustomerInterceptors } from "./api";
 
 const API = axios.create({
   baseURL: "http://localhost:5000/api/profile",
 });
+
+attachCustomerInterceptors(API);
 
 // Get authentication token
 const authHeader = () => {
