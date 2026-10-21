@@ -6,9 +6,8 @@ const Cart = require("../models/Cart");
 const Address = require("../models/Address");
 const User = require("../models/User");
 
-// =====================================================
+
 // ELIGIBILITY CONSTANTS
-// =====================================================
 
 // Statuses that allow FULL ORDER cancellation
 const CANCELLABLE_ORDER_STATUSES = ["Placed", "Confirmed", "Processing"];
@@ -19,24 +18,11 @@ const CANCELLABLE_ITEM_STATUSES_ORDER = ["Placed", "Confirmed", "Processing"];
 // Statuses that allow RETURN REQUEST
 const RETURNABLE_ORDER_STATUSES = ["Delivered"];
 
-// =====================================================
-// HELPERS
-// =====================================================
 
+// HELPERS
 /**
- * Restore stock for one order item.
- *
- * Matches the variant using:
- *  1) Variant ObjectId (_id) if present in item.variant._id or item.variantId
- *  2) Exact variant size & color match via $elemMatch fallback
- *
- * NOTE ON ATOMICITY:
- * Standalone MongoDB (non-replica set) does not support multi-document transactions.
- * Individual variant increments are atomic at the single-document level using $inc.
- * Each item tracks `stockRestored: boolean` to prevent duplicate increments and
- * enable safe, idempotent retries if transient network or server errors occur.
- *
- * @param {Object} item - The order item subdocument
+
+ * @param {Object} item 
  * @returns {Promise<{ success: boolean, reason?: string, error?: string, updatedProduct?: Object }>}
  */
 async function restoreItemStock(item) {
@@ -483,10 +469,10 @@ const createOrder = async (req, res) => {
   }
 };
 
-// =====================================================
+
 // GET MY ORDERS (Customer)
 // GET /api/orders
-// =====================================================
+
 
 const getMyOrders = async (req, res) => {
   try {
@@ -570,10 +556,10 @@ const getMyOrders = async (req, res) => {
   }
 };
 
-// =====================================================
+
 // GET ORDER DETAILS (Customer)
 // GET /api/orders/:id
-// =====================================================
+
 
 const getOrderDetails = async (req, res) => {
   try {
@@ -612,11 +598,10 @@ const getOrderDetails = async (req, res) => {
   }
 };
 
-// =====================================================
+
 // CANCEL FULL ORDER (Customer)
 // PATCH /api/orders/:id/cancel
 // Body: { reason? }
-// =====================================================
 
 const cancelOrder = async (req, res) => {
   try {
@@ -808,11 +793,11 @@ const cancelOrder = async (req, res) => {
   }
 };
 
-// =====================================================
+
 // CANCEL SINGLE ITEM (Customer)
 // PATCH /api/orders/:id/items/:itemId/cancel
 // Body: { reason? }
-// =====================================================
+
 
 const cancelOrderItem = async (req, res) => {
   try {
@@ -884,7 +869,7 @@ const cancelOrderItem = async (req, res) => {
 
     const item = order.items.id(itemId);
 
-    // ── Stock Restoration for this specific item ──────────────────────────────
+    // Stock Restoration for this specific item 
     let stockRestored = false;
     let stockError = null;
 
@@ -907,7 +892,7 @@ const cancelOrderItem = async (req, res) => {
       stockRestored = true;
     }
 
-    // ── Recalculate order totals from remaining active items ──────────────────
+    // Recalculate order totals from remaining active items 
     const activeItems = order.items.filter((i) => i.itemStatus === "Active");
     const newSubtotal = activeItems.reduce((sum, i) => sum + i.itemTotal, 0);
     const newTotalAmount = Math.max(
@@ -957,26 +942,30 @@ const cancelOrderItem = async (req, res) => {
   }
 };
 
-// =====================================================
+
 // REQUEST FULL ORDER RETURN (Customer)
 // PATCH /api/orders/:id/return
-// Body: { reason } (required)
-// NOTE: Return requests do NOT restore stock.
-// Stock restoration for returns only occurs when physically
-// inspected and approved by warehouse administration.
-// =====================================================
+// Body: { reason, description, photos, preferredRefundMethod, pickupAddress, pickupAddressId }
+
 
 const requestOrderReturn = async (req, res) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
-    const { reason = "" } = req.body;
+    const {
+      reason = "",
+      description = "",
+      photos = [],
+      preferredRefundMethod = "Original Payment",
+      pickupAddress = null,
+      pickupAddressId = null,
+    } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid order ID." });
     }
 
-    if (!reason.trim()) {
+    if (!reason || !reason.trim()) {
       return res.status(400).json({
         success: false,
         message: "A return reason is required.",
@@ -989,24 +978,55 @@ const requestOrderReturn = async (req, res) => {
       return res.status(404).json({ success: false, message: "Order not found." });
     }
 
-    if (!RETURNABLE_ORDER_STATUSES.includes(order.orderStatus)) {
+    const isDelivered = RETURNABLE_ORDER_STATUSES.some(
+      (s) => s.toLowerCase() === (order.orderStatus || "").toLowerCase()
+    );
+
+    if (!isDelivered) {
       return res.status(409).json({
         success: false,
-        message: `Return requests are only allowed for orders with status: ${RETURNABLE_ORDER_STATUSES.join(
-          ", "
-        )}. Current status: "${order.orderStatus}".`,
+        message: `Return requests are only allowed for delivered orders. Current status: "${order.orderStatus}".`,
       });
     }
 
-    if (order.returnStatus !== "None") {
+    if (order.returnStatus && order.returnStatus !== "None") {
       return res.status(409).json({
         success: false,
         message: `A return request already exists for this order (current status: "${order.returnStatus}").`,
       });
     }
 
+    // Resolve pickup address
+    let resolvedPickup = pickupAddress;
+    if (!resolvedPickup && pickupAddressId && mongoose.Types.ObjectId.isValid(pickupAddressId)) {
+      const savedAddr = await Address.findOne({ _id: pickupAddressId, userId });
+      if (savedAddr) {
+        resolvedPickup = {
+          fullName: savedAddr.fullName,
+          phone: savedAddr.phone,
+          house: savedAddr.house,
+          street: savedAddr.street,
+          city: savedAddr.city,
+          state: savedAddr.state,
+          pincode: savedAddr.pincode,
+        };
+      }
+    }
+    if (!resolvedPickup) {
+      resolvedPickup = order.shippingAddress;
+    }
+
+    const digitsOnly = (order.orderNumber || "").replace(/[^0-9]/g, "");
+    const refId = "RET-" + (digitsOnly || String(Date.now()).slice(-5));
+
     order.returnStatus = "Requested";
     order.returnReason = reason.trim();
+    order.returnDescription = (description || "").trim();
+    order.returnPhotos = Array.isArray(photos) ? photos : [];
+    order.preferredRefundMethod = preferredRefundMethod || "Original Payment";
+    order.pickupAddress = resolvedPickup;
+    order.returnReferenceId = refId;
+    order.returnRequestedAt = new Date();
 
     // Mark active items as ReturnRequested without restoring stock
     for (const item of order.items) {
@@ -1014,6 +1034,12 @@ const requestOrderReturn = async (req, res) => {
         item.itemStatus = "ReturnRequested";
         item.returnStatus = "Requested";
         item.returnReason = reason.trim();
+        item.returnDescription = (description || "").trim();
+        item.returnPhotos = order.returnPhotos;
+        item.preferredRefundMethod = order.preferredRefundMethod;
+        item.pickupAddress = resolvedPickup;
+        item.returnReferenceId = refId;
+        item.returnRequestedAt = order.returnRequestedAt;
       }
     }
 
@@ -1022,11 +1048,16 @@ const requestOrderReturn = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Return request submitted. Our atelier team will review it shortly.",
+      returnReferenceId: refId,
       order: {
         _id: order._id,
         orderNumber: order.orderNumber,
         returnStatus: order.returnStatus,
         returnReason: order.returnReason,
+        returnDescription: order.returnDescription,
+        preferredRefundMethod: order.preferredRefundMethod,
+        returnRequestedAt: order.returnRequestedAt,
+        returnReferenceId: refId,
       },
     });
   } catch (error) {
@@ -1038,18 +1069,24 @@ const requestOrderReturn = async (req, res) => {
   }
 };
 
-// =====================================================
+
 // REQUEST ITEM-LEVEL RETURN (Customer)
 // PATCH /api/orders/:id/items/:itemId/return
-// Body: { reason } (required)
-// NOTE: Item return requests do NOT restore stock.
-// =====================================================
+// Body: { reason, description, photos, preferredRefundMethod, pickupAddress, pickupAddressId }
+
 
 const requestItemReturn = async (req, res) => {
   try {
     const userId = req.user.id;
     const { id, itemId } = req.params;
-    const { reason = "" } = req.body;
+    const {
+      reason = "",
+      description = "",
+      photos = [],
+      preferredRefundMethod = "Original Payment",
+      pickupAddress = null,
+      pickupAddressId = null,
+    } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid order ID." });
@@ -1058,7 +1095,7 @@ const requestItemReturn = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid item ID." });
     }
 
-    if (!reason.trim()) {
+    if (!reason || !reason.trim()) {
       return res.status(400).json({
         success: false,
         message: "A return reason is required.",
@@ -1071,12 +1108,14 @@ const requestItemReturn = async (req, res) => {
       return res.status(404).json({ success: false, message: "Order not found." });
     }
 
-    if (!RETURNABLE_ORDER_STATUSES.includes(order.orderStatus)) {
+    const isDelivered = RETURNABLE_ORDER_STATUSES.some(
+      (s) => s.toLowerCase() === (order.orderStatus || "").toLowerCase()
+    );
+
+    if (!isDelivered) {
       return res.status(409).json({
         success: false,
-        message: `Item return requests are only allowed when the order is "${RETURNABLE_ORDER_STATUSES.join(
-          ", "
-        )}". Current status: "${order.orderStatus}".`,
+        message: `Item return requests are only allowed when the order is delivered. Current status: "${order.orderStatus}".`,
       });
     }
 
@@ -1093,28 +1132,72 @@ const requestItemReturn = async (req, res) => {
       });
     }
 
-    if (item.returnStatus !== "None") {
+    if (item.returnStatus && item.returnStatus !== "None") {
       return res.status(409).json({
         success: false,
         message: `A return request already exists for this item (status: "${item.returnStatus}").`,
       });
     }
 
+    // Resolve pickup address
+    let resolvedPickup = pickupAddress;
+    if (!resolvedPickup && pickupAddressId && mongoose.Types.ObjectId.isValid(pickupAddressId)) {
+      const savedAddr = await Address.findOne({ _id: pickupAddressId, userId });
+      if (savedAddr) {
+        resolvedPickup = {
+          fullName: savedAddr.fullName,
+          phone: savedAddr.phone,
+          house: savedAddr.house,
+          street: savedAddr.street,
+          city: savedAddr.city,
+          state: savedAddr.state,
+          pincode: savedAddr.pincode,
+        };
+      }
+    }
+    if (!resolvedPickup) {
+      resolvedPickup = order.shippingAddress;
+    }
+
+    const digitsOnly = (order.orderNumber || "").replace(/[^0-9]/g, "");
+    const itemSuffix = order.items.length > 1 ? "-" + String(item._id).slice(-4).toUpperCase() : "";
+    const refId = "RET-" + (digitsOnly || String(Date.now()).slice(-5)) + itemSuffix;
+
     item.itemStatus = "ReturnRequested";
     item.returnStatus = "Requested";
     item.returnReason = reason.trim();
+    item.returnDescription = (description || "").trim();
+    item.returnPhotos = Array.isArray(photos) ? photos : [];
+    item.preferredRefundMethod = preferredRefundMethod || "Original Payment";
+    item.pickupAddress = resolvedPickup;
+    item.returnReferenceId = refId;
+    item.returnRequestedAt = new Date();
+
+    if (order.returnStatus === "None") {
+      order.returnStatus = "Requested";
+      order.returnReason = reason.trim();
+      order.returnRequestedAt = item.returnRequestedAt;
+      order.returnReferenceId = refId;
+      order.pickupAddress = resolvedPickup;
+      order.preferredRefundMethod = item.preferredRefundMethod;
+    }
 
     await order.save();
 
     return res.status(200).json({
       success: true,
       message: "Item return request submitted. Our atelier team will review it shortly.",
+      returnReferenceId: refId,
       item: {
         _id: item._id,
         productName: item.productName,
         itemStatus: item.itemStatus,
         returnStatus: item.returnStatus,
         returnReason: item.returnReason,
+        returnDescription: item.returnDescription,
+        preferredRefundMethod: item.preferredRefundMethod,
+        returnRequestedAt: item.returnRequestedAt,
+        returnReferenceId: refId,
       },
     });
   } catch (error) {
@@ -1122,6 +1205,116 @@ const requestItemReturn = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error while submitting item return request.",
+    });
+  }
+};
+
+
+// GET USER RETURN DETAILS (Customer)
+// GET /api/orders/:id/return-details
+
+
+const getUserReturnDetails = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id, itemId: paramItemId } = req.params;
+    const queryItemId = req.query.itemId;
+    const itemId = paramItemId || queryItemId;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid order ID." });
+    }
+
+    const order = await Order.findOne({ _id: id, user: userId });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found." });
+    }
+
+    let targetItem = null;
+    if (itemId && mongoose.Types.ObjectId.isValid(itemId)) {
+      targetItem = order.items.id(itemId);
+    } else {
+      // Find the first returned item or fall back to first item
+      targetItem = order.items.find((i) => i.returnStatus && i.returnStatus !== "None") || order.items[0];
+    }
+
+    const hasReturn =
+      (targetItem && targetItem.returnStatus && targetItem.returnStatus !== "None") ||
+      (order.returnStatus && order.returnStatus !== "None");
+
+    if (!hasReturn) {
+      return res.status(404).json({
+        success: false,
+        message: "No active return request found for this commission.",
+      });
+    }
+
+    const currentStatus =
+      targetItem?.returnStatus && targetItem.returnStatus !== "None"
+        ? targetItem.returnStatus
+        : order.returnStatus;
+
+    const returnReason = targetItem?.returnReason || order.returnReason || "Size or fit issue";
+    const returnDescription = targetItem?.returnDescription || order.returnDescription || "";
+    const returnPhotos =
+      targetItem?.returnPhotos?.length ? targetItem.returnPhotos : order.returnPhotos || [];
+    const preferredRefundMethod =
+      targetItem?.preferredRefundMethod || order.preferredRefundMethod || "Original Payment";
+    const pickupAddress =
+      targetItem?.pickupAddress?.fullName
+        ? targetItem.pickupAddress
+        : order.pickupAddress?.fullName
+        ? order.pickupAddress
+        : order.shippingAddress;
+
+    const returnRef =
+      targetItem?.returnReferenceId ||
+      order.returnReferenceId ||
+      "RET-" +
+        (order.orderNumber
+          ? order.orderNumber.replace(/[^0-9]/g, "")
+          : String(order._id).slice(-6).toUpperCase());
+
+    const refundAmount = targetItem ? targetItem.itemTotal : order.totalAmount;
+    const returnRequestedAt =
+      targetItem?.returnRequestedAt || order.returnRequestedAt || order.updatedAt;
+
+    return res.status(200).json({
+      success: true,
+      returnDetails: {
+        returnReferenceId: returnRef,
+        orderId: order._id,
+        orderNumber: order.orderNumber,
+        orderDate: order.orderDate,
+        deliveredDate: order.deliveredDate,
+        isItemReturn: !!itemId && order.items.length > 1,
+        item: targetItem,
+        items: order.items,
+        returnStatus: currentStatus,
+        returnReason,
+        returnDescription,
+        returnPhotos,
+        preferredRefundMethod,
+        pickupAddress,
+        refundAmount,
+        returnRequestedAt,
+        returnPickupScheduledDate: order.returnPickupScheduledDate,
+        returnPickedUpAt: order.returnPickedUpAt,
+        returnCompletedAt: order.returnCompletedAt,
+        returnCustomerMessage:
+          targetItem?.returnCustomerMessage || order.returnCustomerMessage || "",
+        returnRejectionReason:
+          targetItem?.returnRejectionReason || order.returnRejectionReason || "",
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+      },
+    });
+  } catch (error) {
+    console.error("GET USER RETURN DETAILS ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching return details.",
     });
   }
 };
@@ -1134,5 +1327,6 @@ module.exports = {
   cancelOrderItem,
   requestOrderReturn,
   requestItemReturn,
-  restoreItemStock, // Exported for unit/integration testing
+  getUserReturnDetails,
+  restoreItemStock,
 };

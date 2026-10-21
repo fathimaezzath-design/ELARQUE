@@ -1,12 +1,4 @@
-/* =====================================================
-   ELARQUE — MY ORDERS (PRIVATE CLIENT ATELIER ARCHIVE)
-   Color Palette:
-   • Background: Soft warm champagne blush radial gradient
-   • Burgundy: #650D20 / #4A0815
-   • Gold/Champagne: #DFC28D / #C5A059 / #A27D3A
-   • Charcoal/Dark: #261C18 / #382B26
-   • Borders: #EADFD7 / #F0E6DE
-===================================================== */
+
 
 .el-orders-page-wrapper {
   min-height: 100vh;
@@ -22,9 +14,7 @@
   flex-direction: column;
 }
 
-/* -----------------------------------------------------
-   LAYOUT CONTAINER
------------------------------------------------------ */
+/* LAYOUT CONTAINER */
 .el-orders-main-container {
   max-width: 1320px;
   width: 100%;
@@ -37,8 +27,7 @@
 }
 
 /* =====================================================
-   LEFT SIDEBAR: PATRON SALON CARD
-===================================================== */
+   LEFT SIDEBAR: PATRON SALON CARD */
 .el-orders-sidebar-col {
   flex: 0 0 260px;
   width: 260px;
@@ -570,6 +559,47 @@
 .el-btn-track-shipment:hover,
 .el-btn-write-review:hover {
   background: #967d54;
+}
+
+.el-btn-return-order {
+  background: transparent;
+  color: #650D20;
+  border: 1px solid #650D20;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.el-btn-return-order:hover {
+  background: #650D20;
+  color: #FFFFFF;
+}
+
+.el-btn-view-return-dossier {
+  background: #331018;
+  color: #FAF7F2;
+  border: 1px solid #331018;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.el-btn-view-return-dossier:hover {
+  background: #4A0917;
 }
 
 .el-order-more-items-count {

@@ -1,7 +1,5 @@
-/* ==========================================================================
-   ELARQUE ADMIN - ADD PRODUCT STYLES
-   Haute Couture & Ready-to-Wear Atelier Luxury UI
-   ========================================================================== */
+/* ELARQUE ADMIN - ADD PRODUCT STYLES
+   Haute Couture & Ready-to-Wear Atelier Luxury UI */
 
 .admin-add-product-page {
   min-height: 100vh;
@@ -11,9 +9,7 @@
   box-sizing: border-box;
 }
 
-/* --------------------------------------------------------------------------
-   Main Content Container
-   -------------------------------------------------------------------------- */
+/* Main Content Container*/
 .admin-add-product-main {
   width: 100%;
   padding: 36px 48px 64px 48px;
@@ -211,9 +207,7 @@
   color: #d1c1b1;
 }
 
-/* --------------------------------------------------------------------------
-   3. Garment Variants Section
-   -------------------------------------------------------------------------- */
+/* 3. Garment Variants Section */
 .admin-variants-panel {
   background: rgba(18, 9, 14, 0.5);
   border: 1px solid rgba(223, 194, 141, 0.18);
@@ -392,9 +386,7 @@
   cursor: not-allowed;
 }
 
-/* --------------------------------------------------------------------------
-   4. Action Footer & Buttons
-   -------------------------------------------------------------------------- */
+/* 4. Action Footer & Buttons */
 .admin-add-product-footer {
   display: flex;
   justify-content: flex-end;
@@ -498,9 +490,7 @@
   }
 }
 
-/* --------------------------------------------------------------------------
-   5. Responsive Breakpoints
-   -------------------------------------------------------------------------- */
+/* 5. Responsive Breakpoints */
 @media (max-width: 1024px) {
   .admin-add-product-page {
     flex-direction: column;

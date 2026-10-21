@@ -591,13 +591,33 @@ function MyOrders() {
                         </button>
 
                         {isDelivered ? (
-                          <button
-                            type="button"
-                            className="el-btn-write-review"
-                            onClick={() => navigate(`/orders/${order._id}?review=true`)}
-                          >
-                            WRITE REVIEW <Star size={11} fill="#8A775C" stroke="#8A775C" />
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              className="el-btn-write-review"
+                              onClick={() => navigate(`/orders/${order._id}?review=true`)}
+                            >
+                              WRITE REVIEW <Star size={11} fill="#8A775C" stroke="#8A775C" />
+                            </button>
+
+                            {(!order.returnStatus || order.returnStatus === "None") ? (
+                              <button
+                                type="button"
+                                className="el-btn-return-order"
+                                onClick={() => navigate(`/orders/${order._id}/return`)}
+                              >
+                                RETURN ORDER
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="el-btn-view-return-dossier"
+                                onClick={() => navigate(`/orders/${order._id}/return-details`)}
+                              >
+                                VIEW RETURN ({order.returnStatus.toUpperCase()})
+                              </button>
+                            )}
+                          </>
                         ) : isShipped ? (
                           <button
                             type="button"

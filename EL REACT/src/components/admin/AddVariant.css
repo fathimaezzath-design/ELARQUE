@@ -1,7 +1,5 @@
-/* ==========================================================================
-   ELARQUE ADMIN - ADD VARIANT STYLES
-   Haute Couture & Ready-to-Wear Atelier Luxury UI
-   ========================================================================== */
+/* ELARQUE ADMIN - ADD VARIANT STYLES
+   Haute Couture & Ready-to-Wear Atelier Luxury UI */
 
 .admin-add-variant-page {
   min-height: 100vh;
@@ -11,9 +9,7 @@
   box-sizing: border-box;
 }
 
-/* --------------------------------------------------------------------------
-   Main Content Canvas
-   -------------------------------------------------------------------------- */
+/* Main Content Canvas */
 .admin-add-variant-main {
   width: 100%;
   background: #090306;
@@ -112,9 +108,7 @@
   color: #fca5a5;
 }
 
-/* --------------------------------------------------------------------------
-   3. Form Sections
-   -------------------------------------------------------------------------- */
+/* 3. Form Sections */
 .admin-form-section {
   background: #12090e;
   border: 1px solid rgba(223, 194, 141, 0.18);
@@ -234,9 +228,7 @@
   gap: 20px;
 }
 
-/* --------------------------------------------------------------------------
-   4. Parent Product Preview Card
-   -------------------------------------------------------------------------- */
+/* 4. Parent Product Preview Card */
 .admin-product-preview-card {
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(223, 194, 141, 0.25);
@@ -353,9 +345,7 @@
   flex-shrink: 0;
 }
 
-/* --------------------------------------------------------------------------
-   5. Color Input with Swatch Preview
-   -------------------------------------------------------------------------- */
+/* 5. Color Input with Swatch Preview */
 .admin-color-input-wrap {
   position: relative;
   display: flex;
@@ -427,9 +417,7 @@
   color: #f87171;
 }
 
-/* --------------------------------------------------------------------------
-   6. Size Selector Grid
-   -------------------------------------------------------------------------- */
+/* 6. Size Selector Grid */
 .admin-size-selector-grid {
   display: flex;
   gap: 10px;
@@ -473,9 +461,7 @@
   color: #dfc28d;
 }
 
-/* --------------------------------------------------------------------------
-   7. Form Actions Footer
-   -------------------------------------------------------------------------- */
+/* 7. Form Actions Footer */
 .admin-add-variant-footer {
   display: flex;
   justify-content: flex-end;
@@ -548,9 +534,7 @@
   }
 }
 
-/* --------------------------------------------------------------------------
-   8. Responsive Adjustments
-   -------------------------------------------------------------------------- */
+/* 8. Responsive Adjustments */
 @media (max-width: 900px) {
   .admin-add-variant-main {
     padding: 24px 20px 48px 20px;

@@ -84,10 +84,11 @@ export const cancelOrderItem = (orderId, itemId, reason = "") => {
    REQUEST ORDER RETURN
 ========================= */
 
-export const requestOrderReturn = (orderId, reason) => {
+export const requestOrderReturn = (orderId, data) => {
+  const payload = typeof data === "string" ? { reason: data } : data;
   return API.patch(
     `/${orderId}/return`,
-    { reason },
+    payload,
     { headers: authHeader() }
   );
 };
@@ -96,12 +97,26 @@ export const requestOrderReturn = (orderId, reason) => {
    REQUEST ITEM RETURN
 ========================= */
 
-export const requestItemReturn = (orderId, itemId, reason) => {
+export const requestItemReturn = (orderId, itemId, data) => {
+  const payload = typeof data === "string" ? { reason: data } : data;
   return API.patch(
     `/${orderId}/items/${itemId}/return`,
-    { reason },
+    payload,
     { headers: authHeader() }
   );
+};
+
+/* =========================
+   GET USER RETURN DETAILS
+========================= */
+
+export const getUserReturnDetails = (orderId, itemId = null) => {
+  const url = itemId
+    ? `/${orderId}/items/${itemId}/return-details`
+    : `/${orderId}/return-details`;
+  return API.get(url, {
+    headers: authHeader(),
+  });
 };
 
 export default API;

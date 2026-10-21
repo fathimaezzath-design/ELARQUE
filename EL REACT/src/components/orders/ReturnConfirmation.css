@@ -1,0 +1,784 @@
+/* =====================================================
+   ELARQUE RETURN REQUEST ACCEPTED CONFIRMATION (Screenshot 4)
+===================================================== */
+
+.el-conf-page-root {
+  min-height: 100vh;
+  background-color: #FAF7F2;
+  color: #1F1A1B;
+  display: flex;
+  flex-direction: column;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.el-conf-main-container {
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 30px 24px 80px;
+  flex: 1;
+}
+
+/* Loading & Error */
+.el-conf-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 16px;
+  color: #8A775C;
+  font-size: 13.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.el-conf-spinner {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #EBE3DA;
+  border-top-color: #650D20;
+  border-radius: 50%;
+  animation: el-conf-spin 0.8s linear infinite;
+}
+
+@keyframes el-conf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.el-conf-error-card {
+  max-width: 540px;
+  margin: 60px auto;
+  background: #FFFFFF;
+  border: 1px solid #E8DFD8;
+  padding: 40px 30px;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.el-conf-error-card h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 26px;
+  color: #650D20;
+  margin: 14px 0 8px;
+}
+
+.el-conf-error-card p {
+  font-size: 13.5px;
+  color: #7A7072;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.el-conf-btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.el-conf-btn-primary {
+  background: #650D20;
+  color: #FFFFFF;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 10px 20px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.el-conf-btn-outline {
+  background: transparent;
+  color: #650D20;
+  border: 1px solid #C8BCB0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 10px 20px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* Breadcrumbs */
+.el-conf-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #8C8284;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.el-conf-crumb-link {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.el-conf-crumb-link:hover {
+  color: #650D20;
+}
+
+.el-conf-crumb-sep {
+  color: #D5C7B8;
+}
+
+.el-conf-crumb-active {
+  color: #650D20;
+}
+
+/* Hero Center */
+.el-conf-hero-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 38px;
+}
+
+.el-conf-check-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #650D20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 18px rgba(101, 13, 32, 0.25);
+}
+
+.el-conf-pretitle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #8A775C;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.el-conf-dot {
+  color: #650D20;
+  margin-right: 4px;
+}
+
+.el-conf-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 38px;
+  font-weight: 500;
+  color: #650D20;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+
+.el-conf-subtitle {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #6B6264;
+  max-width: 620px;
+  margin: 0 0 20px;
+}
+
+.el-conf-dossier-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #EFE7DE;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #403638;
+}
+
+.el-conf-pill-divider {
+  color: #BDB0A3;
+}
+
+.el-conf-pill-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #650D20;
+}
+
+.el-conf-clock-icon {
+  color: #8A775C;
+}
+
+/* Stepper Card */
+.el-conf-stepper-card {
+  background: #FFFFFF;
+  border: 1px solid #EBE3DA;
+  border-radius: 4px;
+  padding: 26px 30px;
+  margin-bottom: 36px;
+  box-shadow: 0 2px 12px rgba(101, 13, 32, 0.02);
+}
+
+.el-conf-stepper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.el-conf-stepper-eyebrow {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #8A775C;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.el-conf-stepper-headline {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: #1F1A1B;
+  margin: 0;
+}
+
+.el-conf-live-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #FAF7F2;
+  border: 1px solid #EAE1D6;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8A775C;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.el-conf-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #2D5A3A;
+  box-shadow: 0 0 0 2px rgba(45, 90, 58, 0.2);
+}
+
+.el-conf-stepper-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.el-conf-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 120px;
+  position: relative;
+  z-index: 2;
+}
+
+.el-conf-step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FAF7F2;
+  border: 1.5px solid #D8CFC6;
+  color: #8C8284;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.el-conf-step.completed .el-conf-step-circle {
+  background: #650D20;
+  border-color: #650D20;
+  color: #FFFFFF;
+}
+
+.el-conf-step.current .el-conf-step-circle {
+  background: #FFFFFF;
+  border-color: #650D20;
+  color: #650D20;
+  box-shadow: 0 0 0 3px rgba(101, 13, 32, 0.12);
+}
+
+.el-conf-step-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #1F1A1B;
+  margin-bottom: 2px;
+}
+
+.el-conf-step-meta {
+  font-size: 9px;
+  color: #8C8284;
+  margin-bottom: 2px;
+}
+
+.el-conf-step-sub {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #8A775C;
+}
+
+.el-conf-step.completed .el-conf-step-sub {
+  color: #650D20;
+}
+
+.el-conf-step-line {
+  flex: 1;
+  height: 1px;
+  background: #EBE3DA;
+  margin: 0 8px;
+  margin-top: -30px;
+  z-index: 1;
+}
+
+.el-conf-step-line.active {
+  background: #650D20;
+}
+
+@media (max-width: 768px) {
+  .el-conf-stepper-timeline {
+    justify-content: flex-start;
+    gap: 16px;
+  }
+  .el-conf-step-line {
+    display: none;
+  }
+}
+
+/* Two-Column Breakdown */
+.el-conf-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  margin-bottom: 38px;
+}
+
+@media (max-width: 900px) {
+  .el-conf-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.el-conf-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Base Card */
+.el-conf-card {
+  background: #FFFFFF;
+  border: 1px solid #EBE3DA;
+  border-radius: 4px;
+  padding: 24px 26px;
+  box-shadow: 0 2px 10px rgba(101, 13, 32, 0.02);
+}
+
+.el-conf-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F0EAE2;
+}
+
+.el-conf-header-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-conf-header-with-icon h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1F1A1B;
+  margin: 0;
+}
+
+.el-conf-card-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #650D20;
+}
+
+.el-conf-archive-tag {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #8A775C;
+}
+
+/* Return Specifications Card */
+.el-conf-spec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.el-conf-spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  padding: 4px 0;
+}
+
+.el-conf-spec-title {
+  color: #7A7072;
+}
+
+.el-conf-spec-value {
+  color: #1F1A1B;
+}
+
+.el-conf-spec-value.burgundy {
+  color: #650D20;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.el-conf-spec-row.highlighted {
+  background: #FAF7F2;
+  border: 1px solid #EFE7DE;
+  padding: 10px 14px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.el-conf-spec-value.price {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #650D20;
+}
+
+/* Returned Piece Card */
+.el-conf-piece-body {
+  display: flex;
+  gap: 18px;
+}
+
+@media (max-width: 500px) {
+  .el-conf-piece-body {
+    flex-direction: column;
+  }
+}
+
+.el-conf-piece-thumb-wrap {
+  position: relative;
+  width: 120px;
+  height: 150px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #F4EFEB;
+  flex-shrink: 0;
+}
+
+.el-conf-piece-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.el-conf-piece-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  background: rgba(31, 26, 27, 0.85);
+  color: #FFFFFF;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 0;
+  text-align: center;
+  border-radius: 2px;
+}
+
+.el-conf-piece-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.el-conf-piece-collection {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #8A775C;
+  text-transform: uppercase;
+}
+
+.el-conf-piece-name {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: #1F1A1B;
+  margin: 3px 0 6px;
+}
+
+.el-conf-piece-meta,
+.el-conf-piece-cut {
+  font-size: 11.5px;
+  color: #6B6264;
+  margin: 0 0 4px;
+}
+
+.el-conf-piece-meta strong,
+.el-conf-piece-cut strong {
+  color: #1F1A1B;
+}
+
+.el-conf-piece-price-row {
+  margin: 6px 0;
+}
+
+.el-conf-piece-price-val {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #650D20;
+}
+
+.el-conf-tag-advisory {
+  background: #FAF8F5;
+  border: 1px solid #EFEAE3;
+  padding: 6px 10px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #7A7072;
+}
+
+.el-conf-adv-icon {
+  flex-shrink: 0;
+}
+
+/* White-Glove Logistics */
+.el-conf-logistics-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.el-conf-origin-box {
+  background: #FAF7F2;
+  border: 1px solid #EFE7DE;
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+
+.el-conf-origin-label {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8A775C;
+  margin-bottom: 4px;
+}
+
+.el-conf-origin-name {
+  display: block;
+  font-size: 13.5px;
+  color: #1F1A1B;
+  margin-bottom: 2px;
+}
+
+.el-conf-origin-addr,
+.el-conf-origin-phone {
+  font-size: 11.5px;
+  color: #6B6264;
+  margin: 0 0 2px;
+}
+
+.el-conf-logistics-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 500px) {
+  .el-conf-logistics-specs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.el-conf-log-spec-item {
+  background: #FAF8F5;
+  border: 1px solid #EFEAE3;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+
+.el-conf-log-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8C8284;
+  margin-bottom: 4px;
+}
+
+.el-conf-log-val {
+  display: block;
+  font-size: 11px;
+  color: #1F1A1B;
+  line-height: 1.4;
+}
+
+.el-conf-prep-checklist {
+  border-top: 1px solid #F0EAE2;
+  padding-top: 14px;
+}
+
+.el-conf-prep-title {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8A775C;
+  margin-bottom: 10px;
+}
+
+.el-conf-prep-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.el-conf-prep-list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 11px;
+  color: #6B6264;
+  line-height: 1.4;
+}
+
+.el-conf-check-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #EAE3D8;
+  color: #650D20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Protocol Card */
+.el-conf-protocol-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.el-conf-protocol-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.el-conf-proto-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FAF7F2;
+  border: 1px solid #D8CFC6;
+  color: #8A775C;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.el-conf-proto-content strong {
+  display: block;
+  font-size: 12.5px;
+  color: #1F1A1B;
+  margin-bottom: 3px;
+}
+
+.el-conf-proto-content p {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #6B6264;
+  margin: 0;
+}
+
+/* CTA Row */
+.el-conf-cta-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.el-conf-btn-burgundy {
+  background: #650D20;
+  color: #FFFFFF;
+  border: 1px solid #650D20;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 14px 28px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-conf-btn-burgundy:hover {
+  background: #4A0917;
+  border-color: #4A0917;
+}
+
+.el-conf-btn-cream-outline {
+  background: transparent;
+  color: #650D20;
+  border: 1px solid #C8BCB0;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 14px 28px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-conf-btn-cream-outline:hover {
+  background: #FAF7F2;
+  border-color: #650D20;
+}

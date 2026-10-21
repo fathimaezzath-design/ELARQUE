@@ -69,17 +69,6 @@ exports.adminLogin = async (req, res) => {
   }
 };
 
-/**
- * GET /api/admin/dashboard/stats
- * Returns live, dynamically aggregated stats for the Admin Dashboard:
- * - Product catalog metrics
- * - Variant / stock health and valuation
- * - Real-time Order metrics & revenue
- * - User / customer metrics
- * - Category counts
- * - Recently added products (top 6)
- * - Recently placed orders (top 6)
- */
 exports.getDashboardStats = async (req, res) => {
   try {
     const now = new Date();

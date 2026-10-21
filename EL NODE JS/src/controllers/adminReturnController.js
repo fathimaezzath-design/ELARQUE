@@ -155,11 +155,11 @@ function extractReturnRequests(orders) {
   return list;
 }
 
-// =========================================================================
+
 // GET ALL RETURN REQUESTS (Admin)
 // GET /api/admin/returns
 // Query params: page, limit, status, search, sort
-// =========================================================================
+
 exports.getReturnRequests = async (req, res) => {
   try {
     const {
@@ -278,10 +278,10 @@ exports.getReturnRequests = async (req, res) => {
   }
 };
 
-// =========================================================================
+
 // GET SINGLE RETURN REQUEST (Admin)
 // GET /api/admin/returns/:id
-// =========================================================================
+
 exports.getReturnRequestById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -347,11 +347,11 @@ exports.getReturnRequestById = async (req, res) => {
   }
 };
 
-// =========================================================================
+
 // UPDATE RETURN STATUS (Admin)
 // PATCH /api/admin/returns/:id/status
 // Body: { status, adminNote, rejectionReason, customerMessage, notifyCustomer }
-// =========================================================================
+
 exports.updateReturnStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -546,11 +546,11 @@ exports.updateReturnStatus = async (req, res) => {
   }
 };
 
-// =========================================================================
+
 // QUICK ACTION (Approve or Reject Modal on Return Requests Page)
 // PATCH /api/admin/returns/:id/action
 // Body: { action: "APPROVE" | "REJECT", rejectionReason, adminNote }
-// =========================================================================
+
 exports.handleQuickReturnAction = async (req, res) => {
   try {
     const { id } = req.params;

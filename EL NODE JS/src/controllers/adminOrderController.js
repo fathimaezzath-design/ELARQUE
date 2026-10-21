@@ -45,11 +45,10 @@ async function restoreStockForItems(items) {
   return restoreResults;
 }
 
-// =========================================================================
 // GET ALL ORDERS (Admin)
 // GET /api/admin/orders
 // Query params: page, limit, status, search, paymentStatus, paymentMethod, sort
-// =========================================================================
+
 exports.getOrders = async (req, res) => {
   try {
     const {
@@ -147,10 +146,9 @@ exports.getOrders = async (req, res) => {
   }
 };
 
-// =========================================================================
 // GET ORDER BY ID (Admin)
 // GET /api/admin/orders/:id
-// =========================================================================
+
 exports.getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -187,11 +185,11 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
-// =========================================================================
+
 // UPDATE ORDER STATUS (Admin)
 // PATCH /api/admin/orders/:id/status
 // Body: { orderStatus, note? }
-// =========================================================================
+
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -323,11 +321,11 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-// =========================================================================
+
 // HANDLE RETURN REQUEST (Admin)
 // PATCH /api/admin/orders/:id/return
 // Body: { action: "Approve" | "Reject", itemId?, reason? }
-// =========================================================================
+
 exports.handleReturnRequest = async (req, res) => {
   try {
     const { id } = req.params;
@@ -423,10 +421,10 @@ exports.handleReturnRequest = async (req, res) => {
   }
 };
 
-// =========================================================================
+
 // GET ORDER STATS (Admin)
 // GET /api/admin/orders/stats
-// =========================================================================
+
 exports.getOrderStats = async (req, res) => {
   try {
     const [

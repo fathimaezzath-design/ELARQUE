@@ -1,7 +1,5 @@
-/* ==========================================================================
-   ELARQUE ADMIN — DASHBOARD STYLES
-   Haute Couture & Ready-to-Wear Atelier Luxury UI
-   ========================================================================== */
+/* ELARQUE ADMIN — DASHBOARD STYLES
+   Haute Couture & Ready-to-Wear Atelier Luxury UI */
 
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
 
@@ -37,9 +35,7 @@
   50%       { opacity: 0.5; }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   PAGE HEADER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* PAGE HEADER */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -192,9 +188,7 @@
   letter-spacing: 0.5px;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SECTION 1 — PRIMARY KPI CARDS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  SECTION 1 — PRIMARY KPI CARDS */
 .dashboard-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -360,9 +354,7 @@
   color: #f7e7c4;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SECTION 2 — DETAIL CARDS ROW
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  SECTION 2 — DETAIL CARDS ROW */
 .dashboard-details-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -675,9 +667,7 @@
 
 .detail-cta-btn span { flex: 1; }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SECTION 3 — QUICK ACTIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  SECTION 3 — QUICK ACTIONS */
 .dashboard-quick-actions {
   animation: fadeInUp 0.45s ease 0.15s both;
 }
@@ -749,9 +739,7 @@
   color: #f7e7c4;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SECTION 4 — RECENTLY ADDED PRODUCTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  SECTION 4 — RECENTLY ADDED PRODUCTS */
 .dashboard-recent-products {
   display: flex;
   flex-direction: column;
@@ -972,9 +960,7 @@
   color: #5a4e45;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SECTION 5 — INVENTORY ALERTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* SECTION 5 — INVENTORY ALERTS */
 .dashboard-alerts {
   display: flex;
   flex-direction: column;
@@ -1093,9 +1079,7 @@
 .alert-warning  .alert-action { color: #fbbf24; }
 .alert-info     .alert-action { color: #60a5fa; }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   RESPONSIVE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  RESPONSIVE */
 @media (max-width: 1280px) {
   .rp-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -1151,9 +1135,7 @@
   }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   LIVE AUTO-SYNC BADGE & 6-CARD GRID & RECENT ORDERS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  LIVE AUTO-SYNC BADGE & 6-CARD GRID & RECENT ORDERS */
 
 .live-status-pill {
   display: inline-flex;

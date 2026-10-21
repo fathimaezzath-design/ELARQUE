@@ -24,6 +24,9 @@ import Checkout from "../components/user/Checkout";
 import OrderConfirmed from "../components/user/OrderConfirmed";
 import MyOrders from "../components/orders/MyOrders";
 import OrderDetails from "../components/orders/OrderDetails";
+import ReturnOrder from "../components/orders/ReturnOrder";
+import ReturnConfirmation from "../components/orders/ReturnConfirmation";
+import ReturnDetails from "../components/orders/ReturnDetails";
 
 function UserRoutes() {
   return (
@@ -90,6 +93,63 @@ function UserRoutes() {
         element={
           <ProtectedUserRoute>
             <OrderDetails />
+          </ProtectedUserRoute>
+        }
+      />
+      {/* Customer Return Order Workflow */}
+      <Route
+        path="/orders/:id/return"
+        element={
+          <ProtectedUserRoute>
+            <ReturnOrder />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/orders/:id/items/:itemId/return"
+        element={
+          <ProtectedUserRoute>
+            <ReturnOrder />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/orders/:id/return-confirmation"
+        element={
+          <ProtectedUserRoute>
+            <ReturnConfirmation />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/orders/:id/items/:itemId/return-confirmation"
+        element={
+          <ProtectedUserRoute>
+            <ReturnConfirmation />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/orders/:id/return-details"
+        element={
+          <ProtectedUserRoute>
+            <ReturnDetails />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/orders/:id/items/:itemId/return-details"
+        element={
+          <ProtectedUserRoute>
+            <ReturnDetails />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/returns/:id"
+        element={
+          <ProtectedUserRoute>
+            <ReturnDetails />
           </ProtectedUserRoute>
         }
       />

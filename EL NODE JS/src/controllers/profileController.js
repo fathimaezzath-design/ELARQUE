@@ -7,9 +7,9 @@ const { sendEmailChangeOtpMail } = require("../services/otpService");
 
 const getUserId = (req) => req.user?.id || req.user?._id || req.user?.userId;
 
-// ======================================================
+
 // GET PROFILE
-// ======================================================
+
 exports.getProfile = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -54,9 +54,9 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// ======================================================
+
 // UPDATE PROFILE
-// ======================================================
+
 exports.updateProfile = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -144,9 +144,9 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// ======================================================
+
 // UPDATE PROFILE IMAGE
-// ======================================================
+
 exports.updateProfileImage = async (req, res) => {
   try {
     if (!req.file) {
@@ -183,10 +183,10 @@ exports.updateProfileImage = async (req, res) => {
   }
 };
 
-// ======================================================
+
 // SEND EMAIL CHANGE OTP
 // Requires Current Account Password Verification
-// ======================================================
+
 exports.sendEmailChangeOTP = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -287,9 +287,9 @@ exports.sendEmailChangeOTP = async (req, res) => {
   }
 };
 
-// ======================================================
+
 // VERIFY EMAIL CHANGE OTP
-// ======================================================
+
 exports.verifyEmailChangeOTP = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -377,9 +377,9 @@ exports.verifyEmailChangeOTP = async (req, res) => {
   }
 };
 
-// ======================================================
+
 // CHANGE PASSWORD
-// ======================================================
+
 exports.changePassword = async (req, res) => {
   try {
     const userId = getUserId(req);

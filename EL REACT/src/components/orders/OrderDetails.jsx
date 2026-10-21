@@ -818,9 +818,21 @@ function OrderDetails() {
                           <button
                             type="button"
                             className="el-btn-item-return"
-                            onClick={() => openReturnModal(false, item)}
+                            onClick={() => navigate(`/orders/${order._id}/items/${item._id}/return`)}
                           >
                             RETURN
+                          </button>
+                        )}
+
+                        {/* View Item Return Details */}
+                        {item.returnStatus && item.returnStatus !== "None" && (
+                          <button
+                            type="button"
+                            className="el-btn-item-link"
+                            onClick={() => navigate(`/orders/${order._id}/items/${item._id}/return-details`)}
+                            style={{ borderColor: "#650D20", color: "#650D20" }}
+                          >
+                            VIEW RETURN DETAILS
                           </button>
                         )}
 
@@ -868,9 +880,19 @@ function OrderDetails() {
               <button
                 type="button"
                 className="el-btn-order-level-action"
-                onClick={() => openReturnModal(true)}
+                onClick={() => navigate(`/orders/${order._id}/return`)}
               >
                 RETURN ENTIRE ORDER
+              </button>
+            )}
+
+            {order.returnStatus && order.returnStatus !== "None" && (
+              <button
+                type="button"
+                className="el-btn-order-level-action"
+                onClick={() => navigate(`/orders/${order._id}/return-details`)}
+              >
+                VIEW RETURN DOSSIER ({order.returnStatus?.toUpperCase()})
               </button>
             )}
 

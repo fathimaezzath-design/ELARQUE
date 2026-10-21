@@ -11,6 +11,7 @@ const {
   cancelOrderItem,
   requestOrderReturn,
   requestItemReturn,
+  getUserReturnDetails,
 } = require("../controllers/orderController");
 
 // Create a new order
@@ -33,5 +34,9 @@ router.patch("/:id/return", protect, requestOrderReturn);
 
 // Request return for a single item
 router.patch("/:id/items/:itemId/return", protect, requestItemReturn);
+
+// Get return details for customer
+router.get("/:id/return-details", protect, getUserReturnDetails);
+router.get("/:id/items/:itemId/return-details", protect, getUserReturnDetails);
 
 module.exports = router;

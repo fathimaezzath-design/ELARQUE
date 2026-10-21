@@ -1,12 +1,5 @@
 const mongoose = require("mongoose");
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ITEM-LEVEL STATUSES
-//   Active      – no cancellation or return
-//   Cancelled   – customer cancelled this individual item
-//   ReturnRequested – customer has requested a return for this item
-//   Returned    – return approved by admin (set by admin, not customer)
-// ─────────────────────────────────────────────────────────────────────────────
 
 const ITEM_STATUSES = ["Active", "Cancelled", "ReturnRequested", "Returned"];
 
@@ -53,7 +46,7 @@ const orderItemSchema = new mongoose.Schema(
       required: true,
     },
 
-    // ── Per-item cancellation / return tracking ──────────────────────────────
+    // Per-item cancellation / return tracking 
 
     itemStatus: {
       type: String,
@@ -108,6 +101,37 @@ const orderItemSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+    },
+
+    returnDescription: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    returnPhotos: {
+      type: [String],
+      default: [],
+    },
+
+    preferredRefundMethod: {
+      type: String,
+      default: "Original Payment",
+    },
+
+    pickupAddress: {
+      fullName: { type: String, default: "" },
+      phone: { type: String, default: "" },
+      house: { type: String, default: "" },
+      street: { type: String, default: "" },
+      city: { type: String, default: "" },
+      state: { type: String, default: "" },
+      pincode: { type: String, default: "" },
+    },
+
+    returnReferenceId: {
+      type: String,
+      default: "",
     },
 
     // Guard flag – set to true after stock is restored for this item.
@@ -212,7 +236,7 @@ const orderSchema = new mongoose.Schema(
       type: Date,
     },
 
-    // ── Order-level cancellation / return ────────────────────────────────────
+    // Order-level cancellation / return 
 
     cancellationReason: {
       type: String,
@@ -262,6 +286,37 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+    },
+
+    returnDescription: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    returnPhotos: {
+      type: [String],
+      default: [],
+    },
+
+    preferredRefundMethod: {
+      type: String,
+      default: "Original Payment",
+    },
+
+    pickupAddress: {
+      fullName: { type: String, default: "" },
+      phone: { type: String, default: "" },
+      house: { type: String, default: "" },
+      street: { type: String, default: "" },
+      city: { type: String, default: "" },
+      state: { type: String, default: "" },
+      pincode: { type: String, default: "" },
+    },
+
+    returnReferenceId: {
+      type: String,
+      default: "",
     },
 
     returnPickupScheduledDate: {
