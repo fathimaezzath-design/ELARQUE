@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
+const WalletTransaction = require("../models/WalletTransaction");
 
 // Helper to escape regex special characters for safe MongoDB searches
 function escapeRegex(text) {
@@ -467,6 +468,24 @@ exports.updateReturnStatus = async (req, res) => {
           await User.findByIdAndUpdate(order.user?._id || order.user, {
             $inc: { wallet: currentItem.itemTotal },
           });
+          try {
+            await WalletTransaction.create({
+              user: order.user?._id || order.user,
+              transactionId: `TXN-${currentItem._id.toString().slice(-6).toUpperCase()}-REF`,
+              type: "CREDIT",
+              amount: currentItem.itemTotal,
+              title: `Refund from Order #${order.orderNumber}`,
+              description: `${currentItem.productName || "Atelier Item"} Return Cleared - Salon Concierge Desk`,
+              status: "COMPLETED",
+              paymentRail: "Atelier Refund",
+              order: order._id,
+              orderNumber: order.orderNumber,
+              referenceProtocol: "ELG-VLT-RESERVE-2026",
+              date: new Date(),
+            });
+          } catch (txErr) {
+            console.error("WARNING: Failed to log return refund tx:", txErr.message);
+          }
         }
       } else if (targetStatusNorm === "Rejected") {
         currentItem.itemStatus = "Active";
@@ -513,6 +532,24 @@ exports.updateReturnStatus = async (req, res) => {
             $inc: { wallet: order.totalAmount },
           });
           order.paymentStatus = "Refunded";
+          try {
+            await WalletTransaction.create({
+              user: order.user?._id || order.user,
+              transactionId: `TXN-${order._id.toString().slice(-6).toUpperCase()}-REF`,
+              type: "CREDIT",
+              amount: order.totalAmount,
+              title: `Refund from Order #${order.orderNumber}`,
+              description: `Atelier Return Cleared - Salon Concierge Desk`,
+              status: "COMPLETED",
+              paymentRail: "Atelier Refund",
+              order: order._id,
+              orderNumber: order.orderNumber,
+              referenceProtocol: "ELG-VLT-RESERVE-2026",
+              date: new Date(),
+            });
+          } catch (txErr) {
+            console.error("WARNING: Failed to log full return refund tx:", txErr.message);
+          }
         }
       } else if (targetStatusNorm === "Rejected") {
         order.items.forEach((i) => {

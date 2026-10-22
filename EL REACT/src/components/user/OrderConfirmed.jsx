@@ -192,9 +192,13 @@ function OrderConfirmed() {
 
             {/* CTA Buttons */}
             <div className="el-oc-actions">
+              <Link to={`/orders/${order._id}`} className="el-oc-btn-details">
+                <span>VIEW ORDER DETAILS</span>
+                <ArrowRight size={14} />
+              </Link>
               <Link to="/collections" className="el-oc-btn-continue">
                 <span>CONTINUE SHOPPING</span>
-                <ArrowRight size={14} />
+                <ShoppingBag size={14} />
               </Link>
             </div>
 

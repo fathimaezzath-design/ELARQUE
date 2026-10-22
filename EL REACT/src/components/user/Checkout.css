@@ -1142,3 +1142,284 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   PAYMENT GATEWAYS SELECTOR (CARD 3)
+   ============================================================ */
+.el-co-payment-card {
+  margin-top: 24px;
+}
+
+.el-co-gateways-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.el-co-gateway-card {
+  border: 1px solid #E6DDD2;
+  border-radius: 8px;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.el-co-gateway-card:hover {
+  border-color: #500817;
+  background: #FAF8F5;
+}
+
+.el-co-gateway-card.selected {
+  border: 2px solid #500817;
+  background: #FCFAF8;
+  box-shadow: 0 4px 14px rgba(80, 8, 23, 0.08);
+}
+
+.el-co-gateway-radio {
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #C4B5A5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.el-co-gateway-card.selected .el-co-gateway-radio {
+  border-color: #500817;
+}
+
+.el-co-gateway-radio-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #500817;
+}
+
+.el-co-gateway-content {
+  flex: 1;
+}
+
+.el-co-gateway-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.el-co-gateway-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-co-gateway-icon {
+  color: #500817;
+}
+
+.el-co-gateway-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.el-co-gateway-desc {
+  font-size: 12.5px;
+  color: #776e65;
+  margin: 0 0 6px;
+  line-height: 1.45;
+}
+
+.el-co-gateway-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.el-co-pill-recommend {
+  background: #E8F5E9;
+  color: #2E7D32;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.el-co-pill-addon {
+  background: #EDE7F6;
+  color: #512DA8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.el-co-pill-channel {
+  background: #F2ECE4;
+  color: #6C5E53;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* ============================================================
+   COUPON MANAGEMENT IN ORDER SUMMARY
+   ============================================================ */
+.el-co-applied-coupon-card {
+  background: #F0FDF4;
+  border: 1px dashed #86EFAC;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.el-co-applied-coupon-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.el-co-applied-coupon-icon {
+  color: #16A34A;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.el-co-applied-coupon-code {
+  font-size: 13px;
+  font-weight: 700;
+  color: #15803D;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.05em;
+}
+
+.el-co-applied-coupon-savings {
+  font-size: 12px;
+  color: #166534;
+  font-weight: 600;
+  margin: 2px 0 0;
+}
+
+.el-co-applied-coupon-note {
+  font-size: 10.5px;
+  color: #4ADE80;
+  margin: 2px 0 0;
+}
+
+.el-co-btn-remove-coupon {
+  background: #FFFFFF;
+  border: 1px solid #BBF7D0;
+  color: #DC2626;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.el-co-btn-remove-coupon:hover {
+  background: #DC2626;
+  color: #FFFFFF;
+  border-color: #DC2626;
+}
+
+.el-co-cost-row.discount-row {
+  color: #15803D;
+  font-weight: 600;
+}
+
+.el-co-cost-row.discount-row .el-co-disc-amt {
+  color: #15803D;
+  font-weight: 700;
+}
+
+.el-co-coupons-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.el-co-coupon-chip {
+  background: #FAF7F2;
+  border: 1px solid #ECE2D5;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.el-co-coupon-chip strong {
+  display: block;
+  font-size: 13px;
+  color: #500817;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.el-co-coupon-chip p {
+  margin: 0;
+  font-size: 11.5px;
+  color: #6A6056;
+}
+
+.el-co-coupon-chip button {
+  background: #500817;
+  color: #FFFFFF;
+  border: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.el-co-coupon-chip button:hover:not(:disabled) {
+  background: #3B0510;
+}
+
+.el-co-coupon-chip button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.el-co-promo-active-notice {
+  font-size: 11.5px;
+  color: #856404;
+  background: #FFF3CD;
+  border: 1px solid #FFEEBA;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-top: 8px;
+}
+

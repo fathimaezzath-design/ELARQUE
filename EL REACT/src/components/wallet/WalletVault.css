@@ -1,0 +1,926 @@
+/* ============================================================
+   ELARQUE · Wallet Vault & Discretionary Portfolio
+   Burgundy / Cream / Gold / White Luxury Aesthetic
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+.el-wlt-page {
+  background: #FDFAF5;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #2A1F1A;
+}
+
+.el-wlt-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ── Two Column Layout (Sidebar + Main) ── */
+.el-wlt-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .el-wlt-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Sidebar Card ── */
+.el-wlt-sidebar {
+  background: #FFFFFF;
+  border: 1px solid #EFE8DC;
+  border-radius: 18px;
+  padding: 32px 20px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  position: sticky;
+  top: 100px;
+}
+
+.el-wlt-profile-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #F2ECE1;
+  margin-bottom: 20px;
+}
+
+.el-wlt-avatar-wrap {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  margin-bottom: 14px;
+}
+
+.el-wlt-avatar {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #C5A059;
+  background: #F8F3EC;
+}
+
+.el-wlt-avatar-fallback {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #650D20 0%, #3D0713 100%);
+  color: #C5A059;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #C5A059;
+}
+
+.el-wlt-avatar-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #650D20;
+  border: 2px solid #FFFFFF;
+  color: #C5A059;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-wlt-user-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #2A1F1A;
+  margin: 0 0 4px;
+}
+
+.el-wlt-user-sub {
+  font-size: 12px;
+  color: #8C7B70;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+/* Sidebar Menu */
+.el-wlt-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.el-wlt-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5A4A42;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  text-align: left;
+}
+
+.el-wlt-nav-item:hover {
+  background: #FAF6EF;
+  color: #650D20;
+}
+
+.el-wlt-nav-item.active {
+  background: #650D20;
+  color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(101, 13, 32, 0.25);
+}
+
+.el-wlt-nav-item.active .el-wlt-nav-icon {
+  color: #C5A059;
+}
+
+.el-wlt-nav-item.logout {
+  color: #B91C1C;
+  margin-top: 14px;
+  border-top: 1px solid #F4EFE6;
+  padding-top: 16px;
+}
+
+.el-wlt-nav-item.logout:hover {
+  background: #FEF2F2;
+}
+
+.el-wlt-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.el-wlt-nav-icon {
+  color: #8C7B70;
+}
+
+.el-wlt-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #F4EFE6;
+  color: #650D20;
+}
+
+.el-wlt-badge.active-badge {
+  background: rgba(197, 160, 89, 0.25);
+  color: #FFF;
+}
+
+/* ════════ MAIN CONTENT AREA ════════ */
+.el-wlt-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header Area */
+.el-wlt-header {
+  margin-bottom: 4px;
+}
+
+.el-wlt-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  color: #C5A059;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.el-wlt-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 600;
+  color: #360812;
+  margin: 0 0 6px;
+  line-height: 1.1;
+}
+
+.el-wlt-subtitle {
+  font-size: 13.5px;
+  color: #736155;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 680px;
+}
+
+/* ── Top Balance Card ── */
+.el-wlt-balance-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-left: 5px solid #650D20;
+  border-radius: 16px;
+  padding: 28px 32px;
+  box-shadow: 0 6px 24px rgba(101, 13, 32, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.el-wlt-watermark {
+  position: absolute;
+  right: -10px;
+  top: -20px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 170px;
+  font-weight: 700;
+  color: rgba(101, 13, 32, 0.03);
+  pointer-events: none;
+  line-height: 1;
+  user-select: none;
+}
+
+.el-wlt-balance-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #650D20;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.el-wlt-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.el-wlt-amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 44px;
+  font-weight: 700;
+  color: #2A1F1A;
+  line-height: 1;
+}
+
+.el-wlt-currency {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8C7B70;
+  letter-spacing: 0.06em;
+}
+
+.el-wlt-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFF9E6;
+  border: 1px solid #F5D77F;
+  color: #8C6400;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.el-wlt-balance-note {
+  font-size: 12px;
+  color: #8C7B70;
+  margin: 0;
+}
+
+/* ── 3 Action Buttons ── */
+.el-wlt-actions-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 680px) {
+  .el-wlt-actions-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.el-wlt-act-btn {
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border: 1px solid #EAE1D2;
+}
+
+.el-wlt-act-btn.primary {
+  background: #650D20;
+  border-color: #650D20;
+  color: #FFFFFF;
+  box-shadow: 0 6px 18px rgba(101, 13, 32, 0.2);
+}
+
+.el-wlt-act-btn.primary:hover {
+  background: #500A19;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(101, 13, 32, 0.28);
+}
+
+.el-wlt-act-btn.secondary {
+  background: #FFFFFF;
+  color: #2A1F1A;
+}
+
+.el-wlt-act-btn.secondary:hover {
+  background: #FAF6EF;
+  border-color: #D6C7B2;
+  transform: translateY(-2px);
+}
+
+.el-wlt-act-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.el-wlt-act-btn.primary .el-wlt-act-icon-box {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+.el-wlt-act-btn.secondary .el-wlt-act-icon-box {
+  background: #F8F3EC;
+  color: #650D20;
+}
+
+.el-wlt-act-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.el-wlt-act-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.el-wlt-act-sub {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+/* ── Middle Split: Active Refund Tracker + Enrolled Methods ── */
+.el-wlt-middle-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 860px) {
+  .el-wlt-middle-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card Container */
+.el-wlt-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-radius: 16px;
+  padding: 24px 26px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.el-wlt-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.el-wlt-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2A1F1A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.el-wlt-dot-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #650D20;
+}
+
+.el-wlt-order-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #F4EFE6;
+  color: #650D20;
+  font-family: monospace;
+}
+
+.el-wlt-card-sub {
+  font-size: 12px;
+  color: #8C7B70;
+  margin: 0 0 18px;
+}
+
+/* Stepper */
+.el-wlt-stepper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.el-wlt-step {
+  display: flex;
+  gap: 14px;
+  position: relative;
+  padding-bottom: 18px;
+}
+
+.el-wlt-step:last-child {
+  padding-bottom: 0;
+}
+
+.el-wlt-step-line {
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  bottom: 0;
+  width: 2px;
+  background: #EAE1D2;
+}
+
+.el-wlt-step.complete .el-wlt-step-line {
+  background: #650D20;
+}
+
+.el-wlt-step-node {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 2px solid #D6C7B2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  flex-shrink: 0;
+  color: #A39385;
+}
+
+.el-wlt-step.complete .el-wlt-step-node {
+  background: #650D20;
+  border-color: #650D20;
+  color: #FFFFFF;
+}
+
+.el-wlt-step.in-progress .el-wlt-step-node {
+  border-color: #C5A059;
+  background: #FFFDF8;
+}
+
+.el-wlt-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #C5A059;
+}
+
+.el-wlt-step-content {
+  flex: 1;
+}
+
+.el-wlt-step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #2A1F1A;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.el-wlt-step-status-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.el-wlt-step-status-tag.complete {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.el-wlt-step-status-tag.progress {
+  background: #FFF8E1;
+  color: #B78103;
+}
+
+.el-wlt-step-date {
+  font-size: 11px;
+  color: #8C7B70;
+  margin: 0;
+}
+
+.el-wlt-step-desc {
+  font-size: 11px;
+  color: #5A4A42;
+  margin: 2px 0 0;
+}
+
+/* Stepper Bottom Footer */
+.el-wlt-tracker-footer {
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.el-wlt-tracker-expected {
+  font-size: 11px;
+  color: #650D20;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.el-wlt-tracker-expected strong {
+  font-size: 14px;
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  color: #2A1F1A;
+  font-weight: 700;
+}
+
+.el-wlt-btn-dossier {
+  background: #FFFFFF;
+  border: 1px solid #D6C7B2;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #650D20;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-wlt-btn-dossier:hover {
+  background: #650D20;
+  color: #FFFFFF;
+  border-color: #650D20;
+}
+
+/* ── Payment Methods Right Card ── */
+.el-wlt-methods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.el-wlt-method-item {
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.el-wlt-method-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.el-wlt-method-brand {
+  width: 38px;
+  height: 26px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.el-wlt-method-brand.visa {
+  background: #252525;
+  color: #FFF;
+}
+
+.el-wlt-method-brand.razorpay {
+  background: #0C2340;
+  color: #3395FF;
+}
+
+.el-wlt-method-details h4 {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2A1F1A;
+  margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-wlt-method-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.el-wlt-method-badge.default {
+  background: #FFF3D6;
+  color: #B78103;
+}
+
+.el-wlt-method-badge.verified {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.el-wlt-method-details p {
+  font-size: 11px;
+  color: #8C7B70;
+  margin: 0;
+}
+
+.el-wlt-btn-add-method {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px;
+  border: 1px dashed #C5A059;
+  border-radius: 10px;
+  background: transparent;
+  color: #650D20;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-wlt-btn-add-method:hover {
+  background: #FAF6EF;
+  border-color: #650D20;
+}
+
+/* ════════ TRANSACTIONS SECTION ════════ */
+.el-wlt-tx-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.el-wlt-tx-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.el-wlt-tx-title-box h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2A1F1A;
+  margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-wlt-tx-title-box p {
+  font-size: 12px;
+  color: #8C7B70;
+  margin: 0;
+}
+
+.el-wlt-btn-export {
+  background: #FFFFFF;
+  border: 1px solid #D6C7B2;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #5A4A42;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.el-wlt-btn-export:hover {
+  background: #FAF6EF;
+  color: #650D20;
+  border-color: #650D20;
+}
+
+/* Transaction Item Card */
+.el-wlt-tx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.el-wlt-tx-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.el-wlt-tx-card:hover {
+  border-color: #D6C7B2;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.el-wlt-tx-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.el-wlt-tx-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.el-wlt-tx-icon-wrap.credit {
+  background: #FEF9E7;
+  color: #B78103;
+}
+
+.el-wlt-tx-icon-wrap.debit {
+  background: #F8F3EC;
+  color: #5A4A42;
+}
+
+.el-wlt-tx-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.el-wlt-tx-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.el-wlt-tx-ref {
+  font-size: 11px;
+  font-family: monospace;
+  color: #8C7B70;
+  font-weight: 600;
+}
+
+.el-wlt-tx-pill {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.el-wlt-tx-pill.processing {
+  background: #252525;
+  color: #FFF;
+}
+
+.el-wlt-tx-pill.debited {
+  background: #4A0E17;
+  color: #FFF;
+}
+
+.el-wlt-tx-pill.completed {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.el-wlt-tx-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2A1F1A;
+  margin: 0;
+}
+
+.el-wlt-tx-desc {
+  font-size: 11.5px;
+  color: #5A4A42;
+  margin: 0;
+}
+
+.el-wlt-tx-date {
+  font-size: 10.5px;
+  color: #8C7B70;
+  margin: 0;
+}
+
+.el-wlt-tx-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.el-wlt-tx-amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  display: block;
+}
+
+.el-wlt-tx-amount.credit {
+  color: #8C6400;
+}
+
+.el-wlt-tx-amount.debit {
+  color: #2A1F1A;
+}
+
+.el-wlt-tx-sub-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #8C7B70;
+  text-transform: uppercase;
+}
+
+.el-wlt-ledger-footer {
+  text-align: center;
+  font-size: 11.5px;
+  color: #8C7B70;
+  padding: 12px 0;
+}

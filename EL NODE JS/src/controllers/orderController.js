@@ -5,6 +5,8 @@ const Product = require("../models/Product");
 const Cart = require("../models/Cart");
 const Address = require("../models/Address");
 const User = require("../models/User");
+const Coupon = require("../models/Coupon");
+const WalletTransaction = require("../models/WalletTransaction");
 
 
 // ELIGIBILITY CONSTANTS
@@ -167,7 +169,7 @@ const createOrder = async (req, res) => {
   const successfulReservations = [];
 
   try {
-    const { addressId, paymentMethod = "COD" } = req.body;
+    const { addressId, paymentMethod = "COD", couponCode = "", paymentGateway } = req.body;
     if (!addressId || !mongoose.Types.ObjectId.isValid(addressId)) {
       return res.status(400).json({
         success: false,
@@ -187,7 +189,7 @@ const createOrder = async (req, res) => {
       });
     }
 
-    const allowedPaymentMethods = ["COD", "ONLINE", "WALLET"];
+    const allowedPaymentMethods = ["COD", "ONLINE", "WALLET", "RAZORPAY", "PAYPAL"];
     if (!allowedPaymentMethods.includes(paymentMethod)) {
       return res.status(400).json({
         success: false,
@@ -380,8 +382,36 @@ const createOrder = async (req, res) => {
     }
 
     const shippingCharge = 0;
-    const discount = 0;
-    const totalAmount = subtotal + shippingCharge - discount;
+    let discount = 0;
+    let appliedCoupon = null;
+
+    if (couponCode && couponCode.trim()) {
+      const cleanCode = couponCode.trim().toUpperCase();
+      const couponDoc = await Coupon.findOne({ code: cleanCode, isActive: true });
+      if (couponDoc) {
+        const now = new Date();
+        if ((!couponDoc.startDate || couponDoc.startDate <= now) && (!couponDoc.expiryDate || couponDoc.expiryDate >= now)) {
+          if (subtotal >= (couponDoc.minPurchase || 0)) {
+            if (couponDoc.discountType === "percentage") {
+              discount = Math.round((subtotal * couponDoc.discountValue) / 100);
+              if (couponDoc.maxDiscount && discount > couponDoc.maxDiscount) {
+                discount = couponDoc.maxDiscount;
+              }
+            } else {
+              discount = Math.min(couponDoc.discountValue, subtotal);
+            }
+            appliedCoupon = {
+              code: couponDoc.code,
+              discountAmount: discount,
+              discountType: couponDoc.discountType,
+            };
+          }
+        }
+      }
+    }
+
+    const packagingFee = 199;
+    const totalAmount = Math.max(0, subtotal - discount + shippingCharge + packagingFee);
 
     const shippingAddressSnapshot = {
       fullName: address.fullName,
@@ -396,6 +426,24 @@ const createOrder = async (req, res) => {
     let savedOrder = null;
     let persistenceAttempts = 0;
 
+    let orderPaymentStatus = "Pending";
+    if (paymentMethod === "WALLET") {
+      const userDoc = await User.findById(userId);
+      const currentWallet = typeof userDoc?.wallet === "number" ? userDoc.wallet : 0;
+      if (currentWallet < totalAmount) {
+        await rollbackReservations(successfulReservations);
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient Patron Wallet balance. Available: ₹${currentWallet.toLocaleString("en-IN")}, Required: ₹${totalAmount.toLocaleString("en-IN")}. Please top up your wallet or select another payment medium.`,
+        });
+      }
+      await User.findByIdAndUpdate(userId, { $inc: { wallet: -totalAmount } });
+      orderPaymentStatus = "Paid";
+    }
+
+    const resolvedGateway =
+      paymentGateway || (paymentMethod === "COD" ? "COD" : paymentMethod === "WALLET" ? "Wallet" : paymentMethod === "PAYPAL" ? "PayPal" : paymentMethod === "RAZORPAY" ? "Razorpay" : "Online");
+
     while (!savedOrder && persistenceAttempts < 3) {
       persistenceAttempts++;
       const orderNumber = generateOrderNumber();
@@ -408,10 +456,13 @@ const createOrder = async (req, res) => {
           shippingAddress: shippingAddressSnapshot,
           subtotal,
           discount,
+          coupon: appliedCoupon || { code: "", discountAmount: 0, discountType: "" },
           shippingCharge,
+          packagingFee,
           totalAmount,
           paymentMethod,
-          paymentStatus: "Pending",
+          paymentGateway: resolvedGateway,
+          paymentStatus: orderPaymentStatus,
           orderStatus: "Placed",
         });
 
@@ -450,6 +501,47 @@ const createOrder = async (req, res) => {
       await User.findByIdAndUpdate(userId, { $inc: { orderCount: 1 } });
     } catch (userCountError) {
       console.error("WARNING: Failed to increment orderCount:", userCountError.message);
+    }
+
+    if (paymentMethod === "WALLET" && savedOrder) {
+      try {
+        await WalletTransaction.create({
+          user: userId,
+          transactionId: `TXN-${savedOrder._id.toString().slice(-6).toUpperCase()}-ORD`,
+          type: "DEBIT",
+          amount: totalAmount,
+          title: `Order #${savedOrder.orderNumber} Commission`,
+          description: `${savedOrder.items[0]?.productName || "Atelier Commission"} - Vault Direct Settlement`,
+          status: "COMPLETED",
+          paymentRail: "Wallet Vault",
+          order: savedOrder._id,
+          orderNumber: savedOrder.orderNumber,
+          referenceProtocol: "ELG-VLT-RESERVE-2026",
+          date: new Date(),
+        });
+      } catch (txErr) {
+        console.error("WARNING: Failed to log wallet debit transaction:", txErr.message);
+      }
+    }
+
+    if (appliedCoupon && appliedCoupon.code) {
+      try {
+        await Coupon.findOneAndUpdate(
+          { code: appliedCoupon.code },
+          {
+            $inc: { usedCount: 1 },
+            $push: {
+              usedBy: {
+                userId,
+                orderId: savedOrder._id,
+                usedAt: new Date(),
+              },
+            },
+          }
+        );
+      } catch (cpnErr) {
+        console.error("WARNING: Failed to record coupon usage:", cpnErr.message);
+      }
     }
 
     return res.status(201).json({
@@ -764,6 +856,38 @@ const cancelOrder = async (req, res) => {
       order.stockRestored = false;
     }
 
+    // Direct refund to wallet for prepaid/wallet cancellations
+    let refundAmount = 0;
+    let isRefunded = false;
+    if (order.paymentStatus === "Paid" || ["ONLINE", "WALLET", "RAZORPAY", "PAYPAL"].includes(order.paymentMethod)) {
+      refundAmount = order.totalAmount || 0;
+      if (refundAmount > 0) {
+        await User.findByIdAndUpdate(userId, { $inc: { wallet: refundAmount } });
+        await Order.updateOne({ _id: order._id }, { $set: { paymentStatus: "Refunded" } });
+        order.paymentStatus = "Refunded";
+        isRefunded = true;
+
+        try {
+          await WalletTransaction.create({
+            user: userId,
+            transactionId: `TXN-${order._id.toString().slice(-6).toUpperCase()}-REF`,
+            type: "CREDIT",
+            amount: refundAmount,
+            title: `Refund from Order #${order.orderNumber}`,
+            description: `${order.items[0]?.productName || "Atelier Commission"} Cancellation - Direct Vault Refund`,
+            status: "COMPLETED",
+            paymentRail: "Atelier Refund",
+            order: order._id,
+            orderNumber: order.orderNumber,
+            referenceProtocol: "ELG-VLT-RESERVE-2026",
+            date: new Date(),
+          });
+        } catch (txErr) {
+          console.error("WARNING: Failed to log cancellation refund transaction:", txErr.message);
+        }
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message:
@@ -911,6 +1035,32 @@ const cancelOrderItem = async (req, res) => {
       orderUpdate.cancelledDate = new Date();
       orderUpdate.cancellationReason = "All items cancelled by customer.";
       orderUpdate.stockRestored = order.items.every((i) => i.stockRestored);
+    }
+
+    // Direct refund of cancelled item total to wallet if order was prepaid
+    if (order.paymentStatus === "Paid" || ["ONLINE", "WALLET", "RAZORPAY", "PAYPAL"].includes(order.paymentMethod)) {
+      const itemRefundAmount = Number(targetItem.itemTotal) || 0;
+      if (itemRefundAmount > 0) {
+        await User.findByIdAndUpdate(userId, { $inc: { wallet: itemRefundAmount } });
+        try {
+          await WalletTransaction.create({
+            user: userId,
+            transactionId: `TXN-${targetItem._id.toString().slice(-6).toUpperCase()}-REF`,
+            type: "CREDIT",
+            amount: itemRefundAmount,
+            title: `Refund for ${targetItem.productName} (#${order.orderNumber})`,
+            description: `Item Cancellation - Direct Vault Refund`,
+            status: "COMPLETED",
+            paymentRail: "Atelier Refund",
+            order: order._id,
+            orderNumber: order.orderNumber,
+            referenceProtocol: "ELG-VLT-RESERVE-2026",
+            date: new Date(),
+          });
+        } catch (txErr) {
+          console.error("WARNING: Failed to log item cancellation refund transaction:", txErr.message);
+        }
+      }
     }
 
     await Order.updateOne({ _id: order._id }, { $set: orderUpdate });

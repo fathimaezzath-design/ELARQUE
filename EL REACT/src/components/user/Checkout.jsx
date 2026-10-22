@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,6 +20,9 @@ import {
   Save,
   RotateCcw,
   Sparkles,
+  Tag,
+  Shield,
+  Trash2,
 } from "lucide-react";
 import {
   getAddresses,
@@ -27,8 +30,12 @@ import {
   updateAddress,
 } from "../../services/addressService";
 import { getCart } from "../../services/cartService";
-import { createOrder } from "../../services/orderService";
 import { getProfile } from "../../services/authService";
+import {
+  getAvailableCoupons,
+  applyCoupon,
+  removeCoupon,
+} from "../../services/couponService";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import "./Checkout.css";
@@ -88,6 +95,7 @@ function validateAddress(form) {
 // ---------------------------------------------------------------------------
 function Checkout() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // User Profile
   const [userProfile, setUserProfile] = useState(null);
@@ -97,6 +105,8 @@ function Checkout() {
   const [loadingAddresses, setLoadingAddresses] = useState(true);
   const [addressError, setAddressError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+
+
 
   // Quick Address Form (Card 1)
   const [quickForm, setQuickForm] = useState({
@@ -124,14 +134,48 @@ function Checkout() {
   const [loadingCart, setLoadingCart] = useState(true);
   const [cartError, setCartError] = useState("");
 
-  // Promo Code State
+  // Coupon & Promo Code State
   const [promoCode, setPromoCode] = useState("");
   const [promoFeedback, setPromoFeedback] = useState("");
   const [showCoupons, setShowCoupons] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   // Order Placement Feedback
   const [orderNotice, setOrderNotice] = useState(null);
   const [placingOrder, setPlacingOrder] = useState(false);
+
+  // Fetch available coupons on mount
+  useEffect(() => {
+    const fetchCouponsList = async () => {
+      setLoadingCoupons(true);
+      try {
+        const res = await getAvailableCoupons();
+        if (res?.data?.coupons) {
+          setAvailableCoupons(res.data.coupons);
+        }
+      } catch (err) {
+        console.warn("Available coupons retrieval:", err.message);
+      } finally {
+        setLoadingCoupons(false);
+      }
+    };
+    fetchCouponsList();
+  }, []);
+
+  // Check if arrived from Payment Failure retry
+  useEffect(() => {
+    if (location.state?.retryPayment) {
+      setOrderNotice({
+        type: "info",
+        title: "Payment Authorization Retry",
+        message:
+          "You were redirected from an interrupted transaction. You can proceed to payment again or adjust your order.",
+      });
+    }
+  }, [location.state]);
 
   // -------------------------------------------------------------------------
   // Auth & Profile Fetch
@@ -407,101 +451,114 @@ function Checkout() {
   };
 
   // -------------------------------------------------------------------------
-  // Promo Code Handler
   // -------------------------------------------------------------------------
-  const handleApplyPromo = (e) => {
-    e.preventDefault();
-    if (!promoCode.trim()) return;
+  // Promo Code Handlers (Apply & Remove with Single-Coupon Enforcement)
+  // -------------------------------------------------------------------------
+  const handleApplyPromo = async (e, directCode = null) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const codeToApply = (directCode || promoCode || "").trim().toUpperCase();
 
-    // Transparent notification matching existing rules
-    setPromoFeedback(
-      `Salon code "${promoCode.trim().toUpperCase()}" verified. Privilege savings will be confirmed during the upcoming checkout payment activation.`
-    );
-    setTimeout(() => setPromoFeedback(""), 6000);
+    if (!codeToApply) {
+      setPromoFeedback("Please enter a promotional coupon code.");
+      return;
+    }
+
+    // Rule: Prevent multiple coupon applications
+    if (appliedCoupon) {
+      if (appliedCoupon.code === codeToApply) {
+        setPromoFeedback(`Privilege code "${codeToApply}" is already applied.`);
+        return;
+      }
+      setPromoFeedback(
+        `Privilege code "${appliedCoupon.code}" is already active. Please remove it first to apply another coupon.`
+      );
+      return;
+    }
+
+    setApplyingCoupon(true);
+    setPromoFeedback("");
+
+    try {
+      const res = await applyCoupon(codeToApply, calculatedSubtotal);
+      if (res?.data?.success && res?.data?.coupon) {
+        setAppliedCoupon(res.data.coupon);
+        setPromoFeedback(
+          res.data.message || `Privilege code "${codeToApply}" applied successfully!`
+        );
+        setPromoCode("");
+      } else {
+        setPromoFeedback(res?.data?.message || "Invalid coupon code.");
+      }
+    } catch (err) {
+      setPromoFeedback(
+        err.response?.data?.message || "Failed to apply privilege code. Please check requirements."
+      );
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    try {
+      await removeCoupon();
+    } catch {
+      // client-side reset fallback
+    }
+    const removedCode = appliedCoupon?.code;
+    setAppliedCoupon(null);
+    setPromoCode("");
+    setPromoFeedback(`Privilege code "${removedCode}" removed. Total updated.`);
+    setTimeout(() => setPromoFeedback(""), 4500);
   };
 
   // -------------------------------------------------------------------------
-  // Order Placement Trigger
+  // Navigate to Payment Page (validates checkout data first)
   // -------------------------------------------------------------------------
-  const handlePlaceOrder = async () => {
+  const handleContinueToPayment = () => {
     const selected = addresses.find((a) => a._id === selectedId);
     if (!selected) {
       setOrderNotice({
         type: "error",
         title: "Address Required",
-        message: "Please select a delivery destination before placing your order.",
+        message: "Please select a delivery destination before proceeding to payment.",
       });
       return;
     }
 
-    setPlacingOrder(true);
-    setOrderNotice(null);
-
-    try {
-      const res = await createOrder(selectedId, "COD");
-
-      if (res?.data?.success && res?.data?.order) {
-        // Navigate to confirmation page, passing the persisted order via state.
-        // Using replace:true prevents the user from pressing Back into a
-        // half-processed checkout with a now-empty cart.
-        navigate("/order-confirmed", {
-          state: { order: res.data.order },
-          replace: true,
-        });
-      } else {
-        // Backend returned 2xx but no order — treat as unexpected failure
-        setOrderNotice({
-          type: "error",
-          title: "Order Not Created",
-          message:
-            res?.data?.message ||
-            "Your order could not be confirmed. Please try again or contact support.",
-        });
-        setPlacingOrder(false);
-      }
-    } catch (err) {
-      const status = err?.response?.status;
-      const serverMsg = err?.response?.data?.message;
-
-      if (status === 409) {
-        // Stock or duplicate conflict
-        setOrderNotice({
-          type: "error",
-          title: "Inventory Update",
-          message:
-            serverMsg ||
-            "One or more items are no longer available in the requested quantity. Please review your cart.",
-        });
-      } else if (status === 429) {
-        // Duplicate submission guard
-        setOrderNotice({
-          type: "error",
-          title: "Duplicate Order Detected",
-          message:
-            serverMsg ||
-            "A recent order is already being processed. Please check your order history.",
-        });
-      } else if (status === 400) {
-        setOrderNotice({
-          type: "error",
-          title: "Order Validation Failed",
-          message: serverMsg || "Please check your cart and address, then try again.",
-        });
-      } else if (status === 401) {
-        // The api.js interceptor will handle redirect to /login;
-        // no extra notice needed here
-      } else {
-        setOrderNotice({
-          type: "error",
-          title: "Order Failed",
-          message:
-            serverMsg ||
-            "An unexpected error occurred. Your card has not been charged. Please try again.",
-        });
-      }
-
-      setPlacingOrder(false);
+    if (cartItems.length === 0) {
+      setOrderNotice({
+        type: "error",
+        title: "Empty Bag",
+        message: "Your shopping bag is empty. Add items before proceeding.",
+      });
+      return;
     }
+
+    if (hasUnavailableItems) {
+      setOrderNotice({
+        type: "error",
+        title: "Unavailable Items",
+        message: "Please remove unavailable items from your bag before proceeding.",
+      });
+      return;
+    }
+
+    // Navigate to separate payment page with all required checkout data
+    navigate("/payment", {
+      state: {
+        addressId: selectedId,
+        address: selected,
+        couponCode: appliedCoupon?.code || "",
+        appliedCoupon: appliedCoupon || null,
+        cartItems,
+        subtotal: calculatedSubtotal,
+        couponDiscount,
+        packagingFee,
+        shippingFee,
+        estimatedTotal,
+        userProfile,
+      },
+    });
   };
 
   // -------------------------------------------------------------------------
@@ -524,6 +581,8 @@ function Checkout() {
     }, 0);
   }, [cart, cartItems]);
 
+  const couponDiscount = appliedCoupon ? Number(appliedCoupon.discountAmount) || 0 : 0;
+
   const packagingFee =
     cart?.packagingFee !== undefined && cart?.packagingFee !== null
       ? Number(cart.packagingFee)
@@ -537,11 +596,8 @@ function Checkout() {
       : 0;
 
   const estimatedTotal = useMemo(() => {
-    if (cart?.total !== undefined && cart.total !== null) {
-      return Number(cart.total);
-    }
-    return calculatedSubtotal + packagingFee + shippingFee;
-  }, [cart, calculatedSubtotal, packagingFee, shippingFee]);
+    return Math.max(0, calculatedSubtotal - couponDiscount + packagingFee + shippingFee);
+  }, [calculatedSubtotal, couponDiscount, packagingFee, shippingFee]);
 
   const hasUnavailableItems = cartItems.some((i) => !i.isAvailable);
 
@@ -902,6 +958,8 @@ function Checkout() {
                   </div>
                 )}
               </section>
+
+
             </div>
 
             {/* =========================================================
@@ -991,7 +1049,10 @@ function Checkout() {
                   >
                     <div className="el-co-coupons-title-row">
                       <Gift size={16} className="el-co-gift-icon" />
-                      <span>AVAILABLE COUPONS</span>
+                      <span>
+                        AVAILABLE PRIVILEGE COUPONS{" "}
+                        {availableCoupons.length > 0 && `(${availableCoupons.length})`}
+                      </span>
                     </div>
                     {showCoupons ? (
                       <ChevronUp size={15} />
@@ -1002,59 +1063,126 @@ function Checkout() {
 
                   {showCoupons && (
                     <div className="el-co-coupons-dropdown">
-                      <div className="el-co-coupon-chip">
-                        <div>
-                          <strong>ATELIER-LAVISH</strong>
-                          <p>
-                            Complimentary signature packaging and concierge
-                            care.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setPromoCode("ATELIER-LAVISH")}
-                        >
-                          APPLY
-                        </button>
-                      </div>
+                      {loadingCoupons ? (
+                        <p style={{ fontSize: "12px", color: "#888", margin: "8px 0" }}>
+                          Loading eligible privilege coupons...
+                        </p>
+                      ) : availableCoupons.length === 0 ? (
+                        <p style={{ fontSize: "12px", color: "#888", margin: "8px 0" }}>
+                          No additional salon privileges currently listed.
+                        </p>
+                      ) : (
+                        availableCoupons.map((cpn) => {
+                          const isCurrentlyApplied = appliedCoupon?.code === cpn.code;
+                          const meetsMin = calculatedSubtotal >= (cpn.minPurchase || 0);
+
+                          return (
+                            <div key={cpn.code} className="el-co-coupon-chip">
+                              <div>
+                                <strong>{cpn.code}</strong>
+                                <p>{cpn.description}</p>
+                                {cpn.minPurchase > 0 && (
+                                  <span style={{ fontSize: "11px", color: "#8A775C" }}>
+                                    Min. commission: ₹{formatINR(cpn.minPurchase)}
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                disabled={isCurrentlyApplied || !meetsMin || applyingCoupon}
+                                onClick={() => handleApplyPromo(null, cpn.code)}
+                              >
+                                {isCurrentlyApplied ? "APPLIED" : meetsMin ? "APPLY" : "UNMET"}
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   )}
                 </div>
 
-                {/* Promo Code Form */}
-                <form onSubmit={handleApplyPromo} className="el-co-promo-form">
-                  <label htmlFor="promoCode">PROMO CODE</label>
-                  <div className="el-co-promo-input-group">
-                    <input
-                      id="promoCode"
-                      type="text"
-                      placeholder="ATELIER-LAVISH"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                    />
-                    <button type="submit" className="el-co-btn-apply">
-                      APPLY
+                {/* Applied Coupon Display (Single Coupon Enforced) */}
+                {appliedCoupon ? (
+                  <div className="el-co-applied-coupon-card">
+                    <div className="el-co-applied-coupon-left">
+                      <Tag size={18} className="el-co-applied-coupon-icon" />
+                      <div>
+                        <div className="el-co-applied-coupon-code">
+                          <span>{appliedCoupon.code}</span>
+                          <Check size={14} color="#16A34A" strokeWidth={3} />
+                        </div>
+                        <p className="el-co-applied-coupon-savings">
+                          Privilege discount applied: -₹{formatINR(appliedCoupon.discountAmount)}
+                        </p>
+                        <p className="el-co-applied-coupon-note">
+                          Single coupon active • Removes automatically on change
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="el-co-btn-remove-coupon"
+                      onClick={handleRemoveCoupon}
+                      title="Remove applied coupon"
+                    >
+                      <Trash2 size={13} />
+                      <span>REMOVE</span>
                     </button>
                   </div>
-                  {promoFeedback && (
-                    <p className="el-co-promo-feedback">{promoFeedback}</p>
-                  )}
-                </form>
+                ) : (
+                  /* Promo Code Input Form */
+                  <form onSubmit={handleApplyPromo} className="el-co-promo-form">
+                    <label htmlFor="promoCode">PROMO CODE</label>
+                    <div className="el-co-promo-input-group">
+                      <input
+                        id="promoCode"
+                        type="text"
+                        placeholder="e.g. ATELIER10"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        disabled={applyingCoupon}
+                      />
+                      <button
+                        type="submit"
+                        className="el-co-btn-apply"
+                        disabled={!promoCode.trim() || applyingCoupon}
+                      >
+                        {applyingCoupon ? "CHECKING..." : "APPLY"}
+                      </button>
+                    </div>
+                  </form>
+                )}
 
-                {/* Cost Breakdown */}
+                {promoFeedback && (
+                  <p className="el-co-promo-feedback">{promoFeedback}</p>
+                )}
+
+                {/* Cost Breakdown with Discount */}
                 <div className="el-co-cost-breakdown">
                   <div className="el-co-cost-row">
                     <span>Subtotal</span>
                     <span>₹{formatINR(calculatedSubtotal)}</span>
                   </div>
 
+                  {couponDiscount > 0 && (
+                    <div className="el-co-cost-row discount-row">
+                      <span>
+                        Privilege Discount ({appliedCoupon?.code})
+                      </span>
+                      <span className="el-co-disc-amt">
+                        -₹{formatINR(couponDiscount)}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="el-co-cost-row">
-                    <span>Shipping</span>
-                    <span className="el-co-free-text">Free</span>
+                    <span>Insured Shipping</span>
+                    <span className="el-co-free-text">Complimentary</span>
                   </div>
 
                   <div className="el-co-cost-row">
-                    <span>Packaging</span>
+                    <span>Signature Packaging</span>
                     <span>₹{formatINR(packagingFee)}</span>
                   </div>
 
@@ -1077,7 +1205,7 @@ function Checkout() {
                   </div>
                 </div>
 
-                {/* Place Secure Order CTA */}
+                {/* Continue to Payment CTA */}
                 <button
                   type="button"
                   className="el-co-btn-place-order"
@@ -1085,12 +1213,13 @@ function Checkout() {
                     !selectedId ||
                     cartItems.length === 0 ||
                     hasUnavailableItems ||
-                    placingOrder ||
                     loadingCart
                   }
-                  onClick={handlePlaceOrder}
+                  onClick={handleContinueToPayment}
                 >
-                  <span>PLACE SECURE ORDER</span>
+                  <span>
+                    CONTINUE TO PAYMENT • ₹{formatINR(estimatedTotal)}
+                  </span>
                   <ArrowRight size={16} />
                 </button>
 

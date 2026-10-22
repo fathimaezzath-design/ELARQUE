@@ -1,0 +1,373 @@
+/* ============================================================
+   ELARQUE · Money Added Successfully
+   Burgundy / Cream / Gold / White Luxury Aesthetic
+   ============================================================ */
+
+.el-wlt-succ-page {
+  background: #FDFAF5;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #2A1F1A;
+}
+
+.el-wlt-succ-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ── Head ── */
+.el-wlt-succ-head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.el-wlt-succ-eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #C5A059;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.el-wlt-succ-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 600;
+  color: #360812;
+  margin: 0 0 8px;
+}
+
+.el-wlt-succ-sub {
+  font-size: 13px;
+  color: #736155;
+  margin: 0 auto;
+  max-width: 540px;
+  line-height: 1.5;
+}
+
+/* ── Main Center Card ── */
+.el-wlt-succ-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-radius: 20px;
+  padding: 36px 32px 30px;
+  box-shadow: 0 6px 24px rgba(101, 13, 32, 0.04);
+  text-align: center;
+}
+
+.el-wlt-succ-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #360812;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 16px rgba(54, 8, 18, 0.25);
+}
+
+.el-wlt-succ-sealed-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #650D20;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.el-wlt-succ-main-amt {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #360812;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.el-wlt-succ-main-amt span {
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  color: #8C7B70;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.el-wlt-succ-allocated-note {
+  font-size: 12px;
+  color: #8C7B70;
+  margin: 0 0 24px;
+}
+
+/* ── Liquidity Recap Box ── */
+.el-wlt-succ-recap-box {
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  border-radius: 14px;
+  padding: 20px 22px;
+  text-align: left;
+  margin-bottom: 22px;
+}
+
+.el-wlt-succ-recap-head-sub {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #C5A059;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.el-wlt-succ-recap-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2A1F1A;
+  margin: 0 0 16px;
+}
+
+.el-wlt-succ-recap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.el-wlt-succ-recap-item {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.el-wlt-succ-recap-item-left span {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8C7B70;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.el-wlt-succ-recap-item-left strong {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2A1F1A;
+}
+
+.el-wlt-succ-recap-item-left strong.increment {
+  color: #8C6400;
+}
+
+.el-wlt-succ-recap-total {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-left: 4px solid #650D20;
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.el-wlt-succ-total-left span {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #650D20;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.el-wlt-succ-total-left strong {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2A1F1A;
+}
+
+.el-wlt-succ-total-left strong span {
+  display: inline;
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  color: #8C7B70;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.el-wlt-succ-sparkline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.el-wlt-succ-spark-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  background: #FFF3D6;
+  color: #8C6400;
+  border-radius: 4px;
+}
+
+.el-wlt-succ-spark-sub {
+  font-size: 10px;
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+.el-wlt-succ-recap-subtext {
+  font-size: 11px;
+  color: #736155;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ── Atelier Transaction Ledger ── */
+.el-wlt-succ-ledger-card {
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  border-radius: 12px;
+  padding: 16px 18px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.el-wlt-succ-ledger-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8C7B70;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #EFE8DC;
+  padding-bottom: 8px;
+}
+
+.el-wlt-succ-btn-copy-ledger {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #650D20;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.el-wlt-succ-ledger-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 10px;
+  column-gap: 16px;
+  font-size: 11px;
+}
+
+.el-wlt-succ-ledger-field span {
+  display: block;
+  color: #8C7B70;
+  margin-bottom: 2px;
+}
+
+.el-wlt-succ-ledger-field strong {
+  color: #2A1F1A;
+  font-weight: 600;
+}
+
+.el-wlt-succ-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: #4A0E17;
+  color: #FFFFFF;
+  display: inline-block;
+  letter-spacing: 0.04em;
+}
+
+/* ── Buttons ── */
+.el-wlt-succ-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.el-wlt-succ-btn-continue {
+  background: #650D20;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.el-wlt-succ-btn-continue:hover {
+  background: #500A19;
+  transform: translateY(-2px);
+}
+
+.el-wlt-succ-btn-back {
+  background: #FFFFFF;
+  border: 1px solid #D6C7B2;
+  border-radius: 10px;
+  padding: 13px;
+  color: #5A4A42;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
+.el-wlt-succ-btn-back:hover {
+  background: #FAF6EF;
+  color: #2A1F1A;
+}
+
+.el-wlt-succ-invoice-link {
+  font-size: 11px;
+  color: #650D20;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.el-wlt-succ-invoice-link:hover {
+  text-decoration: underline;
+}

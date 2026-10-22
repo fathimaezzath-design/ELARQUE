@@ -382,7 +382,7 @@
   margin-bottom: 20px;
 }
 
-.el-oc-btn-continue {
+.el-oc-btn-details {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -400,9 +400,33 @@
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-.el-oc-btn-continue:hover {
+.el-oc-btn-details:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+.el-oc-btn-continue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 24px;
+  background: transparent;
+  color: #4a0f19;
+  border: 1px solid #4a0f19;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.el-oc-btn-continue:hover {
+  background: #4a0f19;
+  color: #faf6f1;
 }
 
 .el-oc-assurance {

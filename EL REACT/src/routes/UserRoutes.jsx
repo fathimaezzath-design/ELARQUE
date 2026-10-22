@@ -22,6 +22,13 @@ import ChangePassword from "../components/auth/ChangePassword";
 import ProtectedUserRoute from "../components/auth/ProtectedUserRoute";
 import Checkout from "../components/user/Checkout";
 import OrderConfirmed from "../components/user/OrderConfirmed";
+import PaymentSuccess from "../components/user/PaymentSuccess";
+import PaymentFailure from "../components/user/PaymentFailure";
+import Payment from "../components/user/Payment";
+import WalletVault from "../components/wallet/WalletVault";
+import AddMoney from "../components/wallet/AddMoney";
+import WalletSuccess from "../components/wallet/WalletSuccess";
+import WalletFailed from "../components/wallet/WalletFailed";
 import MyOrders from "../components/orders/MyOrders";
 import OrderDetails from "../components/orders/OrderDetails";
 import ReturnOrder from "../components/orders/ReturnOrder";
@@ -65,10 +72,66 @@ function UserRoutes() {
         }
       />
       <Route
+        path="/payment"
+        element={
+          <ProtectedUserRoute>
+            <Payment />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
         path="/order-confirmed"
         element={
           <ProtectedUserRoute>
             <OrderConfirmed />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/payment-success"
+        element={
+          <ProtectedUserRoute>
+            <PaymentSuccess />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/payment-failure"
+        element={
+          <ProtectedUserRoute>
+            <PaymentFailure />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/wallet"
+        element={
+          <ProtectedUserRoute>
+            <WalletVault />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/wallet/add"
+        element={
+          <ProtectedUserRoute>
+            <AddMoney />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/wallet/success"
+        element={
+          <ProtectedUserRoute>
+            <WalletSuccess />
+          </ProtectedUserRoute>
+        }
+      />
+      <Route
+        path="/wallet/failed"
+        element={
+          <ProtectedUserRoute>
+            <WalletFailed />
           </ProtectedUserRoute>
         }
       />

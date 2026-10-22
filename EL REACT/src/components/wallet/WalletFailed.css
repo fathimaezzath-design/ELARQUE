@@ -1,0 +1,239 @@
+/* ============================================================
+   ELARQUE · Money Transfer Failed
+   Burgundy / Cream / Gold / White Luxury Aesthetic
+   ============================================================ */
+
+.el-wlt-fail-page {
+  background: #FDFAF5;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #2A1F1A;
+}
+
+.el-wlt-fail-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ── Head ── */
+.el-wlt-fail-head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.el-wlt-fail-breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #8C7B70;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.el-wlt-fail-session-tag {
+  color: #C5A059;
+}
+
+.el-wlt-fail-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 600;
+  color: #360812;
+  margin: 0 0 8px;
+}
+
+.el-wlt-fail-sub {
+  font-size: 13px;
+  color: #736155;
+  margin: 0 auto;
+  max-width: 520px;
+  line-height: 1.5;
+}
+
+/* ── Main Center Card ── */
+.el-wlt-fail-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-radius: 20px;
+  padding: 36px 32px 30px;
+  box-shadow: 0 6px 24px rgba(101, 13, 32, 0.04);
+  text-align: center;
+}
+
+.el-wlt-fail-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #3D0A14;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 16px rgba(61, 10, 20, 0.25);
+}
+
+.el-wlt-fail-disrupt-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #650D20;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.el-wlt-fail-main-amt {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #360812;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.el-wlt-fail-msg {
+  font-size: 12.5px;
+  color: #736155;
+  margin: 0 0 10px;
+}
+
+.el-wlt-fail-beneficiary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8C7B70;
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  padding: 4px 12px;
+  border-radius: 6px;
+  margin-bottom: 24px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Atelier Transaction Ledger ── */
+.el-wlt-fail-ledger-card {
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  border-radius: 12px;
+  padding: 16px 18px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.el-wlt-fail-ledger-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8C7B70;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #EFE8DC;
+  padding-bottom: 8px;
+}
+
+.el-wlt-fail-ledger-status {
+  color: #8C7B70;
+}
+
+.el-wlt-fail-ledger-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 12px;
+  column-gap: 16px;
+  font-size: 11px;
+}
+
+.el-wlt-fail-field span {
+  display: block;
+  color: #8C7B70;
+  margin-bottom: 2px;
+}
+
+.el-wlt-fail-field strong {
+  color: #2A1F1A;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.el-wlt-fail-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: #FEE2E2;
+  color: #DC2626;
+  display: inline-block;
+  letter-spacing: 0.04em;
+}
+
+.el-wlt-fail-field.full-span {
+  grid-column: span 2;
+  border-top: 1px solid #EFE8DC;
+  padding-top: 10px;
+}
+
+/* ── Buttons ── */
+.el-wlt-fail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.el-wlt-fail-btn-retry {
+  background: #650D20;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.el-wlt-fail-btn-retry:hover {
+  background: #500A19;
+  transform: translateY(-2px);
+}
+
+.el-wlt-fail-btn-vault {
+  background: #FFFFFF;
+  border: 1px solid #D6C7B2;
+  border-radius: 10px;
+  padding: 13px;
+  color: #5A4A42;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
+.el-wlt-fail-btn-vault:hover {
+  background: #FAF6EF;
+  color: #2A1F1A;
+}

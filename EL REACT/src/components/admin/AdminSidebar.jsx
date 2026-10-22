@@ -215,7 +215,11 @@ const AdminSidebar = ({ mobileOpen, setMobileOpen }) => {
             </div>
 
             {/* Coupons */}
-            <div className="el-sidebar-item inactive-link">
+            <Link
+              to="/admin/coupons"
+              className={`el-sidebar-item ${isItemActive("/admin/coupons") ? "active" : ""}`}
+              onClick={closeMobile}
+            >
               <div className="el-sidebar-item-left">
                 <span className="el-sidebar-icon">
                   <svg
@@ -234,7 +238,8 @@ const AdminSidebar = ({ mobileOpen, setMobileOpen }) => {
                 </span>
                 <span className="el-sidebar-label">Coupons</span>
               </div>
-            </div>
+              {isItemActive("/admin/coupons") && <span className="el-sidebar-active-dot" />}
+            </Link>
 
             {/* Returns */}
             <Link

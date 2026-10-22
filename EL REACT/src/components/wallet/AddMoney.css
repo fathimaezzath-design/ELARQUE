@@ -1,0 +1,652 @@
+/* ============================================================
+   ELARQUE · Add Money to Your Wallet
+   Burgundy / Cream / Gold / White Luxury Aesthetic
+   ============================================================ */
+
+.el-wlt-add-page {
+  background: #FDFAF5;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #2A1F1A;
+}
+
+.el-wlt-add-container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* ── Header ── */
+.el-wlt-add-head {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.el-wlt-add-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 600;
+  color: #360812;
+  margin: 0 0 8px;
+}
+
+.el-wlt-add-sub {
+  font-size: 13.5px;
+  color: #736155;
+  margin: 0 auto;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+/* ── Section Cards ── */
+.el-wlt-add-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-radius: 16px;
+  padding: 24px 30px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+}
+
+/* Balance Card (Top Card) */
+.el-wlt-add-balance-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.el-wlt-add-bal-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.el-wlt-add-bal-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #8C7B70;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.el-wlt-vault-code {
+  font-family: monospace;
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #650D20;
+}
+
+.el-wlt-add-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.el-wlt-add-amount-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #2A1F1A;
+  line-height: 1;
+}
+
+.el-wlt-add-currency {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8C7B70;
+}
+
+.el-wlt-add-guarantee {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #8C7B70;
+  margin: 0;
+}
+
+.el-wlt-add-vip-box {
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  border-radius: 12px;
+  padding: 14px 22px;
+  text-align: right;
+}
+
+.el-wlt-add-vip-tier {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #C5A059;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.el-wlt-add-vip-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2A1F1A;
+  margin: 0;
+}
+
+/* ── Allocation Card ── */
+.el-wlt-card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.el-wlt-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2A1F1A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.el-wlt-currency-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #8C7B70;
+  text-transform: uppercase;
+}
+
+/* Preset Chips */
+.el-wlt-chips-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 580px) {
+  .el-wlt-chips-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.el-wlt-chip {
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2A1F1A;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-wlt-chip:hover {
+  background: #F4EFE6;
+  border-color: #D6C7B2;
+}
+
+.el-wlt-chip.selected {
+  background: #650D20;
+  border-color: #650D20;
+  color: #FFFFFF;
+}
+
+/* Custom Input Field */
+.el-wlt-custom-input-box {
+  margin-bottom: 14px;
+}
+
+.el-wlt-custom-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8C7B70;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.el-wlt-input-container {
+  display: flex;
+  align-items: center;
+  background: #FAF6EF;
+  border: 1px solid #EAE1D2;
+  border-radius: 8px;
+  padding: 10px 16px;
+  gap: 10px;
+}
+
+.el-wlt-input-symbol {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #650D20;
+}
+
+.el-wlt-custom-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2A1F1A;
+  width: 100%;
+}
+
+.el-wlt-input-currency-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #8C7B70;
+}
+
+.el-wlt-limits-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #8C7B70;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── Payment Instruments Card ── */
+.el-wlt-instruments-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 680px) {
+  .el-wlt-instruments-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.el-wlt-instrument-card {
+  background: #FAF6EF;
+  border: 1.5px solid #EFE8DC;
+  border-radius: 12px;
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100px;
+  position: relative;
+}
+
+.el-wlt-instrument-card:hover {
+  border-color: #C5A059;
+}
+
+.el-wlt-instrument-card.selected {
+  border-color: #650D20;
+  background: #FFFDF8;
+  box-shadow: 0 4px 12px rgba(101, 13, 32, 0.08);
+}
+
+.el-wlt-inst-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.el-wlt-inst-icon {
+  color: #650D20;
+}
+
+.el-wlt-inst-radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid #C5A059;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-wlt-inst-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #650D20;
+}
+
+.el-wlt-inst-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #2A1F1A;
+  margin: 0 0 2px;
+  text-transform: uppercase;
+}
+
+.el-wlt-inst-sub {
+  font-size: 10.5px;
+  color: #8C7B70;
+  margin: 0;
+}
+
+/* ── Primary Action Button ── */
+.el-wlt-btn-submit-add {
+  width: 100%;
+  background: #650D20;
+  border: none;
+  border-radius: 12px;
+  padding: 18px;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(101, 13, 32, 0.25);
+  margin-bottom: 12px;
+}
+
+.el-wlt-btn-submit-add:hover {
+  background: #500A19;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(101, 13, 32, 0.32);
+}
+
+.el-wlt-btn-submit-add:disabled {
+  background: #A08C82;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.el-wlt-footer-notice {
+  text-align: center;
+  font-size: 11px;
+  color: #8C7B70;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ════════ CONFIRM TRANSACTION MODAL ════════ */
+.el-wlt-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 4, 10, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.el-wlt-modal-card {
+  background: #FAF6EF;
+  border: 1px solid #EFE8DC;
+  border-radius: 20px;
+  max-width: 440px;
+  width: 100%;
+  padding: 32px 28px 24px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.el-wlt-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #8C7B70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.el-wlt-modal-close:hover {
+  background: #EFE8DC;
+  color: #2A1F1A;
+}
+
+.el-wlt-modal-icon-badge {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #650D20;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  position: relative;
+}
+
+.el-wlt-modal-icon-check {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #C5A059;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FAF6EF;
+}
+
+.el-wlt-modal-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #8C6400;
+  background: #FFF8E1;
+  border: 1px solid #FFE082;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.el-wlt-modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: #2A1F1A;
+  margin: 0 0 6px;
+}
+
+.el-wlt-modal-desc {
+  font-size: 11.5px;
+  color: #736155;
+  margin: 0 0 20px;
+  line-height: 1.45;
+}
+
+/* Modal Amount Box */
+.el-wlt-modal-amt-box {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.el-wlt-modal-amt-sub {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #8C7B70;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.el-wlt-modal-amt-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #650D20;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.el-wlt-modal-amt-val span {
+  font-size: 14px;
+  color: #8C7B70;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.el-wlt-modal-zero-fee {
+  font-size: 11px;
+  color: #2E7D32;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Modal Details Table */
+.el-wlt-modal-details {
+  background: #FFFFFF;
+  border: 1px solid #EAE1D2;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.el-wlt-modal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid #F4EFE6;
+  font-size: 11.5px;
+}
+
+.el-wlt-modal-row:last-child {
+  border-bottom: none;
+}
+
+.el-wlt-modal-label {
+  color: #8C7B70;
+}
+
+.el-wlt-modal-val {
+  font-weight: 600;
+  color: #2A1F1A;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.el-wlt-copy-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #8C7B70;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.el-wlt-status-pill-ready {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #FFF3D6;
+  color: #8C6400;
+}
+
+/* Modal Action Buttons */
+.el-wlt-btn-modal-confirm {
+  width: 100%;
+  background: #650D20;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.el-wlt-btn-modal-confirm:hover {
+  background: #500A19;
+}
+
+.el-wlt-btn-modal-cancel {
+  width: 100%;
+  background: #F4EFE6;
+  border: 1px solid #EAE1D2;
+  border-radius: 10px;
+  padding: 12px;
+  color: #5A4A42;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-wlt-btn-modal-cancel:hover {
+  background: #EAE1D2;
+  color: #2A1F1A;
+}
+
+.el-wlt-modal-protocol-footer {
+  font-size: 10.5px;
+  color: #8C7B70;
+  margin: 14px 0 0;
+}

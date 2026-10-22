@@ -1,0 +1,342 @@
+/* =========================================================================
+   ELARQUE HAUTE COUTURE — PAYMENT FAILURE PAGE STYLES
+   ========================================================================= */
+
+.el-pf-root {
+  min-height: 100vh;
+  background-color: #FAF8F5;
+  color: #1A1A1A;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.el-pf-main {
+  flex: 1;
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.el-pf-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE4DC;
+  border-radius: 4px;
+  padding: 48px 40px;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.el-pf-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #C62828 0%, #E57373 50%, #C62828 100%);
+}
+
+/* ── Illustration ── */
+.el-pf-illustration-box {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-pf-svg-crest {
+  width: 100%;
+  height: 100%;
+}
+
+.el-pf-status-badge {
+  position: absolute;
+  bottom: -6px;
+  background: #C62828;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.3);
+}
+
+/* ── Header ── */
+.el-pf-header {
+  margin-bottom: 28px;
+}
+
+.el-pf-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #C62828;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.el-pf-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: #1A1A1A;
+  margin: 0 0 14px;
+}
+
+.el-pf-statement {
+  max-width: 640px;
+  margin: 0 auto;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #555555;
+}
+
+.el-pf-statement strong {
+  color: #1A1A1A;
+}
+
+/* ── Diagnostic Reason Box ── */
+.el-pf-reason-box {
+  background: #FFFBFB;
+  border: 1px solid #FFCDD2;
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin: 0 auto 32px;
+  max-width: 680px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+
+.el-pf-reason-icon {
+  color: #C62828;
+  flex-shrink: 0;
+}
+
+.el-pf-reason-content {
+  flex: 1;
+}
+
+.el-pf-reason-content strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #C62828;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.el-pf-reason-content p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #333333;
+}
+
+.el-pf-amount-pill {
+  flex-shrink: 0;
+  text-align: right;
+  border-left: 1px solid #FFCDD2;
+  padding-left: 14px;
+}
+
+.el-pf-amount-pill span {
+  display: block;
+  font-size: 10px;
+  color: #777777;
+  text-transform: uppercase;
+}
+
+.el-pf-amount-pill strong {
+  font-size: 14px;
+  color: #1A1A1A;
+}
+
+/* ── Actions & Buttons ── */
+.el-pf-actions-wrapper {
+  margin-bottom: 40px;
+}
+
+.el-pf-btn-retry {
+  background-color: #650D20;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 2px;
+  padding: 15px 36px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(101, 13, 32, 0.25);
+  margin-bottom: 18px;
+}
+
+.el-pf-btn-retry:hover {
+  background-color: #4A0816;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(101, 13, 32, 0.35);
+}
+
+.el-pf-redirect-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.el-pf-btn-redirect {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.el-pf-btn-redirect.secondary {
+  background: #1A1A1A;
+  color: #FFFFFF;
+}
+
+.el-pf-btn-redirect.secondary:hover {
+  background: #333333;
+}
+
+.el-pf-btn-redirect.outline {
+  border: 1px solid #D8CFC3;
+  color: #555555;
+  background: transparent;
+}
+
+.el-pf-btn-redirect.outline:hover {
+  border-color: #1A1A1A;
+  color: #1A1A1A;
+  background: #F8F5F0;
+}
+
+/* ── Troubleshoot Grid ── */
+.el-pf-troubleshoot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  text-align: left;
+  border-top: 1px solid #EAE4DC;
+  padding-top: 32px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 650px) {
+  .el-pf-troubleshoot-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.el-pf-tip-card {
+  background: #FAF7F2;
+  border: 1px solid #ECE5DB;
+  border-radius: 4px;
+  padding: 20px;
+}
+
+.el-pf-tip-icon {
+  color: #8A775C;
+  margin-bottom: 8px;
+}
+
+.el-pf-tip-card h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1A1A1A;
+  margin: 0 0 10px;
+}
+
+.el-pf-tip-card ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #666666;
+}
+
+.el-pf-tip-card li {
+  margin-bottom: 4px;
+}
+
+/* ── Concierge Support Strip ── */
+.el-pf-concierge-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #F6F2EC;
+  border-radius: 4px;
+  padding: 16px 20px;
+  text-align: left;
+  flex-wrap: wrap;
+}
+
+.el-pf-concierge-text strong {
+  display: block;
+  font-size: 13px;
+  color: #1A1A1A;
+  margin-bottom: 2px;
+}
+
+.el-pf-concierge-text p {
+  margin: 0;
+  font-size: 12px;
+  color: #666666;
+}
+
+.el-pf-concierge-contacts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.el-pf-contact-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid #D6CBC0;
+  color: #650D20;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.el-pf-contact-pill:hover {
+  background: #650D20;
+  color: #FFFFFF;
+  border-color: #650D20;
+}

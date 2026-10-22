@@ -17,10 +17,10 @@ const authHeader = () => {
    CREATE ORDER
 ========================= */
 
-export const createOrder = (addressId, paymentMethod = "COD") => {
+export const createOrder = (addressId, paymentMethod = "COD", couponCode = "") => {
   return API.post(
     "/",
-    { addressId, paymentMethod },
+    { addressId, paymentMethod, couponCode },
     { headers: authHeader() }
   );
 };

@@ -179,8 +179,29 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["COD", "ONLINE", "WALLET"],
+      enum: ["COD", "ONLINE", "WALLET", "RAZORPAY", "PAYPAL"],
       default: "COD",
+    },
+
+    paymentGateway: {
+      type: String,
+      enum: ["COD", "Razorpay", "PayPal", "Wallet", "Online"],
+      default: "COD",
+    },
+
+    gatewayOrderId: {
+      type: String,
+      default: "",
+    },
+
+    gatewayPaymentId: {
+      type: String,
+      default: "",
+    },
+
+    gatewaySignature: {
+      type: String,
+      default: "",
     },
 
     paymentStatus: {
@@ -213,9 +234,20 @@ const orderSchema = new mongoose.Schema(
       default: 0,
     },
 
+    coupon: {
+      code: { type: String, default: "" },
+      discountAmount: { type: Number, default: 0 },
+      discountType: { type: String, default: "" },
+    },
+
     shippingCharge: {
       type: Number,
       default: 0,
+    },
+
+    packagingFee: {
+      type: Number,
+      default: 199,
     },
 
     totalAmount: {
