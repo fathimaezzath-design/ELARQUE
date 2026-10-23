@@ -15,6 +15,8 @@ import OrderManagement from "../components/admin/OrderManagement";
 import ReturnManagement from "../components/admin/ReturnManagement";
 import UpdateReturnStatus from "../components/admin/UpdateReturnStatus";
 import CouponManagement from "../components/admin/CouponManagement";
+import AddCoupon from "../components/admin/AddCoupon";
+import EditCoupon from "../components/admin/EditCoupon";
 
 function AdminRoutes() {
   return (
@@ -48,6 +50,8 @@ function AdminRoutes() {
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/admin/categories" element={<CategoryManagement />} />
         <Route path="/admin/coupons" element={<CouponManagement />} />
+        <Route path="/admin/coupons/add" element={<AddCoupon />} />
+        <Route path="/admin/coupons/edit/:id" element={<EditCoupon />} />
       </Route>
 
       {/* Fallback for any unknown /admin sub-routes */}

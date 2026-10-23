@@ -1,0 +1,656 @@
+/* ============================================================
+   ELARQUE Admin · Add/Edit Coupon — Luxury Cream/Burgundy
+   Matching reference screenshots for coupon form pages
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+/* ── Root ────────────────────────────────────────────────── */
+.el-ac-root {
+  min-height: 100vh;
+  background: #FDFAF5;
+  font-family: 'Inter', 'Outfit', sans-serif;
+  color: #2a1a1a;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.el-ac-root *, .el-ac-root *::before, .el-ac-root *::after {
+  box-sizing: border-box;
+}
+
+.el-ac-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 32px 60px;
+}
+
+/* ── Breadcrumb Bar ──────────────────────────────────────── */
+.el-ac-breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.el-ac-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5a4a3a;
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+}
+.el-ac-back-btn:hover {
+  color: #650D20;
+}
+
+.el-ac-yield-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: #FDF8EF;
+  border: 1px solid #e0d4c4;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8B6914;
+}
+.el-ac-yield-badge::before {
+  content: '◆';
+  font-size: 7px;
+  color: #C5A059;
+}
+
+/* ── Page Header ─────────────────────────────────────────── */
+.el-ac-header {
+  margin-bottom: 32px;
+}
+
+.el-ac-header-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: #8B6914;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.el-ac-header-eyebrow::before {
+  content: '•';
+  font-size: 16px;
+  color: #C5A059;
+}
+
+.el-ac-header h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: #1a0a0a;
+  margin: 0;
+  line-height: 1.15;
+}
+
+/* ── Main Layout: 2 columns ──────────────────────────────── */
+.el-ac-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .el-ac-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Live Ticket Preview Card ────────────────────────────── */
+.el-ac-preview-section {
+  order: 2;
+}
+
+@media (max-width: 960px) {
+  .el-ac-preview-section {
+    order: -1;
+  }
+}
+
+.el-ac-ticket {
+  background: linear-gradient(155deg, #650D20, #4a0a18, #3A0712);
+  border-radius: 18px;
+  padding: 0;
+  overflow: hidden;
+  position: sticky;
+  top: 32px;
+  box-shadow:
+    0 12px 40px rgba(101, 13, 32, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.el-ac-ticket-inner {
+  padding: 28px 24px;
+}
+
+.el-ac-ticket-label {
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.el-ac-ticket-code {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #f0e8dc;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  word-break: break-all;
+  min-height: 44px;
+}
+
+.el-ac-ticket-title {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.el-ac-ticket-discount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.el-ac-ticket-discount {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 52px;
+  font-weight: 700;
+  color: #C5A059;
+  line-height: 1;
+}
+
+.el-ac-ticket-discount-unit {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px;
+  color: #C5A059;
+  font-weight: 600;
+}
+
+.el-ac-ticket-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.el-ac-ticket-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.el-ac-ticket-meta-label {
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 700;
+}
+
+.el-ac-ticket-meta-value {
+  font-size: 13px;
+  color: #f0e8dc;
+  font-weight: 600;
+}
+
+.el-ac-ticket-barcode {
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.el-ac-ticket-barcode-lines {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+}
+
+.el-ac-ticket-barcode-line {
+  width: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.el-ac-ticket-id {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.el-ac-ticket-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.el-ac-ticket-status.active {
+  background: rgba(40, 167, 69, 0.15);
+  color: #40c870;
+}
+.el-ac-ticket-status.inactive {
+  background: rgba(198, 40, 40, 0.15);
+  color: #e06060;
+}
+
+/* ── Form Section ────────────────────────────────────────── */
+.el-ac-form-section {
+  order: 1;
+}
+
+.el-ac-form-card {
+  background: #FFFFFF;
+  border: 1px solid #e8e0d5;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.el-ac-form-label-header {
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8B6914;
+  font-weight: 700;
+  margin-bottom: 22px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0e8dd;
+}
+
+.el-ac-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Field Grid */
+.el-ac-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .el-ac-field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.el-ac-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.el-ac-field.full {
+  grid-column: 1 / -1;
+}
+
+.el-ac-field-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8B6914;
+  font-weight: 700;
+}
+
+.el-ac-input,
+.el-ac-select,
+.el-ac-textarea {
+  background: #FAF6EF;
+  border: 1.5px solid #e0d8cc;
+  border-radius: 10px;
+  color: #2a1a1a;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.el-ac-input:focus,
+.el-ac-select:focus,
+.el-ac-textarea:focus {
+  border-color: #C5A059;
+  box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.08);
+}
+.el-ac-input::placeholder {
+  color: #b0a898;
+}
+
+.el-ac-input.error,
+.el-ac-select.error {
+  border-color: #c62828;
+}
+
+.el-ac-textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.el-ac-error-msg {
+  font-size: 11px;
+  color: #c62828;
+  margin-top: 2px;
+}
+
+/* Code generator row */
+.el-ac-code-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.el-ac-code-row .el-ac-field {
+  flex: 1;
+}
+
+.el-ac-code-gen-btn {
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #650D20;
+  color: #f8f3ec;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.el-ac-code-gen-btn:hover {
+  background: #7a1228;
+}
+
+/* Discount Type Toggle */
+.el-ac-type-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 10px;
+  border: 1.5px solid #e0d8cc;
+  overflow: hidden;
+}
+
+.el-ac-type-option {
+  flex: 1;
+  padding: 11px 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #FAF6EF;
+  color: #6a5a4a;
+  border: none;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+}
+.el-ac-type-option:first-child {
+  border-right: 1px solid #e0d8cc;
+}
+.el-ac-type-option.active {
+  background: #650D20;
+  color: #f8f3ec;
+}
+.el-ac-type-option:hover:not(.active) {
+  background: #f0e8dd;
+}
+
+/* Activation toggle */
+.el-ac-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #f0e8dd;
+}
+
+.el-ac-toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.el-ac-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.el-ac-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  border-radius: 12px;
+  background: #e0d8cc;
+  transition: background 0.3s;
+}
+.el-ac-toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.el-ac-toggle-switch input:checked + .el-ac-toggle-slider {
+  background: #2a8f4f;
+}
+.el-ac-toggle-switch input:checked + .el-ac-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.el-ac-toggle-text {
+  font-size: 13px;
+  color: #5a4a3a;
+  font-weight: 500;
+}
+
+/* ── Capsule Eligibility Box ─────────────────────────────── */
+.el-ac-capsule-box {
+  background: #FFFFFF;
+  border: 1px solid #e8e0d5;
+  border-radius: 16px;
+  padding: 22px 24px;
+  margin-top: 20px;
+}
+
+.el-ac-capsule-header {
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8B6914;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.el-ac-capsule-desc {
+  font-size: 13px;
+  color: #7a6a5a;
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+.el-ac-capsule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.el-ac-capsule-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: #3a2a2a;
+  font-weight: 500;
+}
+.el-ac-capsule-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #C5A059;
+  flex-shrink: 0;
+}
+
+/* ── Footer Buttons ──────────────────────────────────────── */
+.el-ac-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e8e0d5;
+  flex-wrap: wrap;
+}
+
+.el-ac-btn-discard {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: 10px;
+  background: #FFFFFF;
+  border: 1.5px solid #d4c8b8;
+  color: #5a4a3a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  text-decoration: none;
+}
+.el-ac-btn-discard:hover {
+  background: #FAF6EF;
+  border-color: #b8a898;
+}
+
+.el-ac-btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 32px;
+  border-radius: 10px;
+  background: #650D20;
+  border: none;
+  color: #f8f3ec;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: inherit;
+}
+.el-ac-btn-submit:hover {
+  background: #7a1228;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(101, 13, 32, 0.3);
+}
+.el-ac-btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Alert ────────────────────────────────────────────────── */
+.el-ac-alert {
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.el-ac-alert.success {
+  background: #f0f9f4;
+  border: 1px solid #28a745;
+  color: #1a6b33;
+}
+.el-ac-alert.error {
+  background: #fdf0f0;
+  border: 1px solid #c62828;
+  color: #a01010;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .el-ac-content {
+    padding: 20px 14px 40px;
+  }
+
+  .el-ac-header h1 {
+    font-size: 26px;
+  }
+
+  .el-ac-form-card {
+    padding: 18px 16px;
+  }
+
+  .el-ac-ticket-code {
+    font-size: 26px;
+  }
+
+  .el-ac-ticket-discount {
+    font-size: 38px;
+  }
+
+  .el-ac-footer-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .el-ac-btn-discard,
+  .el-ac-btn-submit {
+    justify-content: center;
+  }
+}

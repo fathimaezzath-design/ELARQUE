@@ -9,6 +9,22 @@ const couponSchema = new mongoose.Schema(
       trim: true,
       uppercase: true,
     },
+    title: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    categoryTag: {
+      type: String,
+      default: "Seasonal",
+      trim: true,
+    },
+    applicableCategories: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
     description: {
       type: String,
       default: "",

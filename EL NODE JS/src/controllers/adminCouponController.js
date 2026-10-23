@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 // ──────────────────────────────────────────────────────────────────────────────
 // GET /api/admin/coupons
-// List all coupons (active + inactive) with usage metrics
+// List all coupons with search, filters, sorting, pagination & summary stats
 // ──────────────────────────────────────────────────────────────────────────────
 exports.getAllCoupons = async (req, res) => {
   try {
@@ -12,20 +12,87 @@ exports.getAllCoupons = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const filter = {};
-    if (req.query.status === "active") filter.isActive = true;
-    if (req.query.status === "inactive") filter.isActive = false;
+    const now = new Date();
+
+    // ── Search by code or title ──
+    if (req.query.search && req.query.search.trim()) {
+      const searchRegex = new RegExp(req.query.search.trim(), "i");
+      filter.$or = [{ code: searchRegex }, { title: searchRegex }, { description: searchRegex }];
+    }
+
+    // ── Status filter ──
+    if (req.query.status === "active") {
+      filter.isActive = true;
+      filter.expiryDate = { $gte: now };
+    } else if (req.query.status === "inactive") {
+      filter.isActive = false;
+    } else if (req.query.status === "expired") {
+      filter.expiryDate = { $lt: now };
+    }
+    // "all" = no filter
+
+    // ── Category tag filter ──
+    if (req.query.categoryTag && req.query.categoryTag !== "all") {
+      filter.categoryTag = new RegExp(`^${req.query.categoryTag.trim()}$`, "i");
+    }
+
+    // ── Sorting ──
+    let sortObj = { createdAt: -1 }; // default: newest first
+    switch (req.query.sort) {
+      case "oldest":
+        sortObj = { createdAt: 1 };
+        break;
+      case "discount_high":
+        sortObj = { discountValue: -1 };
+        break;
+      case "discount_low":
+        sortObj = { discountValue: 1 };
+        break;
+      case "expiry_soon":
+        sortObj = { expiryDate: 1 };
+        break;
+      case "code_az":
+        sortObj = { code: 1 };
+        break;
+      default:
+        sortObj = { createdAt: -1 };
+    }
 
     const [coupons, total] = await Promise.all([
-      Coupon.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Coupon.find(filter).sort(sortObj).skip(skip).limit(limit).lean(),
       Coupon.countDocuments(filter),
     ]);
 
-    const now = new Date();
     const enriched = coupons.map((c) => ({
       ...c,
       isExpired: c.expiryDate && new Date(c.expiryDate) < now,
       totalUsers: (c.usedBy || []).length,
     }));
+
+    // ── Summary stats (computed over entire collection, not filtered subset) ──
+    const allCoupons = await Coupon.find({}).lean();
+    const activeCoupons = allCoupons.filter(
+      (c) => c.isActive && (!c.expiryDate || new Date(c.expiryDate) >= now)
+    ).length;
+
+    let totalSavings = 0;
+    let couponsRedeemed = 0;
+    const categoryCounts = {};
+
+    allCoupons.forEach((c) => {
+      // Sum savings from actual usage
+      const usedCount = c.usedCount || 0;
+      couponsRedeemed += usedCount;
+      if (c.discountType === "percentage") {
+        totalSavings += (c.maxDiscount || c.discountValue * 100) * usedCount;
+      } else {
+        totalSavings += c.discountValue * usedCount;
+      }
+
+      // Category tag counts
+      const tag = (c.categoryTag || "Seasonal").trim();
+      categoryCounts[tag] = (categoryCounts[tag] || 0) + 1;
+    });
 
     return res.status(200).json({
       success: true,
@@ -33,6 +100,13 @@ exports.getAllCoupons = async (req, res) => {
       total,
       page,
       pages: Math.ceil(total / limit),
+      stats: {
+        activeCoupons,
+        totalSavings,
+        couponsRedeemed,
+        totalCoupons: allCoupons.length,
+        categoryCounts,
+      },
     });
   } catch (err) {
     console.error("ADMIN GET COUPONS ERROR:", err);
@@ -48,6 +122,8 @@ exports.createCoupon = async (req, res) => {
   try {
     const {
       code,
+      title,
+      categoryTag,
       description,
       discountType,
       discountValue,
@@ -58,6 +134,7 @@ exports.createCoupon = async (req, res) => {
       usageLimit,
       userUsageLimit,
       isActive,
+      applicableCategories,
     } = req.body;
 
     if (!code || !code.trim()) {
@@ -80,6 +157,8 @@ exports.createCoupon = async (req, res) => {
 
     const coupon = new Coupon({
       code: cleanCode,
+      title: (title || "").trim(),
+      categoryTag: (categoryTag || "Seasonal").trim(),
       description: (description || "").trim(),
       discountType: discountType || "percentage",
       discountValue: Number(discountValue),
@@ -90,6 +169,7 @@ exports.createCoupon = async (req, res) => {
       usageLimit: Number(usageLimit) || 1000,
       userUsageLimit: Number(userUsageLimit) || 1,
       isActive: isActive !== false,
+      applicableCategories: applicableCategories || [],
     });
 
     await coupon.save();
@@ -148,6 +228,8 @@ exports.updateCoupon = async (req, res) => {
     }
 
     const {
+      title,
+      categoryTag,
       description,
       discountType,
       discountValue,
@@ -158,8 +240,11 @@ exports.updateCoupon = async (req, res) => {
       usageLimit,
       userUsageLimit,
       isActive,
+      applicableCategories,
     } = req.body;
 
+    if (title !== undefined) coupon.title = title.trim();
+    if (categoryTag !== undefined) coupon.categoryTag = categoryTag.trim();
     if (description !== undefined) coupon.description = description.trim();
     if (discountType !== undefined) coupon.discountType = discountType;
     if (discountValue !== undefined) coupon.discountValue = Number(discountValue);
@@ -170,6 +255,7 @@ exports.updateCoupon = async (req, res) => {
     if (usageLimit !== undefined) coupon.usageLimit = Number(usageLimit) || 1000;
     if (userUsageLimit !== undefined) coupon.userUsageLimit = Number(userUsageLimit) || 1;
     if (isActive !== undefined) coupon.isActive = Boolean(isActive);
+    if (applicableCategories !== undefined) coupon.applicableCategories = applicableCategories;
 
     await coupon.save();
 
