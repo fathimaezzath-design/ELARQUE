@@ -193,7 +193,11 @@ const AdminSidebar = ({ mobileOpen, setMobileOpen }) => {
             </Link>
 
             {/* Offers */}
-            <div className="el-sidebar-item inactive-link">
+            <Link
+              to="/admin/offers"
+              className={`el-sidebar-item ${isItemActive("/admin/offers") ? "active" : ""}`}
+              onClick={closeMobile}
+            >
               <div className="el-sidebar-item-left">
                 <span className="el-sidebar-icon">
                   <svg
@@ -212,7 +216,8 @@ const AdminSidebar = ({ mobileOpen, setMobileOpen }) => {
                 </span>
                 <span className="el-sidebar-label">Offers</span>
               </div>
-            </div>
+              {isItemActive("/admin/offers") && <span className="el-sidebar-active-dot" />}
+            </Link>
 
             {/* Coupons */}
             <Link
@@ -271,7 +276,11 @@ const AdminSidebar = ({ mobileOpen, setMobileOpen }) => {
             </Link>
 
             {/* Sales Report */}
-            <div className="el-sidebar-item inactive-link">
+            <Link
+              to="/admin/sales-report"
+              className={`el-sidebar-item ${isItemActive("/admin/sales-report") ? "active" : ""}`}
+              onClick={closeMobile}
+            >
               <div className="el-sidebar-item-left">
                 <span className="el-sidebar-icon">
                   <svg
@@ -290,7 +299,8 @@ const AdminSidebar = ({ mobileOpen, setMobileOpen }) => {
                 </span>
                 <span className="el-sidebar-label">Sales Report</span>
               </div>
-            </div>
+              {isItemActive("/admin/sales-report") && <span className="el-sidebar-active-dot" />}
+            </Link>
           </nav>
 
           {/* 3. Bottom Logout Section */}

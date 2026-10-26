@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const Category = require("../models/Category");
+const { getActiveOffers, evaluateProductOffer } = require("../utils/offerUtils");
 
 const ALLOWED_SIZES = ["XS", "S", "M", "L", "XL"];
 const SIZE_ORDER = { XS: 1, S: 2, M: 3, L: 4, XL: 5 };
@@ -32,7 +33,7 @@ function escapeRegex(text) {
 /**
  * Format a lean product document into a safe customer-facing representation
  */
-function formatCustomerProduct(prod) {
+function formatCustomerProduct(prod, activeOffers = []) {
   const variants = Array.isArray(prod.variants) ? prod.variants : [];
   const totalStock = variants.reduce(
     (sum, v) => sum + (Number(v.stock) || 0),
@@ -62,12 +63,33 @@ function formatCustomerProduct(prod) {
       ? Number(firstVariantWithPrice.price)
       : Number(prod.price) || 0;
 
-  const effectiveProductSalePrice =
+  let effectiveProductSalePrice =
     firstVariantWithPrice?.salePrice !== undefined && firstVariantWithPrice?.salePrice !== null
       ? Number(firstVariantWithPrice.salePrice)
       : prod.salePrice !== undefined && prod.salePrice !== null
       ? Number(prod.salePrice)
       : null;
+
+  // Evaluate promotional offers: Apply largest between product and category offer
+  let appliedOffer = null;
+  if (Array.isArray(activeOffers) && activeOffers.length > 0) {
+    const offerResult = evaluateProductOffer(
+      {
+        _id: prod._id,
+        price: effectiveProductPrice,
+        categoryId: prod.categoryId,
+      },
+      activeOffers
+    );
+
+    if (offerResult && offerResult.discountAmount > 0) {
+      // If promotional offer gives lower price than existing salePrice, use it
+      if (effectiveProductSalePrice === null || offerResult.finalPrice < effectiveProductSalePrice) {
+        effectiveProductSalePrice = offerResult.finalPrice;
+        appliedOffer = offerResult.appliedOffer;
+      }
+    }
+  }
 
   // Calculate discount percentage if sale price is valid and lower than regular price
   let discountPercentage = null;
@@ -116,6 +138,7 @@ function formatCustomerProduct(prod) {
     price: effectiveProductPrice,
     salePrice: effectiveProductSalePrice,
     discountPercentage,
+    appliedOffer,
     isFeatured: Boolean(prod.isFeatured),
     isBestSeller: Boolean(prod.isBestSeller),
     coverImage,
@@ -360,7 +383,8 @@ exports.getProducts = async (req, res) => {
       .limit(limitNumber)
       .lean();
 
-    const formattedProducts = products.map(formatCustomerProduct);
+    const activeOffers = await getActiveOffers();
+    const formattedProducts = products.map((p) => formatCustomerProduct(p, activeOffers));
 
     return res.status(200).json({
       success: true,
@@ -567,7 +591,8 @@ exports.getProductById = async (req, res) => {
       });
     }
 
-    const formattedProduct = formatCustomerProduct(product);
+    const activeOffers = await getActiveOffers();
+    const formattedProduct = formatCustomerProduct(product, activeOffers);
 
     // 4. Fetch related eligible products (prefer same category, excluding self)
     let relatedProducts = await Product.find({
@@ -612,7 +637,9 @@ exports.getProductById = async (req, res) => {
       relatedProducts = [...relatedProducts, ...supplement];
     }
 
-    const formattedRelated = relatedProducts.map(formatCustomerProduct);
+    const formattedRelated = relatedProducts.map((p) =>
+      formatCustomerProduct(p, activeOffers)
+    );
 
     return res.status(200).json({
       success: true,

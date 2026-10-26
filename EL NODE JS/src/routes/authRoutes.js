@@ -31,7 +31,8 @@ router.post("/verify-reset-otp", verifyResetOTP);
 router.post("/resend-reset-otp", resendResetOTP);
 router.post("/reset-password", resetPassword);
 
-// Profile
+// Profile & Referral Info
 router.get("/profile", authMiddleware, getProfile);
+router.get("/referral-info", authMiddleware, require("../controllers/authController").getReferralInfo);
 
 module.exports = router;

@@ -32,6 +32,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+      unique: true,
+      sparse: true,
+    },
+
+    referralToken: {
+      type: String,
+      default: "",
+      trim: true,
+      unique: true,
+      sparse: true,
+    },
+
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
 
     agreedToTerms: {

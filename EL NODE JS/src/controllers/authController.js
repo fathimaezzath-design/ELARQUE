@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const OTP = require("../models/OTP");
 const PasswordResetOTP = require("../models/PasswordResetOTP");
+const Offer = require("../models/Offer");
+const WalletTransaction = require("../models/WalletTransaction");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -186,11 +188,50 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
+    // Generate unique referral code & token for new user
+    const myReferralCode = `ELQ-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+    const myReferralToken = crypto.randomBytes(16).toString("hex");
+
+    // Check if user was referred by code or token
+    let referrer = null;
+    if (record.referralCode && record.referralCode.trim()) {
+      const codeOrToken = record.referralCode.trim();
+      referrer = await User.findOne({
+        $or: [
+          { referralCode: codeOrToken.toUpperCase() },
+          { referralToken: codeOrToken },
+        ],
+      });
+    }
+
+    // Determine referral rewards from active referral offer
+    let refereeReward = 100;
+    let referrerReward = 200;
+
+    const activeReferralOffer = await Offer.findOne({
+      targetClass: "referral",
+      isActive: true,
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+    }).lean();
+
+    if (activeReferralOffer?.referralConfig) {
+      if (activeReferralOffer.referralConfig.refereeAmount) {
+        refereeReward = Number(activeReferralOffer.referralConfig.refereeAmount);
+      }
+      if (activeReferralOffer.referralConfig.referrerAmount) {
+        referrerReward = Number(activeReferralOffer.referralConfig.referrerAmount);
+      }
+    }
+
     const user = await User.create({
       fullName: record.fullName,
       email: record.email,
       phoneNumber: record.phoneNumber,
-      referralCode: record.referralCode,
+      referralCode: myReferralCode,
+      referralToken: myReferralToken,
+      referredBy: referrer ? referrer._id : null,
+      wallet: referrer ? refereeReward : 0,
       password: record.password,
       agreedToTerms: record.agreedToTerms,
       isVerified: true,
@@ -198,6 +239,38 @@ exports.verifyOTP = async (req, res) => {
 
     // Invalidate OTP immediately so code cannot be reused
     await OTP.deleteMany({ email: cleanEmail });
+
+    // Process referral reward transactions
+    if (referrer) {
+      // 1. Log transaction for new user (referee)
+      await WalletTransaction.create({
+        user: user._id,
+        transactionId: `TXN-REF-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+        type: "CREDIT",
+        amount: refereeReward,
+        title: "Referral Welcome Concession",
+        description: `Bespoke welcome dividend for onboarding via invitation by ${referrer.fullName}.`,
+        status: "COMPLETED",
+        paymentRail: "Vault Direct",
+        date: new Date(),
+      });
+
+      // 2. Credit referrer wallet and log transaction
+      referrer.wallet = (referrer.wallet || 0) + referrerReward;
+      await referrer.save();
+
+      await WalletTransaction.create({
+        user: referrer._id,
+        transactionId: `TXN-REF-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+        type: "CREDIT",
+        amount: referrerReward,
+        title: "Patron Referral Dividend",
+        description: `Bespoke reward for successfully inviting ${user.fullName} to ELARQUE.`,
+        status: "COMPLETED",
+        paymentRail: "Vault Direct",
+        date: new Date(),
+      });
+    }
 
     const userObj = user.toObject();
     delete userObj.password;
@@ -787,6 +860,69 @@ exports.getProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Unable to fetch profile",
+    });
+  }
+};
+
+// GET /api/auth/referral-info (Protected)
+exports.getReferralInfo = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    let updated = false;
+    if (!user.referralCode) {
+      user.referralCode = `ELQ-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+      updated = true;
+    }
+    if (!user.referralToken) {
+      user.referralToken = crypto.randomBytes(16).toString("hex");
+      updated = true;
+    }
+    if (updated) {
+      await user.save();
+    }
+
+    const [referredCount, transactions, activeReferralOffer] = await Promise.all([
+      User.countDocuments({ referredBy: user._id }),
+      WalletTransaction.find({
+        user: user._id,
+        title: /Referral/i,
+        status: "COMPLETED",
+      }).lean(),
+      Offer.findOne({
+        targetClass: "referral",
+        isActive: true,
+        startDate: { $lte: new Date() },
+        endDate: { $gte: new Date() },
+      }).lean(),
+    ]);
+
+    const totalReferralEarnings = transactions.reduce((acc, t) => acc + (t.amount || 0), 0);
+    const clientOrigin = req.headers.origin || "http://localhost:5173";
+
+    return res.status(200).json({
+      success: true,
+      referralCode: user.referralCode,
+      referralToken: user.referralToken,
+      referralUrl: `${clientOrigin}/signup?ref=${user.referralCode}`,
+      tokenUrl: `${clientOrigin}/signup?token=${user.referralToken}`,
+      referredCount,
+      totalReferralEarnings,
+      walletBalance: user.wallet || 0,
+      offerTerms: {
+        referrerAmount: activeReferralOffer?.referralConfig?.referrerAmount || 200,
+        refereeAmount: activeReferralOffer?.referralConfig?.refereeAmount || 100,
+      },
+    });
+  } catch (err) {
+    console.error("GET REFERRAL INFO ERROR:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load referral details.",
     });
   }
 };

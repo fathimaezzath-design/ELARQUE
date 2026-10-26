@@ -1,12 +1,13 @@
 const mongoose = require("mongoose");
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
+const { getActiveOffers, evaluateProductOffer } = require("../utils/offerUtils");
 
 /**
  * Format a populated cart document into a customer-facing response structure
  * consistent with ELARQUE cart designs and business rules.
  */
-function formatCart(cart) {
+function formatCart(cart, activeOffers = []) {
   if (!cart || !Array.isArray(cart.items)) {
     return {
       items: [],
@@ -50,6 +51,8 @@ function formatCart(cart) {
     // Calculate current effective price
     let currentPrice = item.price;
     let originalPrice = item.price;
+    let appliedOffer = null;
+
     if (isProductActive && product.price !== undefined) {
       originalPrice = Number(product.price);
       if (
@@ -60,6 +63,24 @@ function formatCart(cart) {
         currentPrice = Number(product.salePrice);
       } else {
         currentPrice = Number(product.price);
+      }
+
+      // Check active promotional offers: Apply largest between product & category
+      if (Array.isArray(activeOffers) && activeOffers.length > 0) {
+        const offerResult = evaluateProductOffer(
+          {
+            _id: product._id,
+            price: originalPrice,
+            categoryId: product.categoryId,
+          },
+          activeOffers
+        );
+        if (offerResult && offerResult.discountAmount > 0) {
+          if (offerResult.finalPrice < currentPrice) {
+            currentPrice = offerResult.finalPrice;
+            appliedOffer = offerResult.appliedOffer;
+          }
+        }
       }
     }
 
@@ -164,18 +185,21 @@ exports.getCart = async (req, res) => {
       });
     }
 
-    const cart = await getPopulatedCart(userId);
+    const [cart, activeOffers] = await Promise.all([
+      getPopulatedCart(userId),
+      getActiveOffers(),
+    ]);
 
     if (!cart) {
       return res.status(200).json({
         success: true,
-        cart: formatCart(null),
+        cart: formatCart(null, activeOffers),
       });
     }
 
     return res.status(200).json({
       success: true,
-      cart: formatCart(cart),
+      cart: formatCart(cart, activeOffers),
     });
   } catch (error) {
     console.error("Cart getCart error:", error);

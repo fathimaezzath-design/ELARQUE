@@ -19,6 +19,9 @@ const adminVariantRoutes = require("./routes/adminVariantRoutes");
 const adminOrderRoutes = require("./routes/adminOrderRoutes");
 const adminReturnRoutes = require("./routes/adminReturnRoutes");
 const adminCouponRoutes = require("./routes/adminCouponRoutes");
+const adminSalesReportRoutes = require("./routes/adminSalesReportRoutes");
+const offerRoutes = require("./routes/offerRoutes");
+const adminOfferRoutes = require("./routes/adminOfferRoutes");
 
 const app = express();
 
@@ -58,8 +61,9 @@ app.use("/api/cart", cartRoutes);
 // ORDER ROUTES (PROTECTED)
 app.use("/api/orders", orderRoutes);
 
-// COUPON ROUTES (PROTECTED)
+// COUPON & OFFER ROUTES (PUBLIC / PROTECTED)
 app.use("/api/coupons", couponRoutes);
+app.use("/api/offers", offerRoutes);
 
 // PAYMENT GATEWAY ROUTES (PROTECTED)
 app.use("/api/payment", paymentRoutes);
@@ -79,6 +83,8 @@ app.use("/api/admin/variants", adminVariantRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/admin/returns", adminReturnRoutes);
 app.use("/api/admin/coupons", adminCouponRoutes);
+app.use("/api/admin/offers", adminOfferRoutes);
+app.use("/api/admin/sales-report", adminSalesReportRoutes);
 
 app.get("/", (req, res) => {
   res.send("Elarque Backend Running");

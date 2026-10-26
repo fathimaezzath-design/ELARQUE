@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import bg from "../../assets/images/Signup.png";
 import API from "../../services/authService";
 import {
@@ -15,6 +15,11 @@ import {
 
 function SignUp() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const refCodeOrToken =
+    searchParams.get("ref") ||
+    searchParams.get("token") ||
+    searchParams.get("referral");
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -26,11 +31,20 @@ function SignUp() {
     fullName: "",
     email: "",
     phoneNumber: "",
-    referralCode: "",
+    referralCode: refCodeOrToken || "",
     password: "",
     confirmPassword: "",
     agreedToTerms: false,
   });
+
+  useEffect(() => {
+    if (refCodeOrToken) {
+      setFormData((prev) => ({
+        ...prev,
+        referralCode: refCodeOrToken,
+      }));
+    }
+  }, [refCodeOrToken]);
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -449,6 +463,28 @@ function SignUp() {
           <h2>Create Your Fashion Account</h2>
           <p>Join the Elarque luxury fashion experience.</p>
         </div>
+
+        {refCodeOrToken && (
+          <div
+            style={{
+              background: "rgba(223, 194, 141, 0.12)",
+              border: "1px solid rgba(223, 194, 141, 0.35)",
+              borderRadius: "10px",
+              padding: "10px 14px",
+              fontSize: "12px",
+              color: "#dfc28d",
+              marginBottom: "18px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Gift size={16} style={{ flexShrink: 0 }} />
+            <span>
+              Patron VIP Invitation Applied! A welcome bonus will be credited to your wallet upon verification.
+            </span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <label>FULL NAME</label>

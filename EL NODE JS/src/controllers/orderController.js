@@ -7,6 +7,7 @@ const Address = require("../models/Address");
 const User = require("../models/User");
 const Coupon = require("../models/Coupon");
 const WalletTransaction = require("../models/WalletTransaction");
+const { getActiveOffers, evaluateProductOffer } = require("../utils/offerUtils");
 
 
 // ELIGIBILITY CONSTANTS
@@ -216,6 +217,7 @@ const createOrder = async (req, res) => {
       });
     }
 
+    const activeOffers = await getActiveOffers();
     const validatedItems = [];
     let subtotal = 0;
 
@@ -291,12 +293,29 @@ const createOrder = async (req, res) => {
           ? Number(variant.salePrice)
           : product.salePrice;
 
-      const effectivePrice =
+      let effectivePrice =
         saleVariantPrice !== undefined &&
         saleVariantPrice !== null &&
         Number(saleVariantPrice) < Number(baseVariantPrice)
           ? Number(saleVariantPrice)
           : Number(baseVariantPrice);
+
+      // Check active promotional offers: Apply largest between product & category offer
+      if (Array.isArray(activeOffers) && activeOffers.length > 0) {
+        const offerResult = evaluateProductOffer(
+          {
+            _id: product._id,
+            price: baseVariantPrice,
+            categoryId: product.categoryId,
+          },
+          activeOffers
+        );
+        if (offerResult && offerResult.discountAmount > 0) {
+          if (offerResult.finalPrice < effectivePrice) {
+            effectivePrice = offerResult.finalPrice;
+          }
+        }
+      }
 
       const lineTotal = effectivePrice * qty;
       subtotal += lineTotal;
