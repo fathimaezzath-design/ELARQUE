@@ -74,7 +74,7 @@ function ReturnConfirmation() {
             returnStatus: targetItem?.returnStatus || ord.returnStatus || "Requested",
             returnReason: targetItem?.returnReason || ord.returnReason || "Size or fit issue",
             returnDescription: targetItem?.returnDescription || ord.returnDescription || "",
-            preferredRefundMethod: targetItem?.preferredRefundMethod || ord.preferredRefundMethod || "Original Payment",
+            preferredRefundMethod: "ELARQUE Wallet",
             pickupAddress: targetItem?.pickupAddress || ord.pickupAddress || ord.shippingAddress,
             refundAmount: targetItem ? targetItem.itemTotal : ord.totalAmount,
             returnRequestedAt: targetItem?.returnRequestedAt || ord.returnRequestedAt || new Date(),
@@ -105,7 +105,7 @@ function ReturnConfirmation() {
             returnStatus: targetItem?.returnStatus || ord.returnStatus || "Requested",
             returnReason: targetItem?.returnReason || ord.returnReason || "Size or fit issue",
             returnDescription: targetItem?.returnDescription || ord.returnDescription || "",
-            preferredRefundMethod: targetItem?.preferredRefundMethod || ord.preferredRefundMethod || "Original Payment",
+            preferredRefundMethod: "ELARQUE Wallet",
             pickupAddress: targetItem?.pickupAddress || ord.pickupAddress || ord.shippingAddress,
             refundAmount: targetItem ? targetItem.itemTotal : ord.totalAmount,
             returnRequestedAt: targetItem?.returnRequestedAt || ord.returnRequestedAt || new Date(),
@@ -330,7 +330,7 @@ function ReturnConfirmation() {
                 <RotateCcw size={14} />
               </div>
               <strong className="el-conf-step-name">5. SETTLEMENT ISSUED</strong>
-              <span className="el-conf-step-meta">{preferredRefundMethod}</span>
+              <span className="el-conf-step-meta">ELARQUE Wallet</span>
               <span className="el-conf-step-sub">
                 {formatPrice(refundAmount)} {returnStatus === "Refunded" ? "CREDITED" : "SCHEDULED"}
               </span>
@@ -545,10 +545,11 @@ function ReturnConfirmation() {
                 <div className="el-conf-protocol-item">
                   <div className="el-conf-proto-num">2</div>
                   <div className="el-conf-proto-content">
-                    <strong>Automatic Full Refund Release</strong>
+                    <strong>Automatic Wallet Refund</strong>
                     <p>
-                      The entire {formatPrice(refundAmount)} commission will be reversed directly
-                      back to your {preferredRefundMethod} account within 5 to 7 banking days.
+                      The entire {formatPrice(refundAmount)} commission will be credited instantly
+                      to your <strong>ELARQUE Wallet</strong> once the return is approved. Use
+                      the balance toward any future purchase.
                     </p>
                   </div>
                 </div>

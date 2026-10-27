@@ -1125,10 +1125,11 @@ const requestOrderReturn = async (req, res) => {
       reason = "",
       description = "",
       photos = [],
-      preferredRefundMethod = "Original Payment",
       pickupAddress = null,
       pickupAddressId = null,
     } = req.body;
+    // Refund method is always ELARQUE Wallet — do not accept client override
+    const preferredRefundMethod = "ELARQUE Wallet";
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid order ID." });
@@ -1192,7 +1193,7 @@ const requestOrderReturn = async (req, res) => {
     order.returnReason = reason.trim();
     order.returnDescription = (description || "").trim();
     order.returnPhotos = Array.isArray(photos) ? photos : [];
-    order.preferredRefundMethod = preferredRefundMethod || "Original Payment";
+    order.preferredRefundMethod = "ELARQUE Wallet";
     order.pickupAddress = resolvedPickup;
     order.returnReferenceId = refId;
     order.returnRequestedAt = new Date();
@@ -1205,7 +1206,7 @@ const requestOrderReturn = async (req, res) => {
         item.returnReason = reason.trim();
         item.returnDescription = (description || "").trim();
         item.returnPhotos = order.returnPhotos;
-        item.preferredRefundMethod = order.preferredRefundMethod;
+        item.preferredRefundMethod = "ELARQUE Wallet";
         item.pickupAddress = resolvedPickup;
         item.returnReferenceId = refId;
         item.returnRequestedAt = order.returnRequestedAt;
@@ -1252,10 +1253,11 @@ const requestItemReturn = async (req, res) => {
       reason = "",
       description = "",
       photos = [],
-      preferredRefundMethod = "Original Payment",
       pickupAddress = null,
       pickupAddressId = null,
     } = req.body;
+    // Refund method is always ELARQUE Wallet — do not accept client override
+    const preferredRefundMethod = "ELARQUE Wallet";
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid order ID." });
@@ -1337,7 +1339,7 @@ const requestItemReturn = async (req, res) => {
     item.returnReason = reason.trim();
     item.returnDescription = (description || "").trim();
     item.returnPhotos = Array.isArray(photos) ? photos : [];
-    item.preferredRefundMethod = preferredRefundMethod || "Original Payment";
+    item.preferredRefundMethod = "ELARQUE Wallet";
     item.pickupAddress = resolvedPickup;
     item.returnReferenceId = refId;
     item.returnRequestedAt = new Date();
@@ -1348,7 +1350,7 @@ const requestItemReturn = async (req, res) => {
       order.returnRequestedAt = item.returnRequestedAt;
       order.returnReferenceId = refId;
       order.pickupAddress = resolvedPickup;
-      order.preferredRefundMethod = item.preferredRefundMethod;
+      order.preferredRefundMethod = "ELARQUE Wallet";
     }
 
     await order.save();

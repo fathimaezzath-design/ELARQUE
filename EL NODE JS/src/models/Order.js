@@ -116,7 +116,7 @@ const orderItemSchema = new mongoose.Schema(
 
     preferredRefundMethod: {
       type: String,
-      default: "Original Payment",
+      default: "ELARQUE Wallet",
     },
 
     pickupAddress: {
@@ -137,6 +137,13 @@ const orderItemSchema = new mongoose.Schema(
     // Guard flag – set to true after stock is restored for this item.
     // Prevents double-restoration without MongoDB transactions.
     stockRestored: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Guard flag – set to true after wallet is credited for this item return.
+    // Prevents double wallet-refund on repeated admin approval clicks.
+    walletRefunded: {
       type: Boolean,
       default: false,
     },
@@ -366,6 +373,13 @@ const orderSchema = new mongoose.Schema(
     // Guard: true after ALL items' stock has been restored for this order.
     // Prevents double-restoration of full-order cancellations.
     stockRestored: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Guard: true after wallet has been credited for this order-level return.
+    // Prevents double wallet-refund if admin approves multiple times.
+    walletRefunded: {
       type: Boolean,
       default: false,
     },

@@ -275,7 +275,7 @@ function OrderDetails() {
 
     setReturnModal((prev) => ({ ...prev, busy: true, error: "" }));
 
-    const fullReason = `${returnModal.reason}: ${returnModal.description.trim()} [Refund Method: ${returnModal.refundMethod.toUpperCase()}]`;
+    const fullReason = `${returnModal.reason}: ${returnModal.description.trim()} [Refund Method: ELARQUE WALLET]`;
 
     try {
       if (returnModal.isFullOrder) {
@@ -587,8 +587,8 @@ function OrderDetails() {
                   <li>
                     <span className="el-num-circle">2</span>
                     <div>
-                      <strong>Automatic Full Refund Release</strong>
-                      <p>The entire {formatPrice(returnConfirmed.refundAmount)} commission is reversed directly to your account within 5 to 7 banking days.</p>
+                      <strong>Automatic ELARQUE Wallet Credit</strong>
+                      <p>The entire {formatPrice(returnConfirmed.refundAmount)} refund will be credited directly to your ELARQUE Wallet upon return approval.</p>
                     </div>
                   </li>
                   <li>
@@ -1251,33 +1251,15 @@ function OrderDetails() {
                   />
                 </div>
 
-                {/* 3. Preferred Refund Method */}
+                {/* 3. Preferred Refund Method — ELARQUE Wallet Only */}
                 <div className="el-ret-field-group">
-                  <label>3. SELECT PREFERRED REFUND METHOD <span className="el-req-star">*</span></label>
+                  <label>3. REFUND METHOD</label>
                   <div className="el-refund-options-row">
-                    <div
-                      className={`el-refund-card ${returnModal.refundMethod === "original" ? "selected" : ""}`}
-                      onClick={() =>
-                        setReturnModal({ ...returnModal, refundMethod: "original" })
-                      }
-                    >
+                    <div className="el-refund-card selected" style={{ cursor: "default" }}>
                       <CreditCard size={18} color="#650D20" />
                       <div>
-                        <strong>Original Payment</strong>
-                        <span>Reversed directly (5–7 business days)</span>
-                      </div>
-                    </div>
-
-                    <div
-                      className={`el-refund-card ${returnModal.refundMethod === "wallet" ? "selected" : ""}`}
-                      onClick={() =>
-                        setReturnModal({ ...returnModal, refundMethod: "wallet" })
-                      }
-                    >
-                      <CreditCard size={18} color="#C5A059" />
-                      <div>
-                        <strong>Atelier Wallet</strong>
-                        <span>Instant credit + 5% salon bonus</span>
+                        <strong>ELARQUE Wallet — Instant Credit</strong>
+                        <span>All approved refunds are credited exclusively to your wallet balance</span>
                       </div>
                     </div>
                   </div>

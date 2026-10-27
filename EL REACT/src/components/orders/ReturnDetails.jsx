@@ -73,8 +73,7 @@ function ReturnDetails() {
             returnStatus: targetItem?.returnStatus || ord.returnStatus || "Requested",
             returnReason: targetItem?.returnReason || ord.returnReason || "Size or fit issue",
             returnDescription: targetItem?.returnDescription || ord.returnDescription || "",
-            preferredRefundMethod:
-              targetItem?.preferredRefundMethod || ord.preferredRefundMethod || "Original Payment",
+            preferredRefundMethod: "ELARQUE Wallet",
             pickupAddress: targetItem?.pickupAddress || ord.pickupAddress || ord.shippingAddress,
             refundAmount: targetItem ? targetItem.itemTotal : ord.totalAmount,
             returnRequestedAt: targetItem?.returnRequestedAt || ord.returnRequestedAt || new Date(),
@@ -106,8 +105,7 @@ function ReturnDetails() {
             returnStatus: targetItem?.returnStatus || ord.returnStatus || "Requested",
             returnReason: targetItem?.returnReason || ord.returnReason || "Size or fit issue",
             returnDescription: targetItem?.returnDescription || ord.returnDescription || "",
-            preferredRefundMethod:
-              targetItem?.preferredRefundMethod || ord.preferredRefundMethod || "Original Payment",
+            preferredRefundMethod: "ELARQUE Wallet",
             pickupAddress: targetItem?.pickupAddress || ord.pickupAddress || ord.shippingAddress,
             refundAmount: targetItem ? targetItem.itemTotal : ord.totalAmount,
             returnRequestedAt: targetItem?.returnRequestedAt || ord.returnRequestedAt || new Date(),
@@ -212,11 +210,13 @@ function ReturnDetails() {
 
   // Status mapping
   const s = (returnStatus || "").toLowerCase();
+  const isApproved = ["approved", "picked up", "completed", "refunded"].includes(s);
+  const isRefunded = ["completed", "refunded"].includes(s);
+  const isRejected = s === "rejected";
   const isRequested = ["requested", "pending", "approved", "picked up", "completed", "refunded"].includes(s);
   const isCollected = ["picked up", "completed", "refunded"].includes(s);
   const isInspected = ["completed", "refunded"].includes(s);
-  const isSettlement = ["refunded"].includes(s);
-  const isRejected = s === "rejected";
+  const isSettlement = isApproved;
 
   return (
     <div className="el-rd-page-root">
@@ -308,7 +308,7 @@ function ReturnDetails() {
                   <h3 className="el-rd-ref-title">{returnReferenceId}</h3>
                 </div>
                 <span className={`el-rd-status-badge ${s}`}>
-                  • {isRejected ? "RETURN REJECTED" : isSettlement ? "RETURN REFUNDED" : "RETURN ACCEPTED & VERIFIED"}
+                  • {isRejected ? "RETURN REJECTED" : isRefunded ? "RETURN REFUNDED" : isApproved ? "RETURN APPROVED" : "PENDING REVIEW"}
                 </span>
               </div>
 
@@ -378,7 +378,7 @@ function ReturnDetails() {
                     <span className="el-rd-node-date">
                       {isSettlement ? "Settlement Remitted" : "Est. 3–5 Days"}
                     </span>
-                    <span className="el-rd-node-note">{preferredRefundMethod}</span>
+                    <span className="el-rd-node-note">ELARQUE Wallet</span>
                   </div>
                 </div>
               </div>
@@ -388,8 +388,8 @@ function ReturnDetails() {
                 <div className="el-rd-est-left">
                   <ShieldCheck size={16} color="#8A775C" className="el-rd-est-icon" />
                   <p>
-                    Estimated Refund Processing: <strong>3–5 Business Days</strong>. Direct remittance
-                    to primary {preferredRefundMethod} account.
+                    Approved refunds are credited <strong>instantly</strong> to your{" "}
+                    <strong>ELARQUE Wallet</strong> — usable for any future purchase.
                   </p>
                 </div>
                 <span className="el-rd-tls-tag">TLS 256 SECURITY SEALED</span>
@@ -530,7 +530,7 @@ function ReturnDetails() {
               </div>
             </div>
 
-            {/* Card 2: Refund Settlement */}
+            {/* Card 2: Wallet Refund Settlement */}
             <div className="el-rd-card">
               <div className="el-rd-card-header">
                 <div className="el-rd-header-with-icon">
@@ -541,29 +541,39 @@ function ReturnDetails() {
               </div>
 
               <div className="el-rd-settlement-body">
+                {/* Approved refund banner */}
+                {isSettlement && (
+                  <div className="el-rd-wallet-approved-banner">
+                    <strong>✓ Your return has been approved.</strong>
+                    <p>The refund amount has been credited to your ELARQUE Wallet.</p>
+                  </div>
+                )}
+
                 <div className="el-rd-settle-row">
                   <span className="el-rd-settle-title">Settlement Method</span>
-                  <strong className="el-rd-settle-val">{preferredRefundMethod}</strong>
+                  <strong className="el-rd-settle-val">ELARQUE Wallet</strong>
                 </div>
 
                 <div className="el-rd-settle-row">
                   <span className="el-rd-settle-title">Destination</span>
-                  <span className="el-rd-settle-val">Visa •••• 4587</span>
+                  <span className="el-rd-settle-val">Your ELARQUE Wallet Balance</span>
                 </div>
 
                 <div className="el-rd-settle-row">
                   <span className="el-rd-settle-title">Expected Clearance</span>
-                  <span className="el-rd-settle-val">Within 5–7 Business Days</span>
+                  <span className="el-rd-settle-val">
+                    {isApproved ? "Credited to ELARQUE Wallet" : "Instant upon approval"}
+                  </span>
                 </div>
 
                 <div className="el-rd-settle-amount-row">
                   <div>
-                    <span className="el-rd-settle-amount-label">EXPECTED REFUND AMOUNT</span>
+                    <span className="el-rd-settle-amount-label">REFUND AMOUNT</span>
                     <div className="el-rd-settle-amount-val">
                       {formatPrice(refundAmount)}
                     </div>
                   </div>
-                  <span className="el-rd-remittance-badge">100% FULL REMITTANCE</span>
+                  <span className="el-rd-remittance-badge">WALLET CREDIT</span>
                 </div>
               </div>
             </div>

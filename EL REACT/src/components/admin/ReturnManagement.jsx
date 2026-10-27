@@ -451,6 +451,17 @@ const ReturnManagement = () => {
             >
               REJECTED ({stats.rejectedCount})
             </button>
+
+            <button
+              type="button"
+              className={`admin-returns-tab ${activeTab === "REFUNDED" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("REFUNDED");
+                setCurrentPage(1);
+              }}
+            >
+              REFUNDED ({stats.completedCount})
+            </button>
           </div>
 
           {/* Search & Sort Controls */}

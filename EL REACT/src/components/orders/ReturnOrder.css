@@ -981,3 +981,63 @@
     display: none;
   }
 }
+
+/* =====================================================
+   WALLET-ONLY REFUND PANEL
+===================================================== */
+.el-ret-wallet-only-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 22px;
+  background: linear-gradient(135deg, #FDF8F1 0%, #F5EDE0 100%);
+  border: 1.5px solid #E8D8C0;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+.el-ret-wallet-only-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  background: #fff;
+  border: 1.5px solid #E8D8C0;
+  border-radius: 10px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(101, 13, 32, 0.07);
+}
+
+.el-ret-wallet-only-body {
+  flex: 1;
+}
+
+.el-ret-wallet-only-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1F1A1B;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.el-ret-wallet-only-desc {
+  font-size: 12.5px;
+  color: #6B5E52;
+  line-height: 1.65;
+  margin: 0 0 10px 0;
+}
+
+.el-ret-wallet-only-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #650D20;
+  background: rgba(101, 13, 32, 0.07);
+  border: 1px solid rgba(101, 13, 32, 0.15);
+  border-radius: 20px;
+  padding: 3px 12px;
+  text-transform: uppercase;
+}

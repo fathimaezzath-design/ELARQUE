@@ -431,6 +431,11 @@ function WalletVault() {
                             <span className="el-wlt-tx-ref">
                               #{tx.transactionId || `TXN-ORD-${idx}`}
                             </span>
+                            {tx.orderNumber && (
+                              <span className="el-wlt-tx-ref" style={{ color: "#650D20", fontWeight: 600 }}>
+                                Order #{tx.orderNumber}
+                              </span>
+                            )}
                             <span className={`el-wlt-tx-pill ${tx.status?.toLowerCase() || "debited"}`}>
                               {tx.status === "PROCESSING" ? "PROCESSING" : tx.type === "DEBIT" ? "DEBITED" : "CREDITED"}
                             </span>

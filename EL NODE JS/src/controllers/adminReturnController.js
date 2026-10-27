@@ -456,35 +456,41 @@ exports.updateReturnStatus = async (req, res) => {
       if (rejectionReason) currentItem.returnRejectionReason = rejectionReason.trim();
       if (customerMessage) currentItem.returnCustomerMessage = customerMessage.trim();
 
-      if (targetStatusNorm === "Approved") {
-        currentItem.itemStatus = "Returned";
-      } else if (targetStatusNorm === "Refunded") {
+      if (targetStatusNorm === "Approved" || targetStatusNorm === "Refunded") {
         currentItem.itemStatus = "Returned";
         // Restore inventory if not already done
         await restoreStockForItems([currentItem]);
 
-        // Process wallet refund if order was paid and not yet refunded
-        if (order.paymentStatus === "Paid") {
-          await User.findByIdAndUpdate(order.user?._id || order.user, {
-            $inc: { wallet: currentItem.itemTotal },
-          });
-          try {
-            await WalletTransaction.create({
-              user: order.user?._id || order.user,
-              transactionId: `TXN-${currentItem._id.toString().slice(-6).toUpperCase()}-REF`,
-              type: "CREDIT",
-              amount: currentItem.itemTotal,
-              title: `Refund from Order #${order.orderNumber}`,
-              description: `${currentItem.productName || "Atelier Item"} Return Cleared - Salon Concierge Desk`,
-              status: "COMPLETED",
-              paymentRail: "Atelier Refund",
-              order: order._id,
-              orderNumber: order.orderNumber,
-              referenceProtocol: "ELG-VLT-RESERVE-2026",
-              date: new Date(),
+        // Process wallet refund — idempotency guard prevents double-credit
+        if (!currentItem.walletRefunded) {
+          const refundAmount = Number(currentItem.itemTotal) || 0;
+
+          if (refundAmount > 0) {
+            // Mark refunded BEFORE crediting to prevent race-condition double-credit
+            currentItem.walletRefunded = true;
+
+            await User.findByIdAndUpdate(order.user?._id || order.user, {
+              $inc: { wallet: refundAmount },
             });
-          } catch (txErr) {
-            console.error("WARNING: Failed to log return refund tx:", txErr.message);
+            try {
+              const uniqueSuffix = Date.now().toString().slice(-4);
+              await WalletTransaction.create({
+                user: order.user?._id || order.user,
+                transactionId: `TXN-${currentItem._id.toString().slice(-6).toUpperCase()}-${uniqueSuffix}-REF`,
+                type: "CREDIT",
+                amount: refundAmount,
+                title: `Refund from Order #${order.orderNumber}`,
+                description: `${currentItem.productName || "Atelier Item"} Return Approved — ELARQUE Wallet Credit`,
+                status: "COMPLETED",
+                paymentRail: "ELARQUE Wallet Refund",
+                order: order._id,
+                orderNumber: order.orderNumber,
+                referenceProtocol: "ELG-VLT-RESERVE-2026",
+                date: new Date(),
+              });
+            } catch (txErr) {
+              console.error("WARNING: Failed to log return refund tx:", txErr.message);
+            }
           }
         }
       } else if (targetStatusNorm === "Rejected") {
@@ -506,15 +512,7 @@ exports.updateReturnStatus = async (req, res) => {
       if (rejectionReason) order.returnRejectionReason = rejectionReason.trim();
       if (customerMessage) order.returnCustomerMessage = customerMessage.trim();
 
-      if (targetStatusNorm === "Approved") {
-        order.orderStatus = "Returned";
-        order.items.forEach((i) => {
-          if (i.itemStatus !== "Cancelled") {
-            i.itemStatus = "Returned";
-            i.returnStatus = "Approved";
-          }
-        });
-      } else if (targetStatusNorm === "Refunded") {
+      if (targetStatusNorm === "Approved" || targetStatusNorm === "Refunded") {
         order.orderStatus = "Returned";
         await restoreStockForItems(order.items);
         order.stockRestored = true;
@@ -522,33 +520,41 @@ exports.updateReturnStatus = async (req, res) => {
         order.items.forEach((i) => {
           if (i.itemStatus !== "Cancelled") {
             i.itemStatus = "Returned";
-            i.returnStatus = "Completed";
+            i.returnStatus = targetDbStatus;
           }
         });
 
-        // Refund full amount to wallet if paid
-        if (order.paymentStatus === "Paid") {
-          await User.findByIdAndUpdate(order.user?._id || order.user, {
-            $inc: { wallet: order.totalAmount },
-          });
-          order.paymentStatus = "Refunded";
-          try {
-            await WalletTransaction.create({
-              user: order.user?._id || order.user,
-              transactionId: `TXN-${order._id.toString().slice(-6).toUpperCase()}-REF`,
-              type: "CREDIT",
-              amount: order.totalAmount,
-              title: `Refund from Order #${order.orderNumber}`,
-              description: `Atelier Return Cleared - Salon Concierge Desk`,
-              status: "COMPLETED",
-              paymentRail: "Atelier Refund",
-              order: order._id,
-              orderNumber: order.orderNumber,
-              referenceProtocol: "ELG-VLT-RESERVE-2026",
-              date: new Date(),
+        // Refund full amount to wallet if not already refunded — idempotency guard
+        if (!order.walletRefunded) {
+          const refundAmount = Number(order.totalAmount) || 0;
+
+          if (refundAmount > 0) {
+            // Mark refunded BEFORE crediting to prevent double-credit
+            order.walletRefunded = true;
+            order.paymentStatus = "Refunded";
+
+            await User.findByIdAndUpdate(order.user?._id || order.user, {
+              $inc: { wallet: refundAmount },
             });
-          } catch (txErr) {
-            console.error("WARNING: Failed to log full return refund tx:", txErr.message);
+            try {
+              const uniqueSuffix = Date.now().toString().slice(-4);
+              await WalletTransaction.create({
+                user: order.user?._id || order.user,
+                transactionId: `TXN-${order._id.toString().slice(-6).toUpperCase()}-${uniqueSuffix}-REF`,
+                type: "CREDIT",
+                amount: refundAmount,
+                title: `Refund from Order #${order.orderNumber}`,
+                description: `Full Order Return Approved — ELARQUE Wallet Credit`,
+                status: "COMPLETED",
+                paymentRail: "ELARQUE Wallet Refund",
+                order: order._id,
+                orderNumber: order.orderNumber,
+                referenceProtocol: "ELG-VLT-RESERVE-2026",
+                date: new Date(),
+              });
+            } catch (txErr) {
+              console.error("WARNING: Failed to log full return refund tx:", txErr.message);
+            }
           }
         }
       } else if (targetStatusNorm === "Rejected") {

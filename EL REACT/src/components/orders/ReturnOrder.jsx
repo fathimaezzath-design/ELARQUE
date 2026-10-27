@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Upload,
-  Check,
   AlertCircle,
   MapPin,
   Clock,
@@ -11,8 +10,7 @@ import {
   ShieldCheck,
   Package,
   X,
-  CreditCard,
-  Building,
+  Wallet,
   Sparkles,
   Info,
 } from "lucide-react";
@@ -52,7 +50,6 @@ function ReturnOrder() {
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
   const [photos, setPhotos] = useState([]);
-  const [preferredRefundMethod, setPreferredRefundMethod] = useState("Original Payment");
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isChangingAddress, setIsChangingAddress] = useState(false);
   const [customAddress, setCustomAddress] = useState({
@@ -192,7 +189,7 @@ function ReturnOrder() {
         reason: reason.trim(),
         description: description.trim(),
         photos,
-        preferredRefundMethod,
+        preferredRefundMethod: "ELARQUE Wallet",
         pickupAddress: selectedAddress,
       };
 
@@ -406,8 +403,8 @@ function ReturnOrder() {
                     <RotateCcw size={16} />
                   </div>
                   <div>
-                    <strong>5–7 Day Refund</strong>
-                    <p>Direct to chosen settlement</p>
+                    <strong>Instant Wallet Refund</strong>
+                    <p>Credited to ELARQUE Wallet</p>
                   </div>
                 </div>
 
@@ -538,71 +535,23 @@ function ReturnOrder() {
                 )}
               </div>
 
-              {/* 4. SELECT PREFERRED REFUND METHOD */}
+              {/* 4. REFUND METHOD — ELARQUE WALLET ONLY */}
               <div className="el-ret-field-block">
                 <label className="el-ret-field-label">
-                  4. SELECT PREFERRED REFUND METHOD <span className="el-ret-required">*</span>
+                  4. REFUND METHOD
                 </label>
-                <div className="el-ret-refund-methods-grid">
-                  {/* Option 1: Original Payment */}
-                  <div
-                    className={`el-ret-method-card ${
-                      preferredRefundMethod === "Original Payment" ? "selected" : ""
-                    }`}
-                    onClick={() => setPreferredRefundMethod("Original Payment")}
-                  >
-                    <div className="el-ret-method-header">
-                      <div className="el-ret-method-icon">
-                        <CreditCard size={16} />
-                      </div>
-                      <div className="el-ret-check-circle">
-                        {preferredRefundMethod === "Original Payment" && <Check size={12} />}
-                      </div>
-                    </div>
-                    <strong className="el-ret-method-title">Original Payment</strong>
-                    <p className="el-ret-method-desc">
-                      Visa ending in •••• 4587 (5–7 business days)
-                    </p>
+                <div className="el-ret-wallet-only-panel">
+                  <div className="el-ret-wallet-only-icon">
+                    <Wallet size={22} color="#650D20" />
                   </div>
-
-                  {/* Option 2: Atelier Wallet */}
-                  <div
-                    className={`el-ret-method-card ${
-                      preferredRefundMethod === "Atelier Wallet" ? "selected" : ""
-                    }`}
-                    onClick={() => setPreferredRefundMethod("Atelier Wallet")}
-                  >
-                    <div className="el-ret-method-header">
-                      <div className="el-ret-method-icon">
-                        <Sparkles size={16} />
-                      </div>
-                      <span className="el-ret-fastest-pill">FASTEST</span>
-                    </div>
-                    <strong className="el-ret-method-title">Atelier Wallet</strong>
-                    <p className="el-ret-method-desc">
-                      Instant credit + 5% bonus reward for next salon commission
+                  <div className="el-ret-wallet-only-body">
+                    <strong className="el-ret-wallet-only-title">ELARQUE Wallet — Instant Refund</strong>
+                    <p className="el-ret-wallet-only-desc">
+                      All approved return refunds are credited exclusively to your ELARQUE Wallet.
+                      Your balance will be updated instantly upon admin approval and can be used
+                      toward any future purchase.
                     </p>
-                  </div>
-
-                  {/* Option 3: Bank Transfer */}
-                  <div
-                    className={`el-ret-method-card ${
-                      preferredRefundMethod === "Bank Transfer" ? "selected" : ""
-                    }`}
-                    onClick={() => setPreferredRefundMethod("Bank Transfer")}
-                  >
-                    <div className="el-ret-method-header">
-                      <div className="el-ret-method-icon">
-                        <Building size={16} />
-                      </div>
-                      <div className="el-ret-check-circle">
-                        {preferredRefundMethod === "Bank Transfer" && <Check size={12} />}
-                      </div>
-                    </div>
-                    <strong className="el-ret-method-title">Bank Transfer</strong>
-                    <p className="el-ret-method-desc">
-                      Direct NEFT/RTGS to verified patron account
-                    </p>
+                    <span className="el-ret-wallet-only-badge">✦ SECURE · INSTANT · WALLET-ONLY</span>
                   </div>
                 </div>
               </div>
@@ -805,7 +754,7 @@ function ReturnOrder() {
             <div className="el-ret-timeline-step">
               <div className="el-ret-t-circle">5</div>
               <strong className="el-ret-t-title">Refund Completed</strong>
-              <span className="el-ret-t-sub">Instant/Bank</span>
+              <span className="el-ret-t-sub">To ELARQUE Wallet</span>
             </div>
           </div>
         </section>
