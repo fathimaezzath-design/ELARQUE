@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const Category = require("../models/Category");
+const Review = require("../models/Review");
 const { getActiveOffers, evaluateProductOffer } = require("../utils/offerUtils");
 
 const ALLOWED_SIZES = ["XS", "S", "M", "L", "XL"];
@@ -20,6 +21,9 @@ const ALLOWED_SORT_MAP = {
   "a-z": { name: 1 },
   "name-desc": { name: -1 },
   "z-a": { name: -1 },
+  bestseller: { isBestSeller: -1, createdAt: -1 },
+  bestsellers: { isBestSeller: -1, createdAt: -1 },
+  "best-sellers": { isBestSeller: -1, createdAt: -1 },
 };
 
 /**
@@ -33,7 +37,7 @@ function escapeRegex(text) {
 /**
  * Format a lean product document into a safe customer-facing representation
  */
-function formatCustomerProduct(prod, activeOffers = []) {
+function formatCustomerProduct(prod, activeOffers = [], reviewMap = {}) {
   const variants = Array.isArray(prod.variants) ? prod.variants : [];
   const totalStock = variants.reduce(
     (sum, v) => sum + (Number(v.stock) || 0),
@@ -162,6 +166,10 @@ function formatCustomerProduct(prod, activeOffers = []) {
     })),
     createdAt: prod.createdAt,
     updatedAt: prod.updatedAt,
+    rating: reviewMap[prod._id.toString()] ? reviewMap[prod._id.toString()].averageRating : null,
+    reviewsCount: reviewMap[prod._id.toString()] ? reviewMap[prod._id.toString()].reviewsCount : 0,
+    fabric: prod.description || (categoryData ? categoryData.name : ""),
+    image: coverImage,
   };
 }
 
@@ -182,6 +190,8 @@ exports.getProducts = async (req, res) => {
       sort,
       page,
       limit,
+      isBestSeller,
+      bestseller,
     } = req.query;
 
     // 1. Validate Pagination
@@ -272,6 +282,16 @@ exports.getProducts = async (req, res) => {
       status: "active",
       categoryId: { $in: targetCategoryIds },
     };
+
+    // Filter by bestseller flag if requested
+    if (
+      isBestSeller === "true" ||
+      isBestSeller === true ||
+      bestseller === "true" ||
+      bestseller === true
+    ) {
+      filter.isBestSeller = true;
+    }
 
     // 5. Search Filter (Safe case-insensitive partial match on name or brand)
     if (search !== undefined && typeof search === "string" && search.trim().length > 0) {
@@ -383,8 +403,38 @@ exports.getProducts = async (req, res) => {
       .limit(limitNumber)
       .lean();
 
+    // Fetch real review ratings & review count for retrieved products
+    const productIds = products.map((p) => p._id);
+    const reviewMap = {};
+    if (productIds.length > 0) {
+      const reviewStats = await Review.aggregate([
+        {
+          $match: {
+            product: { $in: productIds },
+            status: "approved",
+          },
+        },
+        {
+          $group: {
+            _id: "$product",
+            averageRating: { $avg: "$rating" },
+            reviewsCount: { $sum: 1 },
+          },
+        },
+      ]);
+
+      reviewStats.forEach((stat) => {
+        reviewMap[stat._id.toString()] = {
+          averageRating: Number(stat.averageRating.toFixed(1)),
+          reviewsCount: stat.reviewsCount,
+        };
+      });
+    }
+
     const activeOffers = await getActiveOffers();
-    const formattedProducts = products.map((p) => formatCustomerProduct(p, activeOffers));
+    const formattedProducts = products.map((p) =>
+      formatCustomerProduct(p, activeOffers, reviewMap)
+    );
 
     return res.status(200).json({
       success: true,

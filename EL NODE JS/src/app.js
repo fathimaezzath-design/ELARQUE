@@ -22,6 +22,7 @@ const adminCouponRoutes = require("./routes/adminCouponRoutes");
 const adminSalesReportRoutes = require("./routes/adminSalesReportRoutes");
 const offerRoutes = require("./routes/offerRoutes");
 const adminOfferRoutes = require("./routes/adminOfferRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 
 const app = express();
 
@@ -54,6 +55,9 @@ app.use("/api/addresses", addressRoutes);
 
 // CUSTOMER PRODUCT ROUTES (PUBLIC)
 app.use("/api/products", productRoutes);
+
+// CLIENT REVIEW ROUTES (PUBLIC & PROTECTED)
+app.use("/api/reviews", reviewRoutes);
 
 // CART ROUTES (PROTECTED)
 app.use("/api/cart", cartRoutes);

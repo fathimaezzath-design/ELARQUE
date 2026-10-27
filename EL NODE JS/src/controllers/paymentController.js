@@ -8,18 +8,31 @@ const Address = require("../models/Address");
 const User = require("../models/User");
 const Coupon = require("../models/Coupon");
 
-// Configuration for Razorpay
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "rzp_test_elarqueTestKey123";
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "elarqueTestSecret456";
+// Configuration helper for Razorpay
+function getRazorpayConfig() {
+  const keyId = (process.env.RAZORPAY_KEY_ID || "").trim();
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
+  const isRealConfig = Boolean(
+    keyId &&
+    keySecret &&
+    !keyId.includes("elarqueTestKey") &&
+    !keySecret.includes("elarqueTestSecret") &&
+    keyId.startsWith("rzp_")
+  );
 
-let razorpay = null;
-try {
-  razorpay = new Razorpay({
-    key_id: RAZORPAY_KEY_ID,
-    key_secret: RAZORPAY_KEY_SECRET,
-  });
-} catch (err) {
-  console.warn("Razorpay instance initialization note:", err.message);
+  let instance = null;
+  if (isRealConfig) {
+    try {
+      instance = new Razorpay({
+        key_id: keyId,
+        key_secret: keySecret,
+      });
+    } catch (err) {
+      console.warn("Razorpay instance initialization note:", err.message);
+    }
+  }
+
+  return { keyId, keySecret, isRealConfig, instance };
 }
 
 // Generate unique order reference (e.g. #ELQ-2026-78901)
@@ -188,38 +201,39 @@ exports.createRazorpayOrder = async (req, res) => {
     const amountInPaise = Math.round(totalAmount * 100);
     const receipt = `rcpt_${Date.now().toString().slice(-8)}`;
 
-    let razorpayOrderId = "";
+    const { keyId, keySecret, isRealConfig, instance } = getRazorpayConfig();
 
-    // Try real Razorpay API if initialized and real keys exist
-    if (
-      razorpay &&
-      RAZORPAY_KEY_ID &&
-      !RAZORPAY_KEY_ID.includes("elarqueTestKey")
-    ) {
-      try {
-        const orderOptions = {
-          amount: amountInPaise,
-          currency: "INR",
-          receipt,
-          notes: {
-            userId: userId.toString(),
-            couponCode: appliedCoupon?.code || "",
-          },
-        };
-        const rzpOrder = await razorpay.orders.create(orderOptions);
-        razorpayOrderId = rzpOrder.id;
-      } catch (rzpErr) {
-        console.warn("Razorpay API call failed, using luxury test session:", rzpErr.message);
-        razorpayOrderId = `order_${Date.now()}${Math.floor(100 + Math.random() * 900)}`;
-      }
-    } else {
-      // Sandbox / Test fallback order ID
-      razorpayOrderId = `order_${Date.now()}${Math.floor(100 + Math.random() * 900)}`;
+    if (!isRealConfig || !instance) {
+      return res.status(500).json({
+        success: false,
+        message: "Razorpay gateway is not configured with valid Test Mode API keys.",
+      });
+    }
+
+    let razorpayOrderId = "";
+    try {
+      const orderOptions = {
+        amount: amountInPaise,
+        currency: "INR",
+        receipt,
+        notes: {
+          userId: userId.toString(),
+          couponCode: appliedCoupon?.code || "",
+        },
+      };
+      const rzpOrder = await instance.orders.create(orderOptions);
+      razorpayOrderId = rzpOrder.id;
+    } catch (rzpErr) {
+      console.error("Razorpay orders.create failed:", rzpErr);
+      return res.status(502).json({
+        success: false,
+        message: `Razorpay Gateway Error: ${rzpErr.error?.description || rzpErr.message || "Failed to initialize order on Razorpay."}`,
+      });
     }
 
     return res.status(200).json({
       success: true,
-      keyId: RAZORPAY_KEY_ID,
+      keyId,
       razorpayOrderId,
       amount: totalAmount,
       amountInPaise,
@@ -273,20 +287,39 @@ exports.verifyRazorpayPayment = async (req, res) => {
       });
     }
 
-    // Verify signature
-    let isSignatureValid = false;
-    if (razorpaySignature && RAZORPAY_KEY_SECRET && !RAZORPAY_KEY_SECRET.includes("elarqueTestSecret")) {
-      const generatedSignature = crypto
-        .createHmac("sha256", RAZORPAY_KEY_SECRET)
-        .update(`${razorpayOrderId}|${razorpayPaymentId}`)
-        .digest("hex");
-      isSignatureValid = generatedSignature === razorpaySignature;
-    } else {
-      // In development / test environment, verify presence of payment confirmation
-      isSignatureValid = Boolean(razorpayPaymentId);
+    // Idempotency: Prevent duplicate order processing if already confirmed
+    const existingOrder = await Order.findOne({ gatewayPaymentId: razorpayPaymentId });
+    if (existingOrder) {
+      return res.status(200).json({
+        success: true,
+        message: "Payment already verified and order confirmed.",
+        order: existingOrder,
+      });
     }
 
-    if (!isSignatureValid) {
+    const { keySecret, isRealConfig } = getRazorpayConfig();
+
+    if (!isRealConfig || !keySecret) {
+      return res.status(500).json({
+        success: false,
+        message: "Razorpay gateway is not configured with valid Test Mode API keys on server.",
+      });
+    }
+
+    // Verify cryptographic signature securely
+    if (!razorpaySignature) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment authentication failed. Cryptographic signature is required.",
+      });
+    }
+
+    const generatedSignature = crypto
+      .createHmac("sha256", keySecret)
+      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+      .digest("hex");
+
+    if (generatedSignature !== razorpaySignature) {
       return res.status(400).json({
         success: false,
         message: "Payment authentication failed. Cryptographic signature does not match.",

@@ -134,7 +134,97 @@ function Payment() {
   const handleOrderError = (err) => {
     setProcessing(false);
     const serverMsg = err?.response?.data?.message || err?.message;
-    setError(serverMsg || "An unexpected error occurred. Please try again.");
+    setError(serverMsg || "An unexpected error occurred during payment. Please try again.");
+  };
+
+  // ── Razorpay Standard Checkout Initiation (Test Mode) ──
+  const initiateRazorpayPayment = async () => {
+    setError("");
+    setProcessing(true);
+
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setError("Unable to load secure Razorpay gateway. Please check your network connection.");
+        setProcessing(false);
+        return;
+      }
+
+      const createRes = await createRazorpayOrder(addressId, couponCode);
+      if (!createRes?.data?.success) {
+        throw new Error(createRes?.data?.message || "Failed to initialize payment gateway.");
+      }
+
+      const {
+        keyId,
+        razorpayOrderId,
+        amountInPaise,
+        customer,
+      } = createRes.data;
+
+      const options = {
+        key: keyId,
+        amount: amountInPaise,
+        currency: "INR",
+        name: "ELARQUE Atelier",
+        description: "Bespoke Couture Commission",
+        order_id: razorpayOrderId,
+        prefill: {
+          name: customer?.name || address?.fullName || userProfile?.name || "",
+          email: customer?.email || userProfile?.email || "",
+          contact: customer?.phone || address?.phone || "",
+        },
+        theme: { color: "#541424" },
+        handler: async function (response) {
+          try {
+            setProcessing(true);
+            const verifyRes = await verifyRazorpayPayment({
+              addressId,
+              couponCode,
+              razorpayOrderId: response.razorpay_order_id || razorpayOrderId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            if (verifyRes?.data?.success && verifyRes?.data?.order) {
+              navigate("/order-confirmed", {
+                state: { order: verifyRes.data.order },
+                replace: true,
+              });
+            } else {
+              throw new Error(verifyRes?.data?.message || "Payment signature verification failed.");
+            }
+          } catch (vErr) {
+            setProcessing(false);
+            const errMsg = vErr.response?.data?.message || vErr.message || "Payment verification failed.";
+            setError(`Payment Verification Failed: ${errMsg}. Order was not placed.`);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setProcessing(false);
+            setError("Payment was cancelled. You can retry payment whenever you are ready.");
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (failResponse) {
+        setProcessing(false);
+        const failReason = failResponse.error?.description || "Transaction declined by card provider.";
+        setError(`Transaction Failed: ${failReason}. Please retry or choose another payment medium.`);
+      });
+      rzp.open();
+    } catch (err) {
+      handleOrderError(err);
+    }
+  };
+
+  const handleSelectPaymentMethod = (method) => {
+    setPaymentMethod(method);
+    setError("");
+    if (method === "RAZORPAY") {
+      initiateRazorpayPayment();
+    }
   };
 
   // ── Payment Submission ──
@@ -147,8 +237,8 @@ function Payment() {
       try {
         const res = await createOrder(addressId, "COD", couponCode);
         if (res?.data?.success && res?.data?.order) {
-          navigate("/payment-success", {
-            state: { order: res.data.order, paymentDetails: { gateway: "Cash on Delivery" } },
+          navigate("/order-confirmed", {
+            state: { order: res.data.order },
             replace: true,
           });
         } else {
@@ -163,82 +253,7 @@ function Payment() {
 
     // ── CARD / RAZORPAY ──
     if (paymentMethod === "CARD" || paymentMethod === "RAZORPAY") {
-      try {
-        const scriptLoaded = await loadRazorpayScript();
-        if (!scriptLoaded) {
-          setError("Unable to load secure payment gateway. Please check your network.");
-          setProcessing(false);
-          return;
-        }
-
-        const createRes = await createRazorpayOrder(addressId, couponCode);
-        if (!createRes?.data?.success) {
-          throw new Error(createRes?.data?.message || "Failed to initialize payment.");
-        }
-
-        const { keyId, razorpayOrderId, amountInPaise, amount, customer } = createRes.data;
-
-        const options = {
-          key: keyId,
-          amount: amountInPaise,
-          currency: "INR",
-          name: "ELARQUE Atelier",
-          description: "Bespoke Couture Commission",
-          order_id: razorpayOrderId,
-          prefill: {
-            name: customer?.name || address?.fullName || "",
-            email: customer?.email || userProfile?.email || "",
-            contact: customer?.phone || address?.phone || "",
-          },
-          theme: { color: "#650D20" },
-          handler: async function (response) {
-            try {
-              const verifyRes = await verifyRazorpayPayment({
-                addressId,
-                couponCode,
-                razorpayOrderId: response.razorpay_order_id || razorpayOrderId,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-              });
-              if (verifyRes?.data?.success && verifyRes?.data?.order) {
-                navigate("/payment-success", {
-                  state: {
-                    order: verifyRes.data.order,
-                    paymentDetails: { gateway: "Razorpay Online", paymentId: response.razorpay_payment_id },
-                  },
-                  replace: true,
-                });
-              } else {
-                throw new Error("Signature verification failed.");
-              }
-            } catch (vErr) {
-              navigate("/payment-failure", {
-                state: { reason: vErr.response?.data?.message || "Payment verification failed.", gateway: "Razorpay", amount },
-                replace: true,
-              });
-            }
-          },
-          modal: {
-            ondismiss: function () {
-              setProcessing(false);
-              navigate("/payment-failure", {
-                state: { reason: "Payment window was dismissed.", gateway: "Razorpay", amount },
-              });
-            },
-          },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on("payment.failed", function (failResponse) {
-          setProcessing(false);
-          navigate("/payment-failure", {
-            state: { reason: failResponse.error?.description || "Transaction declined.", gateway: "Razorpay", amount },
-          });
-        });
-        rzp.open();
-      } catch (err) {
-        handleOrderError(err);
-      }
+      initiateRazorpayPayment();
       return;
     }
 
@@ -253,14 +268,8 @@ function Payment() {
       try {
         const res = await createOrder(addressId, "WALLET", couponCode);
         if (res?.data?.success && res?.data?.order) {
-          navigate("/payment-success", {
-            state: {
-              order: res.data.order,
-              paymentDetails: {
-                gateway: "ELARQUE Wallet Vault",
-                paymentId: `VLT-${res.data.order.orderNumber}`,
-              },
-            },
+          navigate("/order-confirmed", {
+            state: { order: res.data.order },
             replace: true,
           });
         } else {
@@ -313,7 +322,7 @@ function Payment() {
               {/* Credit / Debit */}
               <div
                 className={`el-pay-method-card ${paymentMethod === "CARD" ? "selected" : ""}`}
-                onClick={() => setPaymentMethod("CARD")}
+                onClick={() => handleSelectPaymentMethod("CARD")}
                 role="radio"
                 aria-checked={paymentMethod === "CARD"}
                 tabIndex={0}
@@ -341,7 +350,7 @@ function Payment() {
               {/* Razor Pay */}
               <div
                 className={`el-pay-method-card ${paymentMethod === "RAZORPAY" ? "selected" : ""}`}
-                onClick={() => setPaymentMethod("RAZORPAY")}
+                onClick={() => handleSelectPaymentMethod("RAZORPAY")}
                 role="radio"
                 aria-checked={paymentMethod === "RAZORPAY"}
                 tabIndex={0}
@@ -368,7 +377,7 @@ function Payment() {
               {/* Digital Wallet / Wallet Vault */}
               <div
                 className={`el-pay-method-card ${paymentMethod === "WALLET" ? "selected" : ""}`}
-                onClick={() => setPaymentMethod("WALLET")}
+                onClick={() => handleSelectPaymentMethod("WALLET")}
                 role="radio"
                 aria-checked={paymentMethod === "WALLET"}
                 tabIndex={0}
@@ -395,7 +404,7 @@ function Payment() {
               {/* COD */}
               <div
                 className={`el-pay-method-card ${paymentMethod === "COD" ? "selected" : ""}`}
-                onClick={() => setPaymentMethod("COD")}
+                onClick={() => handleSelectPaymentMethod("COD")}
                 role="radio"
                 aria-checked={paymentMethod === "COD"}
                 tabIndex={0}
@@ -418,6 +427,59 @@ function Payment() {
                 </div>
               </div>
             </div>
+
+            {/* ── Razorpay Test Gateway Panel (shown for RAZORPAY method) ── */}
+            {paymentMethod === "RAZORPAY" && (
+              <div className="el-pay-card-form-section">
+                <div className="el-pay-card-form-header">
+                  <div className="el-pay-card-form-title">
+                    <Shield size={14} />
+                    <span>RAZORPAY STANDARD CHECKOUT (TEST MODE)</span>
+                  </div>
+                  <span className="el-pay-vault-badge">TEST GATEWAY ACTIVE</span>
+                </div>
+
+                <div style={{ background: "#FAF6EF", border: "1px solid #EFE8DC", borderRadius: "12px", padding: "16px 20px", marginBottom: "16px" }}>
+                  <p style={{ margin: "0 0 10px 0", fontSize: "13px", color: "#2A1F1A", lineHeight: 1.5 }}>
+                    The official Razorpay Standard Checkout test window will open. You can test both successful and failed payments using Razorpay's test credentials without real money.
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px", color: "#6A5D54" }}>
+                    <div>
+                      <strong style={{ color: "#541424", display: "block", marginBottom: "2px" }}>Card Testing:</strong>
+                      <span>Enter test cards (e.g. 4111 •••• •••• 1111 with any future MM/YY & CVV). Choose Success or Failure in Razorpay's test OTP simulation.</span>
+                    </div>
+                    <div>
+                      <strong style={{ color: "#541424", display: "block", marginBottom: "2px" }}>UPI Testing:</strong>
+                      <span>Enter <code>success@razorpay</code> for success or <code>failure@razorpay</code> for decline.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={initiateRazorpayPayment}
+                  disabled={processing}
+                  style={{
+                    background: "#541424",
+                    color: "#FFF",
+                    border: "none",
+                    padding: "12px 20px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    cursor: processing ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    width: "fit-content",
+                  }}
+                >
+                  <Smartphone size={15} />
+                  <span>{processing ? "LAUNCHING GATEWAY..." : "LAUNCH RAZORPAY TEST WINDOW →"}</span>
+                </button>
+              </div>
+            )}
 
             {/* ── Wallet Payment Panel (shown for WALLET method) ── */}
             {paymentMethod === "WALLET" && (
@@ -673,6 +735,8 @@ function Payment() {
                 <span>
                   {processing
                     ? "PROCESSING..."
+                    : paymentMethod === "RAZORPAY"
+                    ? `PAY VIA RAZORPAY  ₹${formatINR(estimatedTotal)}`
                     : `CONFIRM & PAY  ₹${formatINR(estimatedTotal)}`}
                 </span>
                 <ArrowRight size={16} />

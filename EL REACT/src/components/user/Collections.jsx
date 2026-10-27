@@ -21,6 +21,7 @@ import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import { getProducts, getProductFacets } from "../../services/productService";
 import { addToCart } from "../../services/cartService";
+import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
 import "./Collections.css";
 
 const SIZES_CANONICAL = ["XS", "S", "M", "L", "XL"];
@@ -258,6 +259,9 @@ const Collections = () => {
   const handleWishlistToggle = (e, product) => {
     e.stopPropagation();
     const prodId = product.id || product._id;
+    const isCurrentlyWishlisted = sessionWishlist.includes(prodId);
+    const nextState = !isCurrentlyWishlisted;
+
     setSessionWishlist((prev) => {
       let updated;
       if (prev.includes(prodId)) {
@@ -267,11 +271,15 @@ const Collections = () => {
       }
       try {
         localStorage.setItem("elarque_session_wishlist", JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent("elarque_wishlist_updated", { detail: updated }));
+        window.dispatchEvent(new Event("storage"));
       } catch (storageErr) {
         console.error(storageErr);
       }
       return updated;
     });
+
+    showWishlistToast(product, nextState);
   };
 
   // Reset quick-view variant selections when the modal product changes
@@ -303,6 +311,7 @@ const Collections = () => {
     // Auth check — matching ProductDetails.jsx pattern
     const token = localStorage.getItem("token");
     if (!token) {
+      showAuthToast();
       navigate("/login");
       return;
     }
@@ -375,6 +384,7 @@ const Collections = () => {
           type: "success",
           text: `${quickViewProduct.name} added to your shopping bag.`,
         });
+        showCartToast(quickViewProduct);
         // Auto-close modal after success
         setTimeout(() => {
           setQuickViewProduct(null);

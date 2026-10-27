@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Heart,
@@ -25,6 +25,12 @@ import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import { getProductById } from "../../services/productService";
 import { addToCart } from "../../services/cartService";
+import {
+  getProductReviews,
+  createProductReview,
+  checkReviewEligibility,
+} from "../../services/reviewService";
+import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
 import "./ProductDetails.css";
 
 const ALLOWED_SIZES = ["XS", "S", "M", "L", "XL"];
@@ -130,6 +136,146 @@ const ProductDetails = () => {
   // Local Wishlist State
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(getSessionWishlistCount);
+
+  // Dynamic Real Reviews State
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState({ totalReviews: 0, averageRating: 0 });
+  const [loadingReviews, setLoadingReviews] = useState(true);
+
+  // Purchase-based Review Eligibility State
+  const [reviewEligibility, setReviewEligibility] = useState({
+    loading: true,
+    isAuthenticated: false,
+    canReview: false,
+    hasPurchased: false,
+    alreadyReviewed: false,
+    message: "",
+    existingReview: null,
+  });
+
+  // Review Submission Modal State
+  const [reviewModal, setReviewModal] = useState({
+    isOpen: false,
+    rating: 5,
+    selectedImpressions: ["Perfect Fit", "Premium Quality"],
+    impressionText: "",
+    submitting: false,
+    error: "",
+  });
+
+  // Fetch reviews for current product from backend
+  const fetchReviews = useCallback(async () => {
+    if (!id) return;
+    setLoadingReviews(true);
+    try {
+      const res = await getProductReviews(id);
+      if (res?.data?.success) {
+        setReviews(res.data.reviews || []);
+        setReviewStats(res.data.stats || { totalReviews: 0, averageRating: 0 });
+      } else {
+        setReviews([]);
+        setReviewStats({ totalReviews: 0, averageRating: 0 });
+      }
+    } catch (err) {
+      console.error("GET PRODUCT REVIEWS ERROR:", err);
+      setReviews([]);
+      setReviewStats({ totalReviews: 0, averageRating: 0 });
+    } finally {
+      setLoadingReviews(false);
+    }
+  }, [id]);
+
+  // Check customer's purchase and review eligibility
+  const fetchEligibility = useCallback(async () => {
+    if (!id) return;
+    try {
+      const res = await checkReviewEligibility(id);
+      if (res?.data?.success) {
+        setReviewEligibility({
+          loading: false,
+          isAuthenticated: Boolean(res.data.isAuthenticated),
+          canReview: Boolean(res.data.canReview),
+          hasPurchased: Boolean(res.data.hasPurchased),
+          alreadyReviewed: Boolean(res.data.alreadyReviewed),
+          message: res.data.message || "",
+          existingReview: res.data.existingReview || null,
+        });
+      }
+    } catch (err) {
+      console.error("CHECK REVIEW ELIGIBILITY ERROR:", err);
+      setReviewEligibility({
+        loading: false,
+        isAuthenticated: false,
+        canReview: false,
+        hasPurchased: false,
+        alreadyReviewed: false,
+        message: "",
+        existingReview: null,
+      });
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchReviews();
+    fetchEligibility();
+  }, [fetchReviews, fetchEligibility]);
+
+  // Handle Review Submission on Product Details Page
+  const handleProductReviewSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      showAuthToast("Please log in to your atelier account to submit a review.");
+      navigate("/login");
+      return;
+    }
+
+    if (!reviewModal.impressionText || reviewModal.impressionText.trim().length < 3) {
+      setReviewModal((prev) => ({
+        ...prev,
+        error: "Please write your atelier impression text (minimum 3 characters).",
+      }));
+      return;
+    }
+
+    try {
+      setReviewModal((prev) => ({ ...prev, submitting: true, error: "" }));
+
+      const payload = {
+        rating: reviewModal.rating,
+        title: reviewModal.selectedImpressions[0] || "Exceptional Sartorial Craft",
+        comment: reviewModal.impressionText.trim(),
+        impressions: reviewModal.selectedImpressions,
+        size: selectedSize || "",
+        fit: reviewModal.selectedImpressions.includes("Perfect Fit") ? "True to Size" : "Atelier Fit",
+      };
+
+      const res = await createProductReview(id, payload);
+      if (res?.data?.success) {
+        alert("Thank you! Your verified patron review has been recorded.");
+        setReviewModal({
+          isOpen: false,
+          rating: 5,
+          selectedImpressions: ["Perfect Fit", "Premium Quality"],
+          impressionText: "",
+          submitting: false,
+          error: "",
+        });
+        await fetchReviews();
+        await fetchEligibility();
+      } else {
+        setReviewModal((prev) => ({
+          ...prev,
+          submitting: false,
+          error: res?.data?.message || "Failed to submit review.",
+        }));
+      }
+    } catch (err) {
+      console.error("CREATE REVIEW ERROR:", err);
+      const msg = err.response?.data?.message || "Failed to submit review. Please try again.";
+      setReviewModal((prev) => ({ ...prev, submitting: false, error: msg }));
+    }
+  };
 
   // 1. Fetch Product Details
   useEffect(() => {
@@ -358,10 +504,13 @@ const ProductDetails = () => {
         }
         const uniqueList = Array.from(new Set(list.filter(Boolean)));
         localStorage.setItem("elarque_session_wishlist", JSON.stringify(uniqueList));
+        window.dispatchEvent(new CustomEvent("elarque_wishlist_updated", { detail: uniqueList }));
+        window.dispatchEvent(new Event("storage"));
         setWishlistCount(uniqueList.length);
       } catch (e) {
         console.error(e);
       }
+      showWishlistToast(product, next);
       return next;
     });
   };
@@ -392,6 +541,7 @@ const ProductDetails = () => {
     // Auth check
     const token = localStorage.getItem("token");
     if (!token) {
+      showAuthToast();
       navigate("/login");
       return;
     }
@@ -442,9 +592,9 @@ const ProductDetails = () => {
         } catch (storageErr) {
           console.error(storageErr);
         }
-        setCartNotice(
-          `${product.name} (${selectedSize}, ${selectedColor}) added to your shopping bag.`
-        );
+        const addedNotice = `${product.name} (${selectedSize}, ${selectedColor}) added to your shopping bag.`;
+        setCartNotice(addedNotice);
+        showCartToast(product, addedNotice);
       } else {
         setCartNotice(response.data?.message || "Could not add to bag. Please try again.");
       }
@@ -1032,107 +1182,218 @@ const ProductDetails = () => {
               </div>
             </section>
 
-            {/* 3. MIDDLE SECTION: HAUTE SPECIFICATION (FABRIC ANATOMY) */}
-            <section className="el-haute-specification-section">
-              <div className="el-spec-section-header">
-                <span className="el-section-kicker">HAUTE SPECIFICATION</span>
-                <h2 className="el-section-main-title">Anatomy of European-Western Crepe</h2>
-                <p className="el-section-desc">
-                  Sculpted from tightly-spun virgin wool crepe selected from historic mills in Biella,
-                  Italy. The silhouette incorporates a high-tension interior canvas that holds crisp
-                  lapel posture while maintaining effortless fluid motion.
-                </p>
-              </div>
-
-              <div className="el-spec-composition-layout">
-                {/* Left 4 Spec Panels */}
-                <div className="el-spec-tiles-grid">
-                  <div className="el-composition-tile">
-                    <span className="el-tile-label">COMPOSITION</span>
-                    <strong className="el-tile-val">70% Virgin Wool, 30% Mulberry Silk</strong>
-                  </div>
-                  <div className="el-composition-tile">
-                    <span className="el-tile-label">INTERIOR LINING</span>
-                    <strong className="el-tile-val">100% Breathable Habotai Silk</strong>
-                  </div>
-                  <div className="el-composition-tile">
-                    <span className="el-tile-label">HARDWARE</span>
-                    <strong className="el-tile-val">Burnished Horn &amp; Aged Brass Yoke Rivets</strong>
-                  </div>
-                  <div className="el-composition-tile">
-                    <span className="el-tile-label">CARE PROTOCOL</span>
-                    <strong className="el-tile-val">Specialist Dry Clean Only / Steam Refresh</strong>
-                  </div>
-
-                  {/* Atelier Quote Callout */}
-                  <div className="el-atelier-quote-card">
-                    <p className="el-quote-text">
-                      "Our blazer dresses are designed to stand alone as an empowering statement of
-                      authority, yet remain comfortable through midnight salon galas."
-                    </p>
-                    <span className="el-quote-author">
-                      — ÉMILIE ARNAULT, MASTER PATTERNMAKER PARIS ATELIER
-                    </span>
-                  </div>
+            {/* 3. CLIENTS REVIEWS SECTION (FULL-WIDTH REAL BACKEND DATA) */}
+            <section className="el-clients-reviews-section">
+              <div className="el-reviews-section-header">
+                <div className="el-reviews-header-left">
+                  <span className="el-section-kicker">VERIFIED ATELIER CLIENTELE</span>
+                  <h2 className="el-reviews-main-title">Clients Reviews</h2>
+                  <p className="el-reviews-subtitle">
+                    Refined feedback from private salon appointments, runway patrons, and bespoke commissions worldwide.
+                  </p>
                 </div>
-
-                {/* Right Macro Fabric Imagery */}
-                <div className="el-spec-macro-images">
-                  <div className="el-macro-card">
-                    <img
-                      src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=600&q=80"
-                      alt="Virgin Wool Crepe Weave"
-                    />
-                    <span className="el-macro-label">VIRGIN WOOL CREPE</span>
-                  </div>
-                  <div className="el-macro-card">
-                    <img
-                      src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80"
-                      alt="Hand-Finished Horn Buttons"
-                    />
-                    <span className="el-macro-label">HAND-FINISHED BUTTONS</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* 4. CLIENT REVIEWS SECTION - Rendered ONLY if real review data exists */}
-            {Array.isArray(product.reviews) && product.reviews.length > 0 && (
-              <section className="el-client-reviews-section">
-                <div className="el-reviews-top-bar">
-                  <h2 className="el-reviews-heading">Clients Reviews</h2>
-                  <div className="el-reviews-summary-tag">
-                    <Star size={13} fill="#dfc28d" color="#dfc28d" />
-                    <strong>{product.rating || "5.0"}</strong>
-                    <span>{product.reviews.length} VERIFIED REVIEWS</span>
-                  </div>
-                </div>
-
-                <div className="el-reviews-cards-row">
-                  {product.reviews.map((rev, revIdx) => (
-                    <div key={rev.id || rev._id || revIdx} className="el-review-card">
-                      <div className="el-review-card-stars">
+                <div className="el-reviews-header-actions">
+                  <div className="el-reviews-summary-card">
+                    <div className="el-reviews-summary-score">
+                      <span className="el-score-num">
+                        {reviewStats.totalReviews > 0
+                          ? Number(reviewStats.averageRating).toFixed(1)
+                          : "—"}
+                      </span>
+                      <div className="el-score-stars">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            size={11}
-                            fill={i < (rev.rating || 5) ? "#dfc28d" : "none"}
+                            size={15}
+                            fill={
+                              reviewStats.totalReviews > 0 &&
+                              i < Math.round(Number(reviewStats.averageRating))
+                                ? "#dfc28d"
+                                : "none"
+                            }
                             color="#dfc28d"
                           />
                         ))}
-                        <span className="el-review-verified">VERIFIED SALON CLIENT</span>
                       </div>
-                      {rev.title && <h4 className="el-review-card-title">"{rev.title}"</h4>}
-                      <p className="el-review-card-text">{rev.comment || rev.text}</p>
-                      <div className="el-review-card-footer">
-                        <strong>{(rev.author || rev.userName || "SALON CLIENT").toUpperCase()}</strong>
-                        {rev.fit && <span>Fit: {rev.fit}</span>}
+                    </div>
+                    <span className="el-summary-label">
+                      {reviewStats.totalReviews > 0
+                        ? `${reviewStats.totalReviews} VERIFIED ${
+                            reviewStats.totalReviews === 1 ? "REVIEW" : "REVIEWS"
+                          }`
+                        : "NO REVIEWS YET"}
+                    </span>
+                  </div>
+
+                  {/* ELIGIBILITY ACTIONS */}
+                  {!reviewEligibility.isAuthenticated ? (
+                    <button
+                      type="button"
+                      className="el-btn-open-review-modal el-btn-review-login"
+                      onClick={() => {
+                        showAuthToast("Please log in to your atelier account to write a review.");
+                        navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                      }}
+                      title="Log in to share a review"
+                    >
+                      <Star size={13} fill="#dfc28d" color="#dfc28d" /> LOG IN TO REVIEW
+                    </button>
+                  ) : reviewEligibility.canReview ? (
+                    <button
+                      type="button"
+                      className="el-btn-open-review-modal"
+                      onClick={() => setReviewModal((prev) => ({ ...prev, isOpen: true, error: "" }))}
+                    >
+                      <Star size={13} fill="#dfc28d" color="#dfc28d" /> WRITE A REVIEW
+                    </button>
+                  ) : reviewEligibility.alreadyReviewed ? (
+                    <div className="el-review-eligibility-badge el-badge-reviewed">
+                      <Check size={13} />
+                      <span>Review Submitted</span>
+                    </div>
+                  ) : (
+                    <div
+                      className="el-review-eligibility-badge el-badge-locked"
+                      title="Purchase this product to share your review."
+                    >
+                      <AlertCircle size={13} />
+                      <span>Purchase Required</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Informative notice if logged in patron has not purchased or already reviewed */}
+              {reviewEligibility.isAuthenticated && !reviewEligibility.hasPurchased && (
+                <div className="el-review-notice-banner el-notice-purchase-req">
+                  <AlertCircle size={15} />
+                  <span>Purchase this product to share your review. Only verified patrons who have purchased this silhouette can write a review.</span>
+                </div>
+              )}
+
+              {reviewEligibility.isAuthenticated && reviewEligibility.alreadyReviewed && (
+                <div className="el-review-notice-banner el-notice-already-reviewed">
+                  <Check size={15} />
+                  <span>You have already reviewed this silhouette. Thank you for your feedback.</span>
+                </div>
+              )}
+
+              {loadingReviews ? (
+                <div className="el-reviews-loading">
+                  <span>Loading verified salon reviews...</span>
+                </div>
+              ) : reviews.length === 0 ? (
+                /* Empty state matching requirement 2 & 4 */
+                <div className="el-reviews-empty-state">
+                  <Sparkles size={28} className="el-empty-sparkle" />
+                  <h4 className="el-empty-title">No reviews yet.</h4>
+                  
+                  {!reviewEligibility.isAuthenticated ? (
+                    <>
+                      <p className="el-empty-desc">Be the first to share your experience.</p>
+                      <button
+                        type="button"
+                        className="el-btn-write-first-review"
+                        onClick={() => {
+                          showAuthToast("Please log in to your atelier account to write a review.");
+                          navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                        }}
+                      >
+                        LOG IN TO REVIEW ➔
+                      </button>
+                    </>
+                  ) : reviewEligibility.canReview ? (
+                    <>
+                      <p className="el-empty-desc">Be the first to share your experience.</p>
+                      <button
+                        type="button"
+                        className="el-btn-write-first-review"
+                        onClick={() => setReviewModal((prev) => ({ ...prev, isOpen: true, error: "" }))}
+                      >
+                        WRITE A REVIEW ➔
+                      </button>
+                    </>
+                  ) : reviewEligibility.alreadyReviewed ? (
+                    <p className="el-empty-desc">Thank you for sharing your review for this silhouette.</p>
+                  ) : (
+                    <>
+                      <p className="el-empty-desc">Be the first to share your experience.</p>
+                      <div className="el-empty-purchased-notice">
+                        <AlertCircle size={14} />
+                        <span>Purchase this product to share your review.</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                /* Real Customer Reviews Grid matching requirement 4 & 6 */
+                <div className="el-reviews-cards-grid">
+                  {reviews.map((rev) => (
+                    <div key={rev._id || rev.id} className="el-full-review-card">
+                      <div className="el-review-card-top">
+                        <div className="el-review-stars">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={14}
+                              fill={i < (rev.rating || 5) ? "#dfc28d" : "none"}
+                              color="#dfc28d"
+                            />
+                          ))}
+                        </div>
+                        {rev.isVerifiedPurchase && (
+                          <span className="el-review-verified-badge">
+                            <ShieldCheck size={13} className="el-verified-icon" />
+                            VERIFIED SALON CLIENT
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="el-review-title">
+                        "{rev.title || rev.headline || "Exceptional Sartorial Craft"}"
+                      </h3>
+
+                      <p className="el-review-body">{rev.comment}</p>
+
+                      <div className="el-review-footer">
+                        <div className="el-client-meta">
+                          <strong className="el-client-name">
+                            {rev.userName ||
+                              (typeof rev.user === "object"
+                                ? rev.user?.fullName
+                                : "Salon Patron")}
+                          </strong>
+                          {rev.userLocation && (
+                            <span className="el-client-location"> — {rev.userLocation}</span>
+                          )}
+                          <span className="el-review-date">
+                            · {new Date(rev.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                        {(rev.size || rev.fit) && (
+                          <div className="el-client-tags">
+                            {rev.size && (
+                              <span className="el-pill-tag">
+                                Size: <strong>{rev.size}</strong>
+                              </span>
+                            )}
+                            {rev.fit && (
+                              <span className="el-pill-tag el-pill-fit">
+                                Fit: <strong>{rev.fit}</strong>
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
-              </section>
-            )}
+              )}
+            </section>
+
 
             {/* 5. RELATED ATELIER SILHOUETTES */}
             {relatedProducts.length > 0 && (
@@ -1295,6 +1556,131 @@ const ProductDetails = () => {
 
             <div className="el-size-guide-footer">
               <span>Need bespoke sizing? Complimentary salon consultation available upon request.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RATE SILHOUETTE / WRITE REVIEW MODAL */}
+      {reviewModal.isOpen && (
+        <div
+          className="el-modal-backdrop"
+          onClick={() => setReviewModal((prev) => ({ ...prev, isOpen: false }))}
+        >
+          <div className="el-modal-review" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="el-modal-close-x"
+              onClick={() => setReviewModal((prev) => ({ ...prev, isOpen: false }))}
+            >
+              <X size={18} />
+            </button>
+
+            <span className="el-rev-eyebrow">★ PRODUCT REVIEW • ATELIER VOICES</span>
+            <h2 className="el-rev-title">Rate Your Experience</h2>
+            <p className="el-rev-subtitle">
+              Share your experiential monograph on{" "}
+              <strong>{product?.name || "this silhouette"}</strong> to assist fellow patrons.
+            </p>
+
+            {reviewModal.error && (
+              <div className="el-rev-error-msg">
+                <AlertCircle size={15} />
+                <span>{reviewModal.error}</span>
+              </div>
+            )}
+
+            {/* Star Rating */}
+            <div className="el-rev-stars-box">
+              <span className="el-rev-stars-label">
+                1. OVERALL EXPERIENCE: {reviewModal.rating} OF 5 STARS
+              </span>
+              <div className="el-rev-stars-list">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={26}
+                    fill={star <= reviewModal.rating ? "#dfc28d" : "none"}
+                    stroke="#dfc28d"
+                    strokeWidth={1.5}
+                    onClick={() => setReviewModal((prev) => ({ ...prev, rating: star }))}
+                    style={{ cursor: "pointer" }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Impression Tags */}
+            <div className="el-rev-tags-box">
+              <span className="el-rev-tags-label">2. WHAT IMPRESSED YOU MOST?</span>
+              <div className="el-rev-tags-flex">
+                {[
+                  "Perfect Fit",
+                  "Premium Quality",
+                  "Comfortable",
+                  "Worth the Price",
+                  "Elegant Design",
+                  "Exquisite Tailoring",
+                  "White-Glove Packaging",
+                ].map((tag) => {
+                  const isSelected = reviewModal.selectedImpressions.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`el-rev-tag-chip ${isSelected ? "selected" : ""}`}
+                      onClick={() => {
+                        const newTags = isSelected
+                          ? reviewModal.selectedImpressions.filter((t) => t !== tag)
+                          : [...reviewModal.selectedImpressions, tag];
+                        setReviewModal((prev) => ({
+                          ...prev,
+                          selectedImpressions: newTags,
+                        }));
+                      }}
+                    >
+                      {isSelected ? "✓ " : ""}
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Impression Textarea */}
+            <div className="el-rev-textarea-box">
+              <span className="el-rev-tags-label">3. YOUR ATELIER IMPRESSION</span>
+              <textarea
+                rows={4}
+                value={reviewModal.impressionText}
+                onChange={(e) =>
+                  setReviewModal((prev) => ({
+                    ...prev,
+                    impressionText: e.target.value,
+                  }))
+                }
+                placeholder="Describe the fabric drape, lapel posture, tailoring comfort, and overall impression..."
+                className="el-rev-textarea"
+              />
+            </div>
+
+            <div className="el-rev-actions">
+              <button
+                type="button"
+                className="el-btn-submit-review"
+                onClick={handleProductReviewSubmit}
+                disabled={reviewModal.submitting}
+              >
+                {reviewModal.submitting ? "RECORDING..." : "SUBMIT REVIEW ➔"}
+              </button>
+              <button
+                type="button"
+                className="el-btn-cancel-rev"
+                onClick={() => setReviewModal((prev) => ({ ...prev, isOpen: false }))}
+                disabled={reviewModal.submitting}
+              >
+                CANCEL
+              </button>
             </div>
           </div>
         </div>

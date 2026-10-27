@@ -21,6 +21,7 @@ import {
   requestOrderReturn,
   requestItemReturn,
 } from "../../services/orderService";
+import { createProductReview } from "../../services/reviewService";
 import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
@@ -80,7 +81,64 @@ function OrderDetails() {
     impressionText:
       "The sculpted shoulders and rich burgundy wool drape like museum couture. The concho belt and brass crests add the ideal balance of western attitude to an otherwise stately French silhouette. Impeccable craftsmanship.",
     submitted: false,
+    submitting: false,
+    error: "",
   });
+
+  const handleReviewSubmit = async () => {
+    if (!reviewModal.item) return;
+
+    const prodId =
+      typeof reviewModal.item.product === "object" && reviewModal.item.product?._id
+        ? reviewModal.item.product._id
+        : reviewModal.item.product || reviewModal.item.productId;
+
+    if (!prodId) {
+      alert("Unable to associate review with product ID.");
+      return;
+    }
+
+    if (!reviewModal.impressionText || reviewModal.impressionText.trim().length < 3) {
+      alert("Please provide your atelier impression text (minimum 3 characters).");
+      return;
+    }
+
+    try {
+      setReviewModal((prev) => ({ ...prev, submitting: true, error: "" }));
+
+      const payload = {
+        rating: reviewModal.rating,
+        title: reviewModal.selectedImpressions[0] || "Exceptional Sartorial Craft",
+        comment: reviewModal.impressionText.trim(),
+        impressions: reviewModal.selectedImpressions,
+        size: reviewModal.item.variant?.size || "",
+        fit: reviewModal.selectedImpressions.includes("Perfect Fit") ? "True to Size" : "Atelier Fit",
+      };
+
+      const res = await createProductReview(prodId, payload);
+      if (res?.data?.success) {
+        alert("Thank you! Your verified patron review has been recorded.");
+        setReviewModal({
+          isOpen: false,
+          item: null,
+          rating: 5,
+          selectedImpressions: ["Perfect Fit", "Premium Quality"],
+          impressionText: "",
+          submitted: true,
+          submitting: false,
+          error: "",
+        });
+      } else {
+        alert(res?.data?.message || "Failed to submit review.");
+        setReviewModal((prev) => ({ ...prev, submitting: false }));
+      }
+    } catch (err) {
+      console.error("SUBMIT REVIEW ERROR:", err);
+      const msg = err.response?.data?.message || "Failed to submit review. Please try again.";
+      alert(msg);
+      setReviewModal((prev) => ({ ...prev, submitting: false, error: msg }));
+    }
+  };
 
   // -----------------------------------------------------
   // FETCH ORDER DETAILS
@@ -1350,17 +1408,16 @@ function OrderDetails() {
               <button
                 type="button"
                 className="el-btn-submit-review"
-                onClick={() => {
-                  alert("Thank you! Your verified patron review has been recorded.");
-                  setReviewModal({ ...reviewModal, isOpen: false });
-                }}
+                onClick={handleReviewSubmit}
+                disabled={reviewModal.submitting}
               >
-                SUBMIT REVIEW ➔
+                {reviewModal.submitting ? "RECORDING..." : "SUBMIT REVIEW ➔"}
               </button>
               <button
                 type="button"
                 className="el-btn-cancel-rev"
                 onClick={() => setReviewModal({ ...reviewModal, isOpen: false })}
+                disabled={reviewModal.submitting}
               >
                 CANCEL
               </button>

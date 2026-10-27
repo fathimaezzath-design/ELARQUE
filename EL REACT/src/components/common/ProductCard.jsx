@@ -1,47 +1,208 @@
-import React, { useState } from "react";
-import { Heart, Star, ShoppingBag } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Heart, Star, ShoppingBag, Loader2 } from "lucide-react";
 import formatPrice from "../../utils/formatPrice";
+import { addToCart } from "../../services/cartService";
+import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
+
+// Helper to safely resolve image paths (uploads vs external URLs)
+const resolveImageUrl = (url) => {
+  if (!url) return "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=700&q=85";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("/")) return `http://localhost:5000${url}`;
+  return `http://localhost:5000/${url}`;
+};
 
 function ProductCard({
   product,
   onAddToCart,
   onToggleWishlist,
   isWishlisted = false,
-  badgeType = "BEST SELLER",
+  badgeType,
+  onClick,
 }) {
-  const [wishlistActive, setWishlistActive] = useState(isWishlisted);
+  const navigate = useNavigate();
+  const prodId = product?.id || product?._id;
+
+  // Initialize wishlist from props or local session storage
+  const [wishlistActive, setWishlistActive] = useState(() => {
+    if (isWishlisted) return true;
+    try {
+      const saved = localStorage.getItem("elarque_session_wishlist");
+      if (saved) {
+        const list = JSON.parse(saved);
+        if (Array.isArray(list) && prodId) {
+          return list.includes(prodId);
+        }
+      }
+    } catch {}
+    return false;
+  });
+
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [imgSrc, setImgSrc] = useState(() =>
+    resolveImageUrl(product?.image || product?.coverImage || (product?.images && product?.images[0]))
+  );
+
+  useEffect(() => {
+    setImgSrc(
+      resolveImageUrl(
+        product?.image ||
+          product?.coverImage ||
+          (product?.images && product?.images[0])
+      )
+    );
+  }, [product]);
+
+  const handleCardClick = (e) => {
+    if (onClick) {
+      onClick(e);
+      return;
+    }
+    if (prodId) {
+      navigate(`/products/${prodId}`);
+    }
+  };
 
   const handleWishlistClick = (e) => {
     e.stopPropagation();
     const nextState = !wishlistActive;
     setWishlistActive(nextState);
+
+    // Sync with elarque_session_wishlist in localStorage
+    try {
+      const saved = localStorage.getItem("elarque_session_wishlist");
+      let list = saved ? JSON.parse(saved) : [];
+      if (!Array.isArray(list)) list = [];
+      if (nextState) {
+        if (prodId && !list.includes(prodId)) list.push(prodId);
+      } else {
+        list = list.filter((id) => id !== prodId);
+      }
+      localStorage.setItem("elarque_session_wishlist", JSON.stringify(list));
+      window.dispatchEvent(new CustomEvent("elarque_wishlist_updated", { detail: list }));
+      window.dispatchEvent(new Event("storage"));
+    } catch {}
+
+    // Trigger luxury pop-up notification
+    showWishlistToast(product, nextState);
+
     if (onToggleWishlist) {
       onToggleWishlist(product, nextState);
     }
   };
 
-  const handleAddToCartClick = (e) => {
+  const handleAddToCartClick = async (e) => {
     e.stopPropagation();
+    if (addingToCart) return;
+
     if (onAddToCart) {
       onAddToCart(product);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      showAuthToast();
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      const targetId = prodId;
+      const variants = product?.variants || [];
+      const firstInStockVariant =
+        variants.find((v) => Number(v.stock) > 0) || variants[0];
+      const variantId = firstInStockVariant?._id || firstInStockVariant?.id;
+
+      const res = await addToCart(targetId, variantId, 1);
+      if (res?.data?.success && res?.data?.cart) {
+        window.dispatchEvent(
+          new CustomEvent("elarque_cart_updated", { detail: res.data.cart })
+        );
+      }
+      showCartToast(product);
+    } catch (err) {
+      console.warn("Could not quick add to bag, navigating to garment details:", err);
+      if (prodId) {
+        navigate(`/products/${prodId}`);
+      }
+    } finally {
+      setAddingToCart(false);
     }
   };
 
-  const displayBadge = product.badge || badgeType;
+  // Determine badge:
+  // 1. Explicit product.badge
+  // 2. Section-specific badgeType (e.g. "NEW" for New Arrivals, "BEST SELLER" for Best Sellers)
+  // 3. Fallback to product flags: isBestSeller -> "BEST SELLER", isFeatured -> "FEATURED"
+  const displayBadge =
+    product?.badge ||
+    badgeType ||
+    (product?.isBestSeller
+      ? "BEST SELLER"
+      : product?.isFeatured
+      ? "FEATURED"
+      : null);
+
+  // Price calculations
+  const hasSale =
+    product?.salePrice !== undefined &&
+    product?.salePrice !== null &&
+    Number(product?.salePrice) < Number(product?.price);
+
+  const currentPrice = hasSale ? product.salePrice : product?.price;
+  const originalPrice = hasSale
+    ? product.price
+    : product?.originalPrice && Number(product.originalPrice) > Number(product?.price)
+    ? product.originalPrice
+    : null;
+
+  const discountPercentage =
+    product?.discountPercentage ||
+    (hasSale && originalPrice
+      ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+      : null);
+
+  // Subtitle / fabric
+  const subtitle =
+    product?.fabric ||
+    product?.category?.name ||
+    product?.brand ||
+    product?.description?.slice(0, 40) ||
+    "";
+
+  // In-stock state
+  const isOutOfStock =
+    product?.inStock === false ||
+    (product?.stock !== undefined && Number(product?.stock) <= 0);
 
   return (
-    <article className="el-product-card" aria-label={product.name}>
+    <article
+      className="el-product-card"
+      aria-label={product?.name}
+      onClick={handleCardClick}
+      style={{ cursor: "pointer" }}
+    >
       <div className="el-card-image-wrap">
         {/* Top Badges */}
         <div className="el-card-badges">
-          {displayBadge && (
+          {isOutOfStock ? (
+            <span className="el-badge-pill el-badge-outofstock">OUT OF STOCK</span>
+          ) : displayBadge ? (
             <span
               className={`el-badge-pill ${
                 displayBadge === "NEW" ? "el-badge-new" : "el-badge-bestseller"
               }`}
             >
               {displayBadge}
+            </span>
+          ) : null}
+
+          {discountPercentage && (
+            <span className="el-badge-pill el-badge-discount">
+              {discountPercentage}% OFF
             </span>
           )}
         </div>
@@ -63,62 +224,77 @@ function ProductCard({
 
         {/* Image with Skeleton/Fallback */}
         <img
-          src={product.image}
-          alt={product.name}
+          src={imgSrc}
+          alt={product?.name || "Product silhouette"}
           className={`el-card-img ${imageLoaded ? "loaded" : "loading"}`}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
+          onError={() => {
+            setImgSrc(
+              "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=700&q=85"
+            );
+            setImageLoaded(true);
+          }}
         />
 
         {/* Quick Add Overlay on Hover */}
-        <div className="el-card-overlay-action">
-          <button
-            className="el-quick-add-btn"
-            onClick={handleAddToCartClick}
-            type="button"
-          >
-            <ShoppingBag size={15} /> QUICK ADD
-          </button>
-        </div>
+        {!isOutOfStock && (
+          <div className="el-card-overlay-action">
+            <button
+              className="el-quick-add-btn"
+              onClick={handleAddToCartClick}
+              type="button"
+              disabled={addingToCart}
+            >
+              {addingToCart ? (
+                <>
+                  <Loader2 size={15} className="spin-icon" /> ADDING...
+                </>
+              ) : (
+                <>
+                  <ShoppingBag size={15} /> QUICK ADD
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Product Details */}
       <div className="el-card-content">
-        {/* Rating Row */}
-        <div className="el-card-rating">
-          <div className="el-stars">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={12}
-                fill="#C49E60"
-                stroke="#C49E60"
-                strokeWidth={1}
-              />
-            ))}
-          </div>
-          <span className="el-rating-value">{product.rating || "5.0"}</span>
-          {product.reviewsCount && (
+        {/* Rating Row — only rendered when genuine review data exists */}
+        {product?.rating && product?.reviewsCount > 0 ? (
+          <div className="el-card-rating">
+            <div className="el-stars">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={12}
+                  fill={i < Math.round(Number(product.rating)) ? "#C49E60" : "none"}
+                  stroke="#C49E60"
+                  strokeWidth={1}
+                />
+              ))}
+            </div>
+            <span className="el-rating-value">{Number(product.rating).toFixed(1)}</span>
             <span className="el-rating-count">({product.reviewsCount})</span>
-          )}
-        </div>
+          </div>
+        ) : null}
 
         {/* Product Name */}
-        <h3 className="el-card-title">{product.name}</h3>
+        <h3 className="el-card-title">{product?.name}</h3>
 
         {/* Fabric / Subtitle */}
-        {product.fabric && (
-          <p className="el-card-fabric">{product.fabric}</p>
-        )}
+        {subtitle && <p className="el-card-fabric">{subtitle}</p>}
 
         {/* Price Row */}
         <div className="el-card-price-row">
           <span className="el-price-current">
-            {formatPrice(product.price)}
+            {formatPrice(currentPrice)}
           </span>
-          {product.originalPrice && product.originalPrice > product.price && (
+          {originalPrice && (
             <span className="el-price-original">
-              {formatPrice(product.originalPrice)}
+              {formatPrice(originalPrice)}
             </span>
           )}
         </div>
@@ -191,16 +367,21 @@ function ProductCard({
           backdrop-filter: blur(4px);
         }
 
-        .el-badge-new {
-          background-color: rgba(247, 242, 235, 0.95);
-          color: var(--el-burgundy);
-          border: 1px solid #DFCEBE;
-        }
-
+        .el-badge-new,
         .el-badge-bestseller {
           background: linear-gradient(135deg, #F5E8D0 0%, #E7C994 100%);
           color: #4A2E05;
           border: 1px solid rgba(196, 158, 96, 0.4);
+        }
+
+        .el-badge-discount {
+          background-color: rgba(82, 8, 20, 0.92);
+          color: #FAF6F0;
+        }
+
+        .el-badge-outofstock {
+          background-color: rgba(30, 26, 24, 0.88);
+          color: #FAF6F0;
         }
 
         .el-wishlist-toggle {
@@ -218,6 +399,8 @@ function ProductCard({
           justify-content: center;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           transition: all 0.25s ease;
+          border: none;
+          cursor: pointer;
         }
 
         .el-wishlist-toggle:hover {
@@ -260,11 +443,31 @@ function ProductCard({
           align-items: center;
           justify-content: center;
           gap: 8px;
+          border: none;
+          cursor: pointer;
           transition: background-color 0.25s ease;
         }
 
-        .el-quick-add-btn:hover {
+        .el-quick-add-btn:hover:not(:disabled) {
           background-color: var(--el-burgundy-deep);
+        }
+
+        .el-quick-add-btn:disabled {
+          opacity: 0.7;
+          cursor: wait;
+        }
+
+        .spin-icon {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
 
         .el-card-content {

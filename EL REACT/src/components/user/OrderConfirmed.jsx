@@ -1,19 +1,14 @@
-import React, { useEffect } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
-import { CheckCircle2, Package, MapPin, CreditCard, ArrowRight, ShoppingBag } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Check, Truck, ShieldCheck, ShoppingBag } from "lucide-react";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
+import { generateInvoicePDF } from "../../utils/generateInvoicePDF";
 import "./OrderConfirmed.css";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 const formatINR = (val) => {
-  if (val === undefined || val === null || isNaN(val)) return "0.00";
-  return Number(val).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  if (val === undefined || val === null || isNaN(val)) return "0";
+  return Number(val).toLocaleString("en-IN");
 };
 
 const resolveImageUrl = (url) => {
@@ -23,16 +18,29 @@ const resolveImageUrl = (url) => {
   return `http://localhost:5000/${url}`;
 };
 
-// ---------------------------------------------------------------------------
-// OrderConfirmed Component
-// ---------------------------------------------------------------------------
 function OrderConfirmed() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // The order object is passed via navigate state from Checkout.jsx.
-  // If the user navigates here directly without an order, redirect to home.
-  const order = location.state?.order;
+  // Retrieve order from state or session storage to handle refresh safely without duplicate requests
+  const [order] = useState(() => {
+    const fromState = location.state?.order;
+    if (fromState) {
+      try {
+        sessionStorage.setItem("elarque_last_confirmed_order", JSON.stringify(fromState));
+      } catch (e) {
+        console.warn("Session storage save error:", e);
+      }
+      return fromState;
+    }
+    try {
+      const cached = sessionStorage.getItem("elarque_last_confirmed_order");
+      if (cached) return JSON.parse(cached);
+    } catch (e) {
+      console.warn("Session storage read error:", e);
+    }
+    return null;
+  });
 
   useEffect(() => {
     if (!order) {
@@ -42,171 +50,161 @@ function OrderConfirmed() {
 
   if (!order) return null;
 
-  const { orderNumber, items = [], shippingAddress, pricing, paymentMethod, orderStatus, createdAt } = order;
+  const {
+    _id,
+    orderNumber = "ELQ-2026-45821",
+    items = [],
+    totalAmount = 0,
+    orderDate,
+    createdAt,
+  } = order;
 
-  const placedDate = createdAt
-    ? new Date(createdAt).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : null;
+  // Format commission date (e.g. "12 September 2026")
+  const rawDate = orderDate || createdAt || new Date();
+  const formattedDate = new Date(rawDate).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  const handleDownloadInvoice = () => {
+    try {
+      generateInvoicePDF(order);
+    } catch (err) {
+      console.error("Failed to generate PDF invoice:", err);
+    }
+  };
+
+  const handleTrackOrder = () => {
+    if (_id) {
+      navigate(`/orders/${_id}`);
+    } else {
+      navigate("/orders");
+    }
+  };
 
   return (
-    <div className="el-oc-root">
+    <div className="el-oc-page">
       <Navbar />
 
       <main className="el-oc-main">
-        {/* ── Confirmation Header ── */}
-        <section className="el-oc-hero">
-          <div className="el-oc-hero-icon-ring">
-            <CheckCircle2 size={40} className="el-oc-check-icon" />
+        {/* ── Top Confirmation Section ── */}
+        <section className="el-oc-hero-section">
+          {/* Centered Burgundy Checkmark Badge */}
+          <div className="el-oc-badge-circle" aria-label="Order Confirmed">
+            <Check size={32} color="#FFFFFF" strokeWidth={2.6} />
           </div>
-          <div className="el-oc-hero-text">
-            <p className="el-oc-label">ORDER CONFIRMED</p>
-            <h1 className="el-oc-title">Your curation is en route.</h1>
-            <p className="el-oc-subtitle">
-              Thank you for your order. You will receive a confirmation shortly.
-            </p>
+
+          {/* Gold Uppercase Eyebrow */}
+          <span className="el-oc-eyebrow">SALON HAUTE COUTURE CONFIRMATION</span>
+
+          {/* Main Heading */}
+          <h1 className="el-oc-title">Your Order is Confirmed</h1>
+
+          {/* Supporting Text */}
+          <p className="el-oc-subtitle">
+            Thank you for shopping with ELARQUE. Your luxury pieces are being prepared with artisanal care and will be on their way soon.
+          </p>
+
+          {/* Pill-Shaped Order Information Container */}
+          <div className="el-oc-ref-pill">
+            <span className="el-oc-pill-gold-dot">●</span>
+            <span className="el-oc-pill-order-num">ORDER #{orderNumber.replace(/^#/, "")}</span>
+            <span className="el-oc-pill-sep">·</span>
+            <span className="el-oc-pill-date">Commissioned {formattedDate}</span>
           </div>
-          <div className="el-oc-order-ref">
-            <span className="el-oc-ref-label">Order Reference</span>
-            <span className="el-oc-ref-value">{orderNumber}</span>
-            {placedDate && (
-              <span className="el-oc-ref-date">Placed on {placedDate}</span>
-            )}
+
+          {/* Action Buttons Row */}
+          <div className="el-oc-actions-row">
+            <button
+              type="button"
+              className="el-oc-btn-track"
+              onClick={handleTrackOrder}
+            >
+              <Truck size={15} color="#FFFFFF" strokeWidth={2} />
+              <span>TRACK YOUR ORDER</span>
+            </button>
+
+            <button
+              type="button"
+              className="el-oc-btn-invoice"
+              onClick={handleDownloadInvoice}
+            >
+              <span>DOWNLOAD INVOICE</span>
+            </button>
           </div>
         </section>
 
-        <div className="el-oc-body">
-          {/* ── Left: Items + Address ── */}
-          <div className="el-oc-left">
-            {/* Items */}
-            <div className="el-oc-card">
-              <div className="el-oc-card-head">
-                <Package size={16} className="el-oc-card-icon" />
-                <h2 className="el-oc-card-title">Items Ordered</h2>
-              </div>
-              <div className="el-oc-items-list">
-                {items.map((item, idx) => {
-                  const img = resolveImageUrl(item.coverImage);
-                  return (
-                    <div key={item._id || idx} className="el-oc-item-row">
-                      <div className="el-oc-item-img-wrap">
-                        {img ? (
-                          <img src={img} alt={item.name} className="el-oc-item-img" />
-                        ) : (
-                          <div className="el-oc-item-img-placeholder">
-                            <ShoppingBag size={20} />
-                          </div>
-                        )}
-                        <span className="el-oc-item-qty-badge">{item.quantity}</span>
+        {/* ── Order Details Card ── */}
+        <section className="el-oc-details-card">
+          <h2 className="el-oc-details-heading">Order Details</h2>
+
+          <div className="el-oc-items-wrapper">
+            {items.map((item, idx) => {
+              const img = resolveImageUrl(item.productImage);
+              const colorName = item.variant?.color || item.color || "Deep Burgundy";
+              const sizeVal = item.variant?.size || item.size || "M";
+              const quantityVal = item.quantity || 1;
+
+              return (
+                <div key={item._id || idx} className="el-oc-item-card">
+                  {/* Product Thumbnail with Couture Tag */}
+                  <div className="el-oc-item-thumb-box">
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={item.productName || "Product"}
+                        className="el-oc-item-img"
+                      />
+                    ) : (
+                      <div className="el-oc-item-placeholder">
+                        <ShoppingBag size={24} color="#A3968F" />
                       </div>
-                      <div className="el-oc-item-info">
-                        <p className="el-oc-item-name">{item.name}</p>
-                        <p className="el-oc-item-meta">
-                          {item.size && <span>{item.size}</span>}
-                          {item.size && item.color && <span className="el-oc-meta-sep">·</span>}
-                          {item.color && <span>{item.color}</span>}
-                        </p>
-                      </div>
-                      <p className="el-oc-item-price">₹{formatINR(item.lineTotal)}</p>
+                    )}
+                    <span className="el-oc-item-couture-badge">COUTURE</span>
+                  </div>
+
+                  {/* Product Metadata & Price */}
+                  <div className="el-oc-item-info">
+                    <h3 className="el-oc-item-title">
+                      {item.productName || "Signature Western Blazer Dress"}
+                    </h3>
+
+                    {/* Metadata Tags (Color, Size, Qty) */}
+                    <div className="el-oc-meta-tags">
+                      <span className="el-oc-meta-pill el-oc-meta-color">
+                        <span className="el-oc-color-dot" />
+                        <span>{colorName}</span>
+                      </span>
+
+                      <span className="el-oc-meta-pill">
+                        SIZE: {sizeVal}
+                      </span>
+
+                      <span className="el-oc-meta-pill">
+                        QTY: {quantityVal}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
 
-            {/* Delivery Address */}
-            {shippingAddress && (
-              <div className="el-oc-card">
-                <div className="el-oc-card-head">
-                  <MapPin size={16} className="el-oc-card-icon" />
-                  <h2 className="el-oc-card-title">Delivery Address</h2>
-                </div>
-                <div className="el-oc-address-block">
-                  <p className="el-oc-addr-name">{shippingAddress.fullName}</p>
-                  {shippingAddress.phone && (
-                    <p className="el-oc-addr-line">{shippingAddress.phone}</p>
-                  )}
-                  <p className="el-oc-addr-line">
-                    {shippingAddress.house}
-                    {shippingAddress.street ? `, ${shippingAddress.street}` : ""}
-                  </p>
-                  <p className="el-oc-addr-line">
-                    {shippingAddress.city}, {shippingAddress.state} — {shippingAddress.pincode}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ── Right: Pricing + Payment ── */}
-          <div className="el-oc-right">
-            <div className="el-oc-card">
-              <div className="el-oc-card-head">
-                <CreditCard size={16} className="el-oc-card-icon" />
-                <h2 className="el-oc-card-title">Order Summary</h2>
-              </div>
-
-              {pricing && (
-                <div className="el-oc-pricing">
-                  <div className="el-oc-price-row">
-                    <span>Subtotal</span>
-                    <span>₹{formatINR(pricing.subtotal)}</span>
-                  </div>
-                  <div className="el-oc-price-row">
-                    <span>Shipping</span>
-                    <span className="el-oc-free">
-                      {pricing.shippingFee === 0 ? "Free" : `₹${formatINR(pricing.shippingFee)}`}
-                    </span>
-                  </div>
-                  {pricing.packagingFee > 0 && (
-                    <div className="el-oc-price-row">
-                      <span>Packaging</span>
-                      <span>₹{formatINR(pricing.packagingFee)}</span>
+                    {/* Total Purchase Amount */}
+                    <div className="el-oc-amount-row">
+                      <span className="el-oc-amount-label">Total Purchase Amount:</span>
+                      <span className="el-oc-amount-value">
+                        ₹{formatINR(totalAmount)}
+                      </span>
                     </div>
-                  )}
-                  <div className="el-oc-price-divider" />
-                  <div className="el-oc-price-row el-oc-price-total">
-                    <span>Total</span>
-                    <span>₹{formatINR(pricing.total)}</span>
+
+                    {/* Guarantee / Authenticity Monograph note */}
+                    <div className="el-oc-monograph-note">
+                      <ShieldCheck size={14} className="el-oc-monograph-icon" />
+                      <span>Bespoke Cedar Box Packaging Included · Authenticity Monograph Sealed</span>
+                    </div>
                   </div>
                 </div>
-              )}
-
-              <div className="el-oc-payment-row">
-                <span className="el-oc-payment-label">Payment</span>
-                <span className="el-oc-payment-value">
-                  {paymentMethod === "COD" ? "Cash on Delivery" : paymentMethod}
-                </span>
-              </div>
-
-              <div className="el-oc-status-row">
-                <span className="el-oc-status-label">Order Status</span>
-                <span className={`el-oc-status-badge el-oc-status-${orderStatus}`}>
-                  {orderStatus?.charAt(0).toUpperCase() + orderStatus?.slice(1)}
-                </span>
-              </div>
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="el-oc-actions">
-              <Link to={`/orders/${order._id}`} className="el-oc-btn-details">
-                <span>VIEW ORDER DETAILS</span>
-                <ArrowRight size={14} />
-              </Link>
-              <Link to="/collections" className="el-oc-btn-continue">
-                <span>CONTINUE SHOPPING</span>
-                <ShoppingBag size={14} />
-              </Link>
-            </div>
-
-            <p className="el-oc-assurance">
-              A delivery update will be sent to your registered contact once your parcel is dispatched.
-            </p>
+              );
+            })}
           </div>
-        </div>
+        </section>
       </main>
 
       <Footer />

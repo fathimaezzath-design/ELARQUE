@@ -1,453 +1,409 @@
-/* =====================================================================
-   OrderConfirmed.css — ELARQUE Order Confirmation Page
-   Luxury fashion aesthetic: cream bg, deep burgundy, warm serif headings
-   ===================================================================== */
+/* ============================================================
+   ELARQUE · Order Confirmation Page — Salon Haute Couture
+   Burgundy / Cream / Gold / White luxury aesthetic
+   ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* ── Root Layout ── */
-.el-oc-root {
+/* ── Root ── */
+.el-oc-page {
+  background: #F8F4EF;
   min-height: 100vh;
-  background: #faf6f1;
+  font-family: 'Inter', sans-serif;
+  color: #2A1F1A;
+}
+
+/* ── Main Container ── */
+.el-oc-main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 56px 28px 80px;
+}
+
+/* ══════════════════════════════════════════
+   HERO CONFIRMATION SECTION
+══════════════════════════════════════════ */
+.el-oc-hero-section {
   display: flex;
   flex-direction: column;
-  font-family: "Inter", sans-serif;
-}
-
-.el-oc-main {
-  flex: 1;
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 48px 24px 80px;
-  width: 100%;
-}
-
-/* ── Hero: Confirmation Header ── */
-.el-oc-hero {
+  align-items: center;
   text-align: center;
-  padding: 56px 24px 48px;
-  border-bottom: 1px solid #e8dfd5;
-  margin-bottom: 48px;
+  margin-bottom: 52px;
 }
 
-.el-oc-hero-icon-ring {
-  width: 72px;
-  height: 72px;
+/* Circular Burgundy Checkmark Badge */
+.el-oc-badge-circle {
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4a0f19 0%, #7a1a2a 100%);
+  background: #541424;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24px;
-  box-shadow: 0 8px 24px rgba(74, 15, 25, 0.25);
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(84, 20, 36, 0.3);
+  position: relative;
 }
 
-.el-oc-check-icon {
-  color: #faf6f1;
+/* Soft glow halo behind the badge */
+.el-oc-badge-circle::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(84, 20, 36, 0.12) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.el-oc-hero-text {
-  margin-bottom: 28px;
-}
-
-.el-oc-label {
-  font-family: "Inter", sans-serif;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: #4a0f19;
+/* Gold uppercase Eyebrow */
+.el-oc-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #B8933F;
   text-transform: uppercase;
   margin-bottom: 12px;
 }
 
+/* Large Serif Heading */
 .el-oc-title {
-  font-family: "Cormorant Garamond", serif;
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 500;
-  color: #1a0a0e;
-  margin: 0 0 12px;
-  line-height: 1.2;
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-size: 58px;
+  font-weight: 600;
+  color: #3B121E;
+  margin: 0 0 16px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
+/* Supporting Paragraph */
 .el-oc-subtitle {
-  font-size: 0.93rem;
-  color: #6b5a4e;
-  line-height: 1.6;
-  max-width: 480px;
-  margin: 0 auto;
+  font-size: 15px;
+  color: #7A6B65;
+  line-height: 1.65;
+  max-width: 540px;
+  margin: 0 auto 28px;
 }
 
-.el-oc-order-ref {
+/* Pill-Shaped Order Reference Container */
+.el-oc-ref-pill {
   display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: #fff;
-  border: 1px solid #e8dfd5;
-  border-radius: 12px;
-  padding: 16px 28px;
-  box-shadow: 0 2px 8px rgba(74, 15, 25, 0.06);
-}
-
-.el-oc-ref-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: #9a8070;
-  text-transform: uppercase;
-}
-
-.el-oc-ref-value {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: #4a0f19;
-  letter-spacing: 0.05em;
-}
-
-.el-oc-ref-date {
-  font-size: 0.75rem;
-  color: #9a8070;
-}
-
-/* ── Body: Two-column layout ── */
-.el-oc-body {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 28px;
-  align-items: start;
-}
-
-/* ── Card ── */
-.el-oc-card {
-  background: #fff;
-  border: 1px solid #e8dfd5;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 2px 12px rgba(74, 15, 25, 0.05);
-  margin-bottom: 20px;
-}
-
-.el-oc-card-head {
-  display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #f0eae1;
+  background: #FFFFFF;
+  border: 1px solid #E8E0D5;
+  border-radius: 9999px;
+  padding: 10px 22px;
+  font-size: 13px;
+  color: #5A4D47;
+  margin-bottom: 36px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-.el-oc-card-icon {
-  color: #4a0f19;
-  flex-shrink: 0;
+.el-oc-pill-gold-dot {
+  color: #C5A059;
+  font-size: 8px;
+  line-height: 1;
 }
 
-.el-oc-card-title {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: #1a0a0e;
-  margin: 0;
+.el-oc-pill-order-num {
+  font-weight: 700;
+  color: #3B121E;
+  letter-spacing: 0.03em;
 }
 
-/* ── Items List ── */
-.el-oc-items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.el-oc-pill-sep {
+  color: #C2B5AD;
 }
 
-.el-oc-item-row {
+.el-oc-pill-date {
+  color: #7A6B65;
+}
+
+/* Action Buttons Row */
+.el-oc-actions-row {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.el-oc-item-img-wrap {
+/* Track Your Order — Filled Burgundy */
+.el-oc-btn-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #541424;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 9999px;
+  padding: 14px 28px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.el-oc-btn-track:hover {
+  background: #3D0E1A;
+  transform: translateY(-1px);
+}
+
+/* Download Invoice — Outlined */
+.el-oc-btn-invoice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  color: #3B121E;
+  border: 1.5px solid #C2B5AD;
+  border-radius: 9999px;
+  padding: 13px 28px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.el-oc-btn-invoice:hover {
+  border-color: #541424;
+  color: #541424;
+  background: #FDF9F5;
+}
+
+/* ══════════════════════════════════════════
+   ORDER DETAILS CARD
+══════════════════════════════════════════ */
+.el-oc-details-card {
+  background: #FFFFFF;
+  border: 1px solid #EDE5DA;
+  border-radius: 18px;
+  padding: 32px 36px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+}
+
+.el-oc-details-heading {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #3B121E;
+  margin: 0 0 24px;
+}
+
+/* Items wrapper */
+.el-oc-items-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Individual item card — beige tinted inner box */
+.el-oc-item-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: #FAF7F2;
+  border: 1px solid #EDE5DA;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+/* Product Thumbnail Box */
+.el-oc-item-thumb-box {
   position: relative;
+  width: 120px;
+  min-width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #EEE8E0;
   flex-shrink: 0;
-  width: 64px;
-  height: 64px;
 }
 
 .el-oc-item-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid #e8dfd5;
+  display: block;
 }
 
-.el-oc-item-img-placeholder {
+.el-oc-item-placeholder {
   width: 100%;
   height: 100%;
-  border-radius: 10px;
-  background: #f5ede6;
-  border: 1px solid #e8dfd5;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9a8070;
+  background: #EEE8E0;
 }
 
-.el-oc-item-qty-badge {
+/* COUTURE Badge on Image */
+.el-oc-item-couture-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #4a0f19;
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 8px;
+  left: 0;
+  background: #541424;
+  color: #FFFFFF;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 3px 8px;
+  border-radius: 0 4px 4px 0;
 }
 
+/* Product Info Column */
 .el-oc-item-info {
   flex: 1;
-  min-width: 0;
-}
-
-.el-oc-item-name {
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: #1a0a0e;
-  margin: 0 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.el-oc-item-meta {
-  font-size: 0.78rem;
-  color: #9a8070;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.el-oc-meta-sep {
-  color: #c8b8a8;
-}
-
-.el-oc-item-price {
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: #1a0a0e;
-  white-space: nowrap;
-  margin: 0;
-}
-
-/* ── Address Block ── */
-.el-oc-address-block {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.el-oc-addr-name {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: #1a0a0e;
-  margin: 0;
-}
-
-.el-oc-addr-line {
-  font-size: 0.85rem;
-  color: #6b5a4e;
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* ── Pricing ── */
-.el-oc-pricing {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 20px;
 }
 
-.el-oc-price-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.88rem;
-  color: #6b5a4e;
-}
-
-.el-oc-price-row span:last-child {
-  font-weight: 500;
-  color: #1a0a0e;
-}
-
-.el-oc-free {
-  color: #2a7a3a !important;
-}
-
-.el-oc-price-divider {
-  height: 1px;
-  background: #e8dfd5;
-  margin: 4px 0;
-}
-
-.el-oc-price-total {
-  font-size: 0.95rem;
+/* Product Name */
+.el-oc-item-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px;
   font-weight: 600;
-  color: #1a0a0e !important;
-}
-
-.el-oc-price-total span:first-child {
-  font-weight: 600;
-  color: #1a0a0e;
-}
-
-.el-oc-price-total span:last-child {
-  color: #4a0f19;
-}
-
-/* ── Payment + Status ── */
-.el-oc-payment-row,
-.el-oc-status-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 14px;
-  border-top: 1px solid #f0eae1;
-  margin-top: 4px;
-}
-
-.el-oc-payment-label,
-.el-oc-status-label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #9a8070;
-}
-
-.el-oc-payment-value {
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: #1a0a0e;
-}
-
-.el-oc-status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.el-oc-status-placed {
-  background: #f0f7ff;
-  color: #1a5a9a;
-  border: 1px solid #c0d8f0;
-}
-
-.el-oc-status-processing {
-  background: #fff8e6;
-  color: #8a5a00;
-  border: 1px solid #e8d0a0;
-}
-
-.el-oc-status-shipped {
-  background: #f0f7e6;
-  color: #2a6a10;
-  border: 1px solid #b0d890;
-}
-
-.el-oc-status-delivered {
-  background: #e8f5e8;
-  color: #1a5a1a;
-  border: 1px solid #90c890;
-}
-
-.el-oc-status-cancelled {
-  background: #fdf0f0;
-  color: #8a1a1a;
-  border: 1px solid #e8b0b0;
-}
-
-/* ── CTA Actions ── */
-.el-oc-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.el-oc-btn-details {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 14px 24px;
-  background: linear-gradient(135deg, #4a0f19 0%, #7a1a2a 100%);
-  color: #faf6f1;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-decoration: none;
-  text-align: center;
-  transition: opacity 0.2s ease, transform 0.15s ease;
-}
-
-.el-oc-btn-details:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.el-oc-btn-continue {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 13px 24px;
-  background: transparent;
-  color: #4a0f19;
-  border: 1px solid #4a0f19;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-decoration: none;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.el-oc-btn-continue:hover {
-  background: #4a0f19;
-  color: #faf6f1;
-}
-
-.el-oc-assurance {
-  font-size: 0.76rem;
-  color: #9a8070;
-  text-align: center;
-  line-height: 1.5;
+  color: #2A1F1A;
   margin: 0;
+  line-height: 1.2;
 }
 
-/* ── Responsive ── */
+/* Metadata Pills Row */
+.el-oc-meta-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.el-oc-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #FFFFFF;
+  border: 1px solid #DDD5CB;
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5A4D47;
+  letter-spacing: 0.04em;
+}
+
+.el-oc-meta-color {
+  gap: 6px;
+}
+
+.el-oc-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #541424;
+  flex-shrink: 0;
+}
+
+/* Total Purchase Amount Row */
+.el-oc-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.el-oc-amount-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3B121E;
+}
+
+.el-oc-amount-value {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #3B121E;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+/* Shield / Monograph Note */
+.el-oc-monograph-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #B8933F;
+  font-weight: 500;
+}
+
+.el-oc-monograph-icon {
+  color: #B8933F;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE STYLES
+══════════════════════════════════════════ */
 @media (max-width: 768px) {
   .el-oc-main {
-    padding: 32px 16px 60px;
+    padding: 36px 20px 60px;
   }
 
-  .el-oc-body {
-    grid-template-columns: 1fr;
+  .el-oc-title {
+    font-size: 40px;
   }
 
-  .el-oc-hero {
-    padding: 36px 16px 36px;
+  .el-oc-details-card {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 580px) {
+  .el-oc-title {
+    font-size: 32px;
+  }
+
+  .el-oc-badge-circle {
+    width: 64px;
+    height: 64px;
+  }
+
+  .el-oc-ref-pill {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    border-radius: 12px;
+    padding: 12px 16px;
+  }
+
+  .el-oc-actions-row {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .el-oc-btn-track,
+  .el-oc-btn-invoice {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .el-oc-item-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .el-oc-item-thumb-box {
+    width: 140px;
+    height: 140px;
+    min-width: unset;
+  }
+
+  .el-oc-meta-tags,
+  .el-oc-amount-row,
+  .el-oc-monograph-note {
+    justify-content: center;
   }
 }

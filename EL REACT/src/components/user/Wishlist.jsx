@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Heart, ShoppingBag, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import UserLayout from "../../layouts/UserLayout";
 import { getProductById } from "../../services/productService";
+import { showWishlistToast } from "../../utils/toast";
 
 // Image URL resolver consistent with Collections & ProductDetails
 const resolveImageUrl = (url) => {
@@ -104,6 +105,9 @@ function Wishlist() {
     } catch (err) {
       console.error("Failed to update localStorage:", err);
     }
+
+    const targetProduct = products.find((p) => (p.id || p._id) === productId);
+    showWishlistToast(targetProduct || { name: "Silhouette" }, false);
 
     // Notify Navbar and other listeners of updated wishlist
     window.dispatchEvent(

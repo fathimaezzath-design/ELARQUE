@@ -9,19 +9,43 @@ import ValuesSection from "./ValuesSection";
 import EditorialGallerySection from "./EditorialGallerySection";
 import NewsletterSection from "./NewsletterSection";
 import Footer from "../common/Footer";
+import { addToCart } from "../../services/cartService";
+import { showCartToast, showAuthToast } from "../../utils/toast";
 
 function Home() {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
 
-  const handleAddToCart = (product) => {
-    setCartCount((prev) => prev + 1);
-    console.log("Added to Cart:", product.name);
+  const handleAddToCart = async (product) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      showAuthToast();
+      return;
+    }
+
+    const prodId = product?.id || product?._id;
+    const variants = product?.variants || [];
+    const firstInStockVariant =
+      variants.find((v) => Number(v.stock) > 0) || variants[0];
+    const variantId = firstInStockVariant?._id || firstInStockVariant?.id;
+
+    try {
+      const res = await addToCart(prodId, variantId, 1);
+      if (res?.data?.success && res?.data?.cart) {
+        window.dispatchEvent(
+          new CustomEvent("elarque_cart_updated", { detail: res.data.cart })
+        );
+      }
+      showCartToast(product);
+    } catch (err) {
+      console.warn("Could not add to bag:", err);
+      showCartToast(product);
+    }
   };
 
   const handleToggleWishlist = (product, isAdded) => {
     setWishlistCount((prev) => (isAdded ? prev + 1 : Math.max(0, prev - 1)));
-    console.log("Wishlist Toggled:", product.name, isAdded);
+    // Wishlist toast notification is handled by ProductCard
   };
 
   return (
@@ -38,7 +62,7 @@ function Home() {
       {/* 4. Explore by Silhouette (4 Curated Archive Cards) */}
       <SilhouetteSection />
 
-      {/* 5. New Arrivals (4 Product Cards) */}
+      {/* 5. New Arrivals (Real Products from DB) */}
       <NewArrivalsSection
         onAddToCart={handleAddToCart}
         onToggleWishlist={handleToggleWishlist}
