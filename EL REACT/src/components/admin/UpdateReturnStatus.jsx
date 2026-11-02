@@ -328,8 +328,9 @@ const UpdateReturnStatus = () => {
               >
                 <option value="Pending">● Pending — Awaiting Concierge Review</option>
                 <option value="Approved">● Return Approved — Reverse Logistics Authorized</option>
-                <option value="Picked Up">● Pickup Scheduled / In Transit — Courier Dispatched</option>
-                <option value="Refunded">● Return Completed & Refunded — Vault Reimbursed</option>
+                <option value="Picked Up">● Item Collected — Courier In Transit</option>
+                <option value="Inspected">● Item Inspected — Paris Atelier Quality Audit Passed</option>
+                <option value="Refunded">● Return Completed & Refunded — Wallet Credited</option>
                 <option value="Rejected">● Return Rejected — Policy Violation / Ineligible</option>
               </select>
             </div>

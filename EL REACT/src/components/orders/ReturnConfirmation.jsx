@@ -207,9 +207,11 @@ function ReturnConfirmation() {
     );
   };
 
-  const isApproved =
-    returnStatus &&
-    ["Approved", "Picked Up", "Completed", "Refunded"].includes(returnStatus);
+  const normStatus = (returnStatus || "").toLowerCase();
+  const isApproved = ["approved", "picked up", "collected", "inspected", "completed", "refunded"].includes(normStatus);
+  const isPickedUp = ["picked up", "collected", "inspected", "completed", "refunded"].includes(normStatus);
+  const isInspected = ["inspected", "completed", "refunded"].includes(normStatus);
+  const isRefunded = ["completed", "refunded"].includes(normStatus);
 
   return (
     <div className="el-conf-page-root">
@@ -298,41 +300,49 @@ function ReturnConfirmation() {
               </span>
             </div>
 
-            <div className={`el-conf-step-line ${["Picked Up", "Completed", "Refunded"].includes(returnStatus) ? "active" : ""}`} />
+            <div className={`el-conf-step-line ${isPickedUp ? "active" : ""}`} />
 
             {/* Step 3: Courier Dispatch */}
-            <div className={`el-conf-step ${["Picked Up", "Completed", "Refunded"].includes(returnStatus) ? "completed" : ""}`}>
+            <div className={`el-conf-step ${isPickedUp ? "completed" : isApproved ? "current" : ""}`}>
               <div className="el-conf-step-circle">
-                <Truck size={14} />
+                {isPickedUp ? <Check size={14} /> : <Truck size={14} />}
               </div>
               <strong className="el-conf-step-name">3. COURIER DISPATCH</strong>
-              <span className="el-conf-step-meta">Est. 24–48h</span>
-              <span className="el-conf-step-sub">WHITE-GLOVE TIER</span>
+              <span className="el-conf-step-meta">
+                {isPickedUp ? "Collected & In Transit" : "Est. 24–48h"}
+              </span>
+              <span className="el-conf-step-sub">
+                {isPickedUp ? "ITEM COLLECTED" : "WHITE-GLOVE TIER"}
+              </span>
             </div>
 
-            <div className={`el-conf-step-line ${["Completed", "Refunded"].includes(returnStatus) ? "active" : ""}`} />
+            <div className={`el-conf-step-line ${isInspected ? "active" : ""}`} />
 
             {/* Step 4: Atelier Vault Check */}
-            <div className={`el-conf-step ${["Completed", "Refunded"].includes(returnStatus) ? "completed" : ""}`}>
+            <div className={`el-conf-step ${isInspected ? "completed" : isPickedUp ? "current" : ""}`}>
               <div className="el-conf-step-circle">
-                <Package size={14} />
+                {isInspected ? <Check size={14} /> : <Package size={14} />}
               </div>
               <strong className="el-conf-step-name">4. ATELIER VAULT CHECK</strong>
-              <span className="el-conf-step-meta">Paris Guild Protocol</span>
-              <span className="el-conf-step-sub">CONDITION AUDIT</span>
+              <span className="el-conf-step-meta">
+                {isInspected ? "Quality Passed" : "Paris Guild Protocol"}
+              </span>
+              <span className="el-conf-step-sub">
+                {isInspected ? "VAULT VERIFIED" : "CONDITION AUDIT"}
+              </span>
             </div>
 
-            <div className={`el-conf-step-line ${returnStatus === "Refunded" ? "active" : ""}`} />
+            <div className={`el-conf-step-line ${isRefunded ? "active" : ""}`} />
 
             {/* Step 5: Settlement Issued */}
-            <div className={`el-conf-step ${returnStatus === "Refunded" ? "completed" : ""}`}>
+            <div className={`el-conf-step ${isRefunded ? "completed" : isInspected ? "current" : ""}`}>
               <div className="el-conf-step-circle">
-                <RotateCcw size={14} />
+                {isRefunded ? <Check size={14} /> : <RotateCcw size={14} />}
               </div>
               <strong className="el-conf-step-name">5. SETTLEMENT ISSUED</strong>
               <span className="el-conf-step-meta">ELARQUE Wallet</span>
               <span className="el-conf-step-sub">
-                {formatPrice(refundAmount)} {returnStatus === "Refunded" ? "CREDITED" : "SCHEDULED"}
+                {formatPrice(refundAmount)} {isRefunded ? "CREDITED" : "SCHEDULED"}
               </span>
             </div>
           </div>

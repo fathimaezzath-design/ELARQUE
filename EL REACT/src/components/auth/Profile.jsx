@@ -414,17 +414,6 @@ function Profile() {
                 <strong className="el-menu-count">{formatPrice(effectiveWallet)}</strong>
               </button>
 
-              {/* Coupons */}
-              <button
-                type="button"
-                className="el-menu-item"
-                onClick={() => navigate("/coupons")}
-              >
-                <div className="el-menu-item-left">
-                  <Ticket size={15} />
-                  <span>COUPONS</span>
-                </div>
-              </button>
 
               {/* Saved Addresses */}
               <button

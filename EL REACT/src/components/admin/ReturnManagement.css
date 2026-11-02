@@ -590,7 +590,9 @@
 }
 
 .admin-return-status-badge.approved,
-.admin-return-status-badge.picked-up {
+.admin-return-status-badge.picked-up,
+.admin-return-status-badge.collected,
+.admin-return-status-badge.inspected {
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.35);
   color: #34d399;

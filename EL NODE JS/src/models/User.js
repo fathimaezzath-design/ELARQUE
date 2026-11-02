@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
 
     referralCode: {
       type: String,
-      default: "",
+      default: undefined,
       trim: true,
       unique: true,
       sparse: true,
@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema(
 
     referralToken: {
       type: String,
-      default: "",
+      default: undefined,
       trim: true,
       unique: true,
       sparse: true,

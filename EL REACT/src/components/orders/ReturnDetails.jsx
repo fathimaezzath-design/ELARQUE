@@ -77,6 +77,11 @@ function ReturnDetails() {
             pickupAddress: targetItem?.pickupAddress || ord.pickupAddress || ord.shippingAddress,
             refundAmount: targetItem ? targetItem.itemTotal : ord.totalAmount,
             returnRequestedAt: targetItem?.returnRequestedAt || ord.returnRequestedAt || new Date(),
+            returnApprovedAt: targetItem?.returnApprovedAt || ord.returnApprovedAt,
+            returnPickedUpAt: targetItem?.returnPickedUpAt || ord.returnPickedUpAt,
+            returnInspectedAt: targetItem?.returnInspectedAt || ord.returnInspectedAt,
+            returnCompletedAt: targetItem?.returnCompletedAt || ord.returnCompletedAt,
+            walletRefunded: Boolean(targetItem?.walletRefunded || ord.walletRefunded),
             paymentMethod: ord.paymentMethod,
           });
         } else {
@@ -109,6 +114,11 @@ function ReturnDetails() {
             pickupAddress: targetItem?.pickupAddress || ord.pickupAddress || ord.shippingAddress,
             refundAmount: targetItem ? targetItem.itemTotal : ord.totalAmount,
             returnRequestedAt: targetItem?.returnRequestedAt || ord.returnRequestedAt || new Date(),
+            returnApprovedAt: targetItem?.returnApprovedAt || ord.returnApprovedAt,
+            returnPickedUpAt: targetItem?.returnPickedUpAt || ord.returnPickedUpAt,
+            returnInspectedAt: targetItem?.returnInspectedAt || ord.returnInspectedAt,
+            returnCompletedAt: targetItem?.returnCompletedAt || ord.returnCompletedAt,
+            walletRefunded: Boolean(targetItem?.walletRefunded || ord.walletRefunded),
             paymentMethod: ord.paymentMethod,
           });
         } else {
@@ -183,6 +193,11 @@ function ReturnDetails() {
     pickupAddress,
     refundAmount,
     returnRequestedAt,
+    returnApprovedAt,
+    returnPickedUpAt,
+    returnInspectedAt,
+    returnCompletedAt,
+    walletRefunded,
     preferredRefundMethod,
     returnCustomerMessage,
     returnRejectionReason,
@@ -191,10 +206,10 @@ function ReturnDetails() {
   const itemImg = item?.productImage || FALLBACK_ITEM_IMG;
   const resolvedImg = itemImg.startsWith("http") ? itemImg : `http://localhost:5000${itemImg}`;
 
-  const formatShortDate = (dateString) => {
-    if (!dateString) return "20 Jul, 02:45 PM";
+  const formatShortDate = (dateString, fallback = "Pending") => {
+    if (!dateString) return fallback;
     const d = new Date(dateString);
-    if (isNaN(d.getTime())) return "20 Jul, 02:45 PM";
+    if (isNaN(d.getTime())) return fallback;
     return (
       d.toLocaleDateString("en-GB", {
         day: "numeric",
@@ -208,15 +223,33 @@ function ReturnDetails() {
     );
   };
 
-  // Status mapping
+  // Status mapping & genuine step completion flags
   const s = (returnStatus || "").toLowerCase();
-  const isApproved = ["approved", "picked up", "completed", "refunded"].includes(s);
-  const isRefunded = ["completed", "refunded"].includes(s);
   const isRejected = s === "rejected";
-  const isRequested = ["requested", "pending", "approved", "picked up", "completed", "refunded"].includes(s);
-  const isCollected = ["picked up", "completed", "refunded"].includes(s);
-  const isInspected = ["completed", "refunded"].includes(s);
-  const isSettlement = isApproved;
+
+  // Step 1: REQUESTED — always true once return request is created
+  const step1Done = Boolean(returnRequestedAt) || ["requested", "pending", "approved", "picked up", "collected", "inspected", "completed", "refunded"].includes(s);
+
+  // Step 2: COLLECTED — checkmark ONLY when item has actually been collected
+  const step2Done = Boolean(returnPickedUpAt) || ["picked up", "collected", "inspected", "completed", "refunded"].includes(s);
+
+  // Step 3: INSPECTED — checkmark ONLY when inspection has actually completed
+  const step3Done = Boolean(returnInspectedAt) || ["inspected", "completed", "refunded"].includes(s);
+
+  // Step 4: SETTLEMENT — checkmark ONLY when refund settlement has been processed
+  const step4Done = Boolean(walletRefunded) || ["completed", "refunded"].includes(s);
+
+  // Step 5: COMPLETED — checkmark ONLY when return workflow is completed and wallet credit confirmed
+  const step5Done = (Boolean(walletRefunded) || ["completed", "refunded"].includes(s)) && step2Done && step3Done;
+
+  // Active in-progress step determination
+  let activeStep = 1;
+  if (step5Done) activeStep = 5;
+  else if (step4Done) activeStep = 5;
+  else if (step3Done) activeStep = 4;
+  else if (step2Done) activeStep = 3;
+  else if (["approved"].includes(s)) activeStep = 2; // Return authorized -> awaiting courier collection
+  else activeStep = 1;
 
   return (
     <div className="el-rd-page-root">
@@ -308,77 +341,111 @@ function ReturnDetails() {
                   <h3 className="el-rd-ref-title">{returnReferenceId}</h3>
                 </div>
                 <span className={`el-rd-status-badge ${s}`}>
-                  • {isRejected ? "RETURN REJECTED" : isRefunded ? "RETURN REFUNDED" : isApproved ? "RETURN APPROVED" : "PENDING REVIEW"}
+                  • {isRejected
+                    ? "RETURN REJECTED"
+                    : step5Done
+                    ? "RETURN REFUNDED"
+                    : step3Done
+                    ? "INSPECTION PASSED"
+                    : step2Done
+                    ? "ITEM COLLECTED"
+                    : ["approved"].includes(s)
+                    ? "RETURN APPROVED"
+                    : "PENDING REVIEW"}
                 </span>
               </div>
 
               {/* 5-Step Stepper */}
               <div className="el-rd-stepper-list">
                 {/* 1. REQUESTED */}
-                <div className={`el-rd-step-node ${isRequested ? "done" : ""}`}>
+                <div className={`el-rd-step-node ${step1Done ? "done" : activeStep === 1 ? "current" : ""}`}>
                   <div className="el-rd-node-circle">
-                    <Check size={13} />
+                    {step1Done ? <Check size={13} /> : <FileText size={13} />}
                   </div>
                   <div className="el-rd-node-body">
                     <strong className="el-rd-node-title">REQUESTED</strong>
-                    <span className="el-rd-node-date">{formatShortDate(returnRequestedAt)}</span>
+                    <span className="el-rd-node-date">
+                      {formatShortDate(returnRequestedAt, "Submitted")}
+                    </span>
                     <span className="el-rd-node-note">Logged in Vault</span>
                   </div>
                 </div>
 
                 {/* 2. COLLECTED */}
-                <div className={`el-rd-step-node ${isCollected ? "done" : isRequested ? "current" : ""}`}>
+                <div className={`el-rd-step-node ${step2Done ? "done" : activeStep === 2 ? "current" : ""}`}>
                   <div className="el-rd-node-circle">
-                    {isCollected ? <Check size={13} /> : <Truck size={13} />}
+                    {step2Done ? <Check size={13} /> : <Truck size={13} />}
                   </div>
                   <div className="el-rd-node-body">
                     <strong className="el-rd-node-title">COLLECTED</strong>
                     <span className="el-rd-node-date">
-                      {isCollected ? "Collected by Courier" : "Scheduled (Within 24h)"}
+                      {step2Done
+                        ? formatShortDate(returnPickedUpAt, "Collected by Courier")
+                        : ["approved"].includes(s)
+                        ? "Courier Scheduled (Within 24h)"
+                        : "Awaiting Dispatch"}
                     </span>
-                    <span className="el-rd-node-note">BlueDart Secure</span>
+                    <span className="el-rd-node-note">
+                      {step2Done ? "BlueDart Secure • In Transit" : "BlueDart Secure"}
+                    </span>
                   </div>
                 </div>
 
                 {/* 3. INSPECTED */}
-                <div className={`el-rd-step-node ${isInspected ? "done" : isCollected ? "current" : ""}`}>
+                <div className={`el-rd-step-node ${step3Done ? "done" : activeStep === 3 ? "current" : ""}`}>
                   <div className="el-rd-node-circle">
-                    {isInspected ? <Check size={13} /> : <Package size={13} />}
+                    {step3Done ? <Check size={13} /> : <Package size={13} />}
                   </div>
                   <div className="el-rd-node-body">
                     <strong className="el-rd-node-title">INSPECTED</strong>
                     <span className="el-rd-node-date">
-                      {isInspected ? "Audit Passed" : "Pending Intake"}
+                      {step3Done
+                        ? formatShortDate(returnInspectedAt, "Audit Passed")
+                        : step2Done
+                        ? "In Transit to Paris Atelier"
+                        : "Pending Intake"}
                     </span>
-                    <span className="el-rd-node-note">Paris Atelier QA</span>
+                    <span className="el-rd-node-note">
+                      {step3Done ? "Paris Atelier QA • Verified" : "Paris Atelier QA"}
+                    </span>
                   </div>
                 </div>
 
                 {/* 4. SETTLEMENT */}
-                <div className={`el-rd-step-node ${isSettlement ? "done" : isInspected ? "current" : ""}`}>
+                <div className={`el-rd-step-node ${step4Done ? "done" : activeStep === 4 ? "current" : ""}`}>
                   <div className="el-rd-node-circle">
-                    {isSettlement ? <Check size={13} /> : <Clock size={13} />}
+                    {step4Done ? <Check size={13} /> : <Clock size={13} />}
                   </div>
                   <div className="el-rd-node-body">
                     <strong className="el-rd-node-title">SETTLEMENT</strong>
                     <span className="el-rd-node-date">
-                      {isSettlement ? "Settled" : "In Progress"}
+                      {step4Done
+                        ? formatShortDate(returnCompletedAt, "Settled")
+                        : step3Done
+                        ? "Authorizing Wallet Credit"
+                        : "Pending Inspection"}
                     </span>
-                    <span className="el-rd-node-note">Clearing Bureau</span>
+                    <span className="el-rd-node-note">
+                      {step4Done ? "Clearing Bureau • Authorized" : "Clearing Bureau"}
+                    </span>
                   </div>
                 </div>
 
                 {/* 5. COMPLETED */}
-                <div className={`el-rd-step-node ${isSettlement ? "done" : ""}`}>
+                <div className={`el-rd-step-node ${step5Done ? "done" : activeStep === 5 ? "current" : ""}`}>
                   <div className="el-rd-node-circle">
-                    {isSettlement ? <Check size={13} /> : <RotateCcw size={13} />}
+                    {step5Done ? <Check size={13} /> : <RotateCcw size={13} />}
                   </div>
                   <div className="el-rd-node-body">
                     <strong className="el-rd-node-title">COMPLETED</strong>
                     <span className="el-rd-node-date">
-                      {isSettlement ? "Settlement Remitted" : "Est. 3–5 Days"}
+                      {step5Done
+                        ? formatShortDate(returnCompletedAt, "Settlement Remitted")
+                        : "Est. 3–5 Days"}
                     </span>
-                    <span className="el-rd-node-note">ELARQUE Wallet</span>
+                    <span className="el-rd-node-note">
+                      {step5Done ? "ELARQUE Wallet • Credited" : "ELARQUE Wallet"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -541,13 +608,20 @@ function ReturnDetails() {
               </div>
 
               <div className="el-rd-settlement-body">
-                {/* Approved refund banner */}
-                {isSettlement && (
+                {/* Approved & Credited refund banner */}
+                {step5Done ? (
                   <div className="el-rd-wallet-approved-banner">
-                    <strong>✓ Your return has been approved.</strong>
-                    <p>The refund amount has been credited to your ELARQUE Wallet.</p>
+                    <strong>✓ Your return has been approved and completed.</strong>
+                    <p>The refund amount of {formatPrice(refundAmount)} has been credited to your ELARQUE Wallet.</p>
                   </div>
-                )}
+                ) : !isRejected && ["approved", "picked up", "collected", "inspected"].includes(s) ? (
+                  <div className="el-rd-wallet-approved-banner" style={{ background: "#FAF7F2", borderColor: "#D5C7B8" }}>
+                    <strong style={{ color: "#650D20" }}>✓ Return Request Authorized</strong>
+                    <p style={{ color: "#403638" }}>
+                      Your return has been approved. Once the piece is collected and passes atelier inspection, the refund amount will be credited directly to your ELARQUE Wallet.
+                    </p>
+                  </div>
+                ) : null}
 
                 <div className="el-rd-settle-row">
                   <span className="el-rd-settle-title">Settlement Method</span>
@@ -562,7 +636,15 @@ function ReturnDetails() {
                 <div className="el-rd-settle-row">
                   <span className="el-rd-settle-title">Expected Clearance</span>
                   <span className="el-rd-settle-val">
-                    {isApproved ? "Credited to ELARQUE Wallet" : "Instant upon approval"}
+                    {step5Done
+                      ? "Credited to ELARQUE Wallet"
+                      : step3Done
+                      ? "Processing Wallet Remittance"
+                      : step2Done
+                      ? "In Transit to Paris Atelier"
+                      : ["approved"].includes(s)
+                      ? "Usable upon inspection"
+                      : "Instant upon approval"}
                   </span>
                 </div>
 

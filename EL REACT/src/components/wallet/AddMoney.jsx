@@ -30,14 +30,14 @@ const PRESET_AMOUNTS = [500, 1000, 2500, 5000];
 function AddMoney() {
   const navigate = useNavigate();
 
-  const [balance, setBalance] = useState(12450);
+  const [balance, setBalance] = useState(0);
   const [vaultId, setVaultId] = useState("Vault #VLT-89241-SWL");
   const [userName, setUserName] = useState("Swaliha Ezzath");
-  const [userEmail, setUserEmail] = useState("swaliha@wallet");
+  const [userEmail, setUserEmail] = useState("");
 
-  const [selectedAmount, setSelectedAmount] = useState(2500);
-  const [customAmount, setCustomAmount] = useState("2500");
-  const [paymentInstrument, setPaymentInstrument] = useState("CARD");
+  const [selectedAmount, setSelectedAmount] = useState(500);
+  const [customAmount, setCustomAmount] = useState("500");
+  const [paymentInstrument, setPaymentInstrument] = useState("RAZORPAY");
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -58,7 +58,7 @@ function AddMoney() {
 
       if (walletRes.status === "fulfilled" && walletRes.value?.data?.success) {
         const v = walletRes.value.data.vault;
-        setBalance(v.balance ?? 12450);
+        setBalance(v.balance ?? 0);
         if (v.vaultId) setVaultId(`Vault #${v.vaultId}`);
         if (v.userName) setUserName(v.userName);
         if (v.userEmail) setUserEmail(v.userEmail);
@@ -112,7 +112,7 @@ function AddMoney() {
   const getInstrumentName = () => {
     if (paymentInstrument === "CARD") return "Credit / Debit Card";
     if (paymentInstrument === "UPI") return "UPI Instant Rail";
-    return "Razor Pay";
+    return "Razorpay Instant Clearing";
   };
 
   const handleConfirmPayment = async () => {
@@ -122,151 +122,129 @@ function AddMoney() {
     const instrumentLabel = getInstrumentName();
 
     try {
-      if (paymentInstrument === "RAZORPAY") {
-        // Razorpay Gateway flow
-        const scriptOk = await loadRazorpayScript();
-        if (!scriptOk) {
-          throw new Error("Unable to load secure Razorpay gateway script.");
-        }
+      // 1. Load Razorpay Checkout SDK
+      const scriptOk = await loadRazorpayScript();
+      if (!scriptOk) {
+        throw new Error("Unable to load secure Razorpay gateway script.");
+      }
 
-        const rzpRes = await createTopupRazorpayOrder(amt);
-        if (!rzpRes?.data?.success) {
-          throw new Error(rzpRes?.data?.message || "Payment initialization failed.");
-        }
+      // 2. Create Razorpay Order on Backend
+      const rzpRes = await createTopupRazorpayOrder(amt);
+      if (!rzpRes?.data?.success) {
+        throw new Error(rzpRes?.data?.message || "Payment initialization failed.");
+      }
 
-        const { keyId, razorpayOrderId, amountInPaise } = rzpRes.data;
+      const { keyId, razorpayOrderId, amountInPaise } = rzpRes.data;
 
-        const options = {
-          key: keyId,
-          amount: amountInPaise,
-          currency: "INR",
-          name: "ELARQUE Atelier",
-          description: "Patron Wallet Vault Refill",
-          order_id: razorpayOrderId,
-          prefill: {
-            name: userName,
-            email: userEmail,
-          },
-          theme: { color: "#650D20" },
-          handler: async function (response) {
-            try {
-              const verifyRes = await verifyTopupPayment({
-                razorpayOrderId: response.razorpay_order_id || razorpayOrderId,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-                amount: amt,
-                paymentInstrument: "Razorpay",
-              });
+      // Prevents double-navigation if both ondismiss and payment.failed fire
+      let navigationDone = false;
 
-              if (verifyRes?.data?.success) {
-                setShowConfirmModal(false);
-                navigate("/wallet/success", {
-                  state: {
-                    addedAmount: amt,
-                    previousBalance: verifyRes.data.previousBalance,
-                    newBalance: verifyRes.data.newBalance,
-                    transactionId: verifyRes.data.transaction?.transactionId || referenceId,
-                    paymentRail: "Razorpay Instant Clearing",
-                    date: new Date().toISOString(),
-                    vaultId,
-                    userName,
-                  },
-                  replace: true,
-                });
-              } else {
-                throw new Error("Verification failed.");
-              }
-            } catch (vErr) {
+      // 3. Configure Razorpay Standard Checkout
+      const options = {
+        key: keyId,
+        amount: amountInPaise,
+        currency: "INR",
+        name: "ELARQUE Atelier",
+        description: "Patron Wallet Vault Refill",
+        order_id: razorpayOrderId,
+        prefill: {
+          name: userName || "Patron",
+          email: userEmail && userEmail.includes("@") && userEmail.includes(".") ? userEmail : undefined,
+        },
+        theme: { color: "#650D20" },
+        handler: async function (response) {
+          try {
+            // 4. Verify payment cryptographically on backend and credit wallet
+            const verifyRes = await verifyTopupPayment({
+              razorpayOrderId: response.razorpay_order_id || razorpayOrderId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              amount: amt,
+              paymentInstrument: instrumentLabel,
+            });
+
+            if (verifyRes?.data?.success) {
+              navigationDone = true;
               setShowConfirmModal(false);
-              navigate("/wallet/failed", {
+              navigate("/wallet/success", {
                 state: {
-                  amount: amt,
-                  referenceId,
-                  paymentRail: "Razorpay Instant Clearing",
+                  addedAmount: amt,
+                  previousBalance: verifyRes.data.previousBalance,
+                  newBalance: verifyRes.data.newBalance,
+                  transactionId: verifyRes.data.transaction?.transactionId || referenceId,
+                  paymentRail: instrumentLabel,
+                  date: new Date().toISOString(),
                   vaultId,
-                  error: vErr.response?.data?.message || vErr.message,
+                  userName,
                 },
                 replace: true,
               });
+            } else {
+              throw new Error(verifyRes?.data?.message || "Verification failed.");
             }
-          },
-          modal: {
-            ondismiss: function () {
+          } catch (vErr) {
+            navigationDone = true;
+            setProcessing(false);
+            setShowConfirmModal(false);
+            navigate("/wallet/failed", {
+              state: {
+                amount: amt,
+                referenceId: response.razorpay_payment_id || referenceId,
+                paymentRail: instrumentLabel,
+                vaultId,
+                error:
+                  vErr?.response?.data?.message ||
+                  vErr?.message ||
+                  "Payment verification failed. If debited, contact support with your payment ID.",
+              },
+              replace: true,
+            });
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            // User dismissed the popup WITHOUT completing payment — do NOT mark as failure
+            if (!navigationDone) {
               setProcessing(false);
               setShowConfirmModal(false);
-              navigate("/wallet/failed", {
-                state: {
-                  amount: amt,
-                  referenceId,
-                  paymentRail: "Razorpay Instant Clearing",
-                  vaultId,
-                  error: "Payment window was dismissed.",
-                },
-                replace: true,
-              });
-            },
+              setErrorMessage("Payment was cancelled. You can try again.");
+            }
           },
-        };
+        },
+      };
 
-        const rzp = new window.Razorpay(options);
-        rzp.on("payment.failed", function (failResponse) {
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (failResponse) {
+        if (!navigationDone) {
+          navigationDone = true;
           setProcessing(false);
           setShowConfirmModal(false);
           navigate("/wallet/failed", {
             state: {
               amount: amt,
               referenceId,
-              paymentRail: "Razorpay Instant Clearing",
+              paymentRail: instrumentLabel,
               vaultId,
-              error: failResponse.error?.description || "Transaction declined.",
+              error:
+                failResponse.error?.description ||
+                failResponse.error?.reason ||
+                "Transaction declined by payment network.",
             },
             replace: true,
           });
-        });
-        rzp.open();
-        return;
-      }
-
-      // Direct Card / UPI Simulation Flow
-      const res = await topupWallet({
-        amount: amt,
-        paymentInstrument: instrumentLabel,
-        referenceId,
+        }
       });
 
-      if (res?.data?.success) {
-        setShowConfirmModal(false);
-        navigate("/wallet/success", {
-          state: {
-            addedAmount: amt,
-            previousBalance: res.data.previousBalance,
-            newBalance: res.data.newBalance,
-            transactionId: res.data.transaction?.transactionId || referenceId,
-            paymentRail: instrumentLabel === "UPI Instant Rail" ? "UPI Instant Rail (swaliha@okaxis)" : `${instrumentLabel} (Ending in 4587)`,
-            date: new Date().toISOString(),
-            vaultId,
-            userName,
-          },
-          replace: true,
-        });
-      } else {
-        throw new Error(res?.data?.message || "Failed to process top-up.");
-      }
+      rzp.open();
     } catch (err) {
       console.error("Topup submission error:", err);
-      setShowConfirmModal(false);
-      navigate("/wallet/failed", {
-        state: {
-          amount: amt,
-          referenceId,
-          paymentRail: instrumentLabel,
-          vaultId,
-          error: err.response?.data?.message || err.message,
-        },
-        replace: true,
-      });
-    } finally {
       setProcessing(false);
+      setShowConfirmModal(false);
+      setErrorMessage(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to initiate payment. Please try again."
+      );
     }
   };
 

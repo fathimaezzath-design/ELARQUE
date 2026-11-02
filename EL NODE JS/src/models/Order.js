@@ -74,6 +74,8 @@ const orderItemSchema = new mongoose.Schema(
         "Pending",
         "Approved",
         "Picked Up",
+        "Collected",
+        "Inspected",
         "Completed",
         "Refunded",
         "Rejected",
@@ -82,6 +84,22 @@ const orderItemSchema = new mongoose.Schema(
     },
 
     returnRequestedAt: {
+      type: Date,
+    },
+
+    returnApprovedAt: {
+      type: Date,
+    },
+
+    returnPickedUpAt: {
+      type: Date,
+    },
+
+    returnInspectedAt: {
+      type: Date,
+    },
+
+    returnCompletedAt: {
       type: Date,
     },
 
@@ -292,6 +310,8 @@ const orderSchema = new mongoose.Schema(
         "Pending",
         "Approved",
         "Picked Up",
+        "Collected",
+        "Inspected",
         "Completed",
         "Refunded",
         "Rejected",
@@ -306,6 +326,10 @@ const orderSchema = new mongoose.Schema(
     },
 
     returnRequestedAt: {
+      type: Date,
+    },
+
+    returnApprovedAt: {
       type: Date,
     },
 
@@ -363,6 +387,10 @@ const orderSchema = new mongoose.Schema(
     },
 
     returnPickedUpAt: {
+      type: Date,
+    },
+
+    returnInspectedAt: {
       type: Date,
     },
 

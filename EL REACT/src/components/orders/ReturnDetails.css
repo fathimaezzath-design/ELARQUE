@@ -310,6 +310,18 @@
 
 .el-rd-status-badge.rejected {
   background: #9C182F;
+  color: #FFF;
+}
+
+.el-rd-status-badge.refunded,
+.el-rd-status-badge.completed {
+  background: #1B4D3E;
+  color: #E2FBE8;
+}
+
+.el-rd-status-badge.inspected {
+  background: #2D3748;
+  color: #E2E8F0;
 }
 
 /* Stepper List */
@@ -320,6 +332,17 @@
   margin-bottom: 24px;
   overflow-x: auto;
   padding-bottom: 8px;
+}
+
+.el-rd-stepper-list::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 50px;
+  right: 50px;
+  height: 2px;
+  background: #E8DFD8;
+  z-index: 1;
 }
 
 .el-rd-step-node {

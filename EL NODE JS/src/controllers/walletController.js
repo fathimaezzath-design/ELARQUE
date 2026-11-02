@@ -22,7 +22,7 @@ exports.getWalletData = async (req, res) => {
     }
 
     // Default balance if not set
-    let balance = typeof user.wallet === "number" ? user.wallet : 12450;
+    let balance = typeof user.wallet === "number" ? user.wallet : 0;
 
     // Find pending returns for this user
     const ordersWithReturns = await Order.find({
@@ -87,99 +87,12 @@ exports.getWalletData = async (req, res) => {
         ],
       };
     } else {
-      // Default active refund tracker demo to match screenshot aesthetic
-      pendingRefundAmount = 4999;
-      activeRefundTracker = {
-        orderNumber: "ELQ-2026-45821",
-        orderId: null,
-        title: "Blazer Dress Atelier Size Adjustment Cancellation",
-        expectedAmount: 4999,
-        currentStep: 3,
-        steps: [
-          {
-            number: 1,
-            label: "INITIATED & REGISTERED",
-            status: "COMPLETE",
-            date: "20 Jul 2026, 02:45 PM - Salon Support Desk",
-          },
-          {
-            number: 2,
-            label: "ATELIER VERIFIED",
-            status: "COMPLETE",
-            date: "21 Jul 2026, 11:30 AM - Dallas Quality Intake",
-          },
-          {
-            number: 3,
-            label: "PROCESSING CLEARANCE",
-            status: "IN PROGRESS",
-            date: "Currently with Central Atelier Clearing Bureau",
-            desc: "Authorization token dispatched to client bank network",
-          },
-          {
-            number: 4,
-            label: "WALLET REMITTANCE COMPLETED",
-            status: "PENDING",
-            date: "Estimated Arrival: 26 Jul 2026 - Immediate usable funds",
-          },
-        ],
-      };
+      pendingRefundAmount = 0;
+      activeRefundTracker = null;
     }
 
-    // Retrieve or seed transactions
-    let transactions = await WalletTransaction.find({ user: userId }).sort({ date: -1, createdAt: -1 });
-
-    if (transactions.length === 0) {
-      // Seed default transactions matching Screenshot 1
-      const defaultTxs = [
-        {
-          user: userId,
-          transactionId: "TXN-984210-REF",
-          type: "CREDIT",
-          amount: 4999,
-          title: "Refund from Order #ELQ-2026-45821",
-          description: "Blazer Dress Atelier Cancellation - Inspection Cleared",
-          status: "PROCESSING",
-          paymentRail: "Atelier Refund",
-          date: new Date(Date.now() - 2 * 3600 * 1000),
-        },
-        {
-          user: userId,
-          transactionId: "TXN-072198-ORD",
-          type: "DEBIT",
-          amount: 2499,
-          title: "Bespoke Silk Chiffon Scarf Commission",
-          description: "Hand-rolled hem, Dallas Western Monogram Embroidery",
-          status: "COMPLETED",
-          paymentRail: "Vault Direct Debit",
-          date: new Date(Date.now() - 3 * 24 * 3600 * 1000),
-        },
-        {
-          user: userId,
-          transactionId: "TXN-654812-ORD",
-          type: "DEBIT",
-          amount: 4512,
-          title: "Order #ELQ-2026-37510 (Tailored Trousers)",
-          description: "Fine Cavalry Twill • Paris Atelier Fitting Dispatch",
-          status: "COMPLETED",
-          paymentRail: "Vault Direct Debit",
-          date: new Date(Date.now() - 15 * 24 * 3600 * 1000),
-        },
-        {
-          user: userId,
-          transactionId: "TXN-654811-ORD",
-          type: "DEBIT",
-          amount: 4950,
-          title: "Order #ELQ-2026-38910 (Tailored Trousers)",
-          description: "Fine Cavalry Twill • Paris Atelier Fitting Dispatch",
-          status: "COMPLETED",
-          paymentRail: "Vault Direct Debit",
-          date: new Date(Date.now() - 25 * 24 * 3600 * 1000),
-        },
-      ];
-
-      await WalletTransaction.insertMany(defaultTxs);
-      transactions = await WalletTransaction.find({ user: userId }).sort({ date: -1, createdAt: -1 });
-    }
+    // Retrieve real transactions for this user
+    const transactions = await WalletTransaction.find({ user: userId }).sort({ date: -1, createdAt: -1 });
 
     const vaultId = `VLT-${user._id.toString().slice(-5).toUpperCase()}-SWL`;
 
@@ -247,11 +160,13 @@ exports.topupWallet = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const previousBalance = typeof user.wallet === "number" ? user.wallet : 12450;
-    const newBalance = previousBalance + numAmount;
-
-    user.wallet = newBalance;
-    await user.save();
+    const previousBalance = typeof user.wallet === "number" ? user.wallet : 0;
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { wallet: numAmount } },
+      { new: true }
+    );
+    const newBalance = updatedUser.wallet;
 
     const txId = referenceId || `TXN-ELQ-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -326,8 +241,17 @@ exports.verifyTopupPayment = async (req, res) => {
     const userId = req.user.id;
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature, amount, paymentInstrument = "Razorpay" } = req.body;
 
-    // Verify signature
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+      return res.status(400).json({ success: false, message: "Missing required payment verification fields." });
+    }
+
+    // Verify signature first (cryptographic check)
     const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) {
+      console.error("RAZORPAY_KEY_SECRET is not set in environment.");
+      return res.status(500).json({ success: false, message: "Payment gateway not configured correctly." });
+    }
+
     const hmac = crypto.createHmac("sha256", secret);
     hmac.update(`${razorpayOrderId}|${razorpayPaymentId}`);
     const generatedSignature = hmac.digest("hex");
@@ -336,15 +260,43 @@ exports.verifyTopupPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid payment authorization signature." });
     }
 
-    const user = await User.findById(userId);
-    const previousBalance = typeof user.wallet === "number" ? user.wallet : 12450;
-    const numAmount = Number(amount) || 0;
-    const newBalance = previousBalance + numAmount;
-
-    user.wallet = newBalance;
-    await user.save();
-
+    // --- IDEMPOTENCY GUARD ---
+    // Prevent double-credit if verify is called more than once for the same payment
     const txId = `TXN-ELQ-${razorpayPaymentId.slice(-6).toUpperCase()}`;
+    const existingTx = await WalletTransaction.findOne({ transactionId: txId });
+    if (existingTx) {
+      // Already processed — return success with current balance without crediting again
+      const user = await User.findById(userId).select("wallet");
+      return res.status(200).json({
+        success: true,
+        message: "Payment already verified and credited to your wallet.",
+        previousBalance: (user?.wallet ?? 0) - Number(amount || 0),
+        addedAmount: Number(amount || 0),
+        newBalance: user?.wallet ?? 0,
+        transaction: existingTx,
+        paymentRail: paymentInstrument,
+        alreadyProcessed: true,
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    const previousBalance = typeof user.wallet === "number" ? user.wallet : 0;
+    const numAmount = Number(amount) || 0;
+
+    if (numAmount <= 0) {
+      return res.status(400).json({ success: false, message: "Invalid amount." });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { wallet: numAmount } },
+      { new: true }
+    );
+    const newBalance = updatedUser.wallet;
 
     const newTx = await WalletTransaction.create({
       user: userId,

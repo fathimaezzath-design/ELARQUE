@@ -12,7 +12,6 @@ import {
   RotateCcw,
   ShoppingBag,
   Heart,
-  Ticket,
   MapPin,
   LogOut,
   User,
@@ -75,8 +74,8 @@ function WalletVault() {
     navigate("/login");
   };
 
-  const balance = walletData?.balance ?? 12450;
-  const pendingRefundAmount = walletData?.pendingRefundAmount ?? 4999;
+  const balance = walletData?.balance ?? 0;
+  const pendingRefundAmount = walletData?.pendingRefundAmount ?? 0;
   const activeTracker = walletData?.activeRefundTracker;
   const paymentMethods = walletData?.paymentMethods || [];
   const transactions = walletData?.transactions || [];
@@ -143,13 +142,6 @@ function WalletVault() {
                   <span>WALLET VAULT</span>
                 </div>
                 <Lock size={12} color="#C5A059" />
-              </Link>
-
-              <Link to="/coupons" className="el-wlt-nav-item">
-                <div className="el-wlt-nav-left">
-                  <Ticket size={15} className="el-wlt-nav-icon" />
-                  <span>COUPONS</span>
-                </div>
               </Link>
 
               <Link to="/addresses" className="el-wlt-nav-item">
@@ -401,8 +393,13 @@ function WalletVault() {
               </div>
 
               <div className="el-wlt-tx-list">
-                {transactions.map((tx, idx) => {
-                  const isCredit = tx.type === "CREDIT";
+                {transactions.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "40px 10px", color: "#8C7B70", fontSize: "13px" }}>
+                    No wallet transactions recorded yet in your personal ledger.
+                  </div>
+                ) : (
+                  transactions.map((tx, idx) => {
+                    const isCredit = tx.type === "CREDIT";
                   const formattedDate = tx.date
                     ? new Date(tx.date).toLocaleDateString("en-IN", {
                         day: "numeric",
@@ -462,7 +459,7 @@ function WalletVault() {
                       </div>
                     </div>
                   );
-                })}
+                }))}
               </div>
 
               <div className="el-wlt-ledger-footer">

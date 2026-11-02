@@ -55,7 +55,8 @@ function normalizeStatus(status) {
   const s = String(status).trim().toLowerCase();
   if (s === "requested" || s === "pending") return "Pending";
   if (s === "approved") return "Approved";
-  if (s === "picked up" || s === "pickedup" || s === "in transit") return "Picked Up";
+  if (s === "picked up" || s === "pickedup" || s === "collected" || s === "in transit") return "Picked Up";
+  if (s === "inspected" || s === "audit passed" || s === "item inspected") return "Inspected";
   if (s === "completed" || s === "refunded") return "Refunded";
   if (s === "rejected") return "Rejected";
   return status;
@@ -103,6 +104,11 @@ function extractReturnRequests(orders) {
           itemStatus: item.itemStatus,
           returnRequestedAt:
             item.returnRequestedAt || order.returnRequestedAt || order.updatedAt || order.orderDate,
+          returnApprovedAt: item.returnApprovedAt || order.returnApprovedAt,
+          returnPickedUpAt: item.returnPickedUpAt || order.returnPickedUpAt,
+          returnInspectedAt: item.returnInspectedAt || order.returnInspectedAt,
+          returnCompletedAt: item.returnCompletedAt || order.returnCompletedAt,
+          walletRefunded: Boolean(item.walletRefunded || order.walletRefunded),
           returnAdminNote: item.returnAdminNote || order.returnAdminNote || "",
           returnRejectionReason: item.returnRejectionReason || order.returnRejectionReason || "",
           returnCustomerMessage: item.returnCustomerMessage || order.returnCustomerMessage || "",
@@ -138,6 +144,11 @@ function extractReturnRequests(orders) {
         rawStatus: order.returnStatus,
         itemStatus: primaryItem.itemStatus || "ReturnRequested",
         returnRequestedAt: order.returnRequestedAt || order.updatedAt || order.orderDate,
+        returnApprovedAt: order.returnApprovedAt,
+        returnPickedUpAt: order.returnPickedUpAt,
+        returnInspectedAt: order.returnInspectedAt,
+        returnCompletedAt: order.returnCompletedAt,
+        walletRefunded: Boolean(order.walletRefunded),
         returnAdminNote: order.returnAdminNote || "",
         returnRejectionReason: order.returnRejectionReason || "",
         returnCustomerMessage: order.returnCustomerMessage || "",
@@ -194,7 +205,7 @@ exports.getReturnRequests = async (req, res) => {
     const totalReturns = allReturns.length;
     const pendingCount = allReturns.filter((r) => r.returnStatus === "Pending").length;
     const approvedCount = allReturns.filter(
-      (r) => r.returnStatus === "Approved" || r.returnStatus === "Picked Up"
+      (r) => ["Approved", "Picked Up", "Inspected"].includes(r.returnStatus)
     ).length;
     const completedCount = allReturns.filter((r) => r.returnStatus === "Refunded").length;
     const rejectedCount = allReturns.filter((r) => r.returnStatus === "Rejected").length;
@@ -209,7 +220,7 @@ exports.getReturnRequests = async (req, res) => {
       allReturns = allReturns.filter((r) => {
         if (target === "PENDING") return r.returnStatus === "Pending";
         if (target === "APPROVED")
-          return r.returnStatus === "Approved" || r.returnStatus === "Picked Up";
+          return ["Approved", "Picked Up", "Inspected"].includes(r.returnStatus);
         if (target === "REJECTED") return r.returnStatus === "Rejected";
         if (target === "COMPLETED" || target === "REFUNDED")
           return r.returnStatus === "Refunded";
@@ -405,6 +416,7 @@ exports.updateReturnStatus = async (req, res) => {
     if (targetStatusNorm === "Pending") targetDbStatus = "Requested";
     else if (targetStatusNorm === "Approved") targetDbStatus = "Approved";
     else if (targetStatusNorm === "Picked Up") targetDbStatus = "Picked Up";
+    else if (targetStatusNorm === "Inspected") targetDbStatus = "Inspected";
     else if (targetStatusNorm === "Refunded") targetDbStatus = "Completed";
     else if (targetStatusNorm === "Rejected") targetDbStatus = "Rejected";
 
@@ -430,10 +442,11 @@ exports.updateReturnStatus = async (req, res) => {
 
     // Validate Status Transitions
     const VALID_TRANSITIONS = {
-      Pending: ["Approved", "Rejected"],
-      Approved: ["Picked Up", "Refunded", "Rejected"],
-      "Picked Up": ["Refunded", "Rejected"],
-      Rejected: ["Approved"], // Admin override
+      Pending: ["Approved", "Picked Up", "Inspected", "Refunded", "Rejected"],
+      Approved: ["Picked Up", "Inspected", "Refunded", "Rejected"],
+      "Picked Up": ["Inspected", "Refunded", "Rejected", "Approved"],
+      Inspected: ["Refunded", "Rejected", "Approved", "Picked Up"],
+      Rejected: ["Approved", "Pending"], // Admin override
       Refunded: [], // Terminal
     };
 
@@ -456,17 +469,45 @@ exports.updateReturnStatus = async (req, res) => {
       if (rejectionReason) currentItem.returnRejectionReason = rejectionReason.trim();
       if (customerMessage) currentItem.returnCustomerMessage = customerMessage.trim();
 
-      if (targetStatusNorm === "Approved" || targetStatusNorm === "Refunded") {
+      if (targetStatusNorm === "Approved") {
         currentItem.itemStatus = "Returned";
+        currentItem.returnApprovedAt = currentItem.returnApprovedAt || now;
+        order.returnApprovedAt = order.returnApprovedAt || now;
+      } else if (targetStatusNorm === "Picked Up") {
+        currentItem.itemStatus = "Returned";
+        currentItem.returnApprovedAt = currentItem.returnApprovedAt || now;
+        currentItem.returnPickedUpAt = currentItem.returnPickedUpAt || now;
+        order.returnApprovedAt = order.returnApprovedAt || now;
+        order.returnPickedUpAt = order.returnPickedUpAt || now;
+      } else if (targetStatusNorm === "Inspected") {
+        currentItem.itemStatus = "Returned";
+        currentItem.returnApprovedAt = currentItem.returnApprovedAt || now;
+        currentItem.returnPickedUpAt = currentItem.returnPickedUpAt || now;
+        currentItem.returnInspectedAt = currentItem.returnInspectedAt || now;
+        order.returnApprovedAt = order.returnApprovedAt || now;
+        order.returnPickedUpAt = order.returnPickedUpAt || now;
+        order.returnInspectedAt = order.returnInspectedAt || now;
+        // Restore inventory upon inspection
+        await restoreStockForItems([currentItem]);
+      } else if (targetStatusNorm === "Refunded") {
+        currentItem.itemStatus = "Returned";
+        currentItem.returnApprovedAt = currentItem.returnApprovedAt || now;
+        currentItem.returnPickedUpAt = currentItem.returnPickedUpAt || now;
+        currentItem.returnInspectedAt = currentItem.returnInspectedAt || now;
+        currentItem.returnCompletedAt = currentItem.returnCompletedAt || now;
+        order.returnApprovedAt = order.returnApprovedAt || now;
+        order.returnPickedUpAt = order.returnPickedUpAt || now;
+        order.returnInspectedAt = order.returnInspectedAt || now;
+        order.returnCompletedAt = order.returnCompletedAt || now;
+
         // Restore inventory if not already done
         await restoreStockForItems([currentItem]);
 
-        // Process wallet refund — idempotency guard prevents double-credit
+        // Process wallet refund ONLY upon Refunded status — idempotency guard prevents double-credit
         if (!currentItem.walletRefunded) {
           const refundAmount = Number(currentItem.itemTotal) || 0;
 
           if (refundAmount > 0) {
-            // Mark refunded BEFORE crediting to prevent race-condition double-credit
             currentItem.walletRefunded = true;
 
             await User.findByIdAndUpdate(order.user?._id || order.user, {
@@ -480,7 +521,7 @@ exports.updateReturnStatus = async (req, res) => {
                 type: "CREDIT",
                 amount: refundAmount,
                 title: `Refund from Order #${order.orderNumber}`,
-                description: `${currentItem.productName || "Atelier Item"} Return Approved — ELARQUE Wallet Credit`,
+                description: `${currentItem.productName || "Atelier Item"} Return Completed — ELARQUE Wallet Credit`,
                 status: "COMPLETED",
                 paymentRail: "ELARQUE Wallet Refund",
                 order: order._id,
@@ -512,24 +553,70 @@ exports.updateReturnStatus = async (req, res) => {
       if (rejectionReason) order.returnRejectionReason = rejectionReason.trim();
       if (customerMessage) order.returnCustomerMessage = customerMessage.trim();
 
-      if (targetStatusNorm === "Approved" || targetStatusNorm === "Refunded") {
+      if (targetStatusNorm === "Approved") {
         order.orderStatus = "Returned";
+        order.returnApprovedAt = order.returnApprovedAt || now;
+        order.items.forEach((i) => {
+          if (i.itemStatus !== "Cancelled") {
+            i.itemStatus = "Returned";
+            i.returnStatus = "Approved";
+            i.returnApprovedAt = i.returnApprovedAt || now;
+          }
+        });
+      } else if (targetStatusNorm === "Picked Up") {
+        order.orderStatus = "Returned";
+        order.returnApprovedAt = order.returnApprovedAt || now;
+        order.returnPickedUpAt = order.returnPickedUpAt || now;
+        order.items.forEach((i) => {
+          if (i.itemStatus !== "Cancelled") {
+            i.itemStatus = "Returned";
+            i.returnStatus = "Picked Up";
+            i.returnApprovedAt = i.returnApprovedAt || now;
+            i.returnPickedUpAt = i.returnPickedUpAt || now;
+          }
+        });
+      } else if (targetStatusNorm === "Inspected") {
+        order.orderStatus = "Returned";
+        order.returnApprovedAt = order.returnApprovedAt || now;
+        order.returnPickedUpAt = order.returnPickedUpAt || now;
+        order.returnInspectedAt = order.returnInspectedAt || now;
         await restoreStockForItems(order.items);
         order.stockRestored = true;
 
         order.items.forEach((i) => {
           if (i.itemStatus !== "Cancelled") {
             i.itemStatus = "Returned";
-            i.returnStatus = targetDbStatus;
+            i.returnStatus = "Inspected";
+            i.returnApprovedAt = i.returnApprovedAt || now;
+            i.returnPickedUpAt = i.returnPickedUpAt || now;
+            i.returnInspectedAt = i.returnInspectedAt || now;
+          }
+        });
+      } else if (targetStatusNorm === "Refunded") {
+        order.orderStatus = "Returned";
+        order.returnApprovedAt = order.returnApprovedAt || now;
+        order.returnPickedUpAt = order.returnPickedUpAt || now;
+        order.returnInspectedAt = order.returnInspectedAt || now;
+        order.returnCompletedAt = order.returnCompletedAt || now;
+        await restoreStockForItems(order.items);
+        order.stockRestored = true;
+
+        order.items.forEach((i) => {
+          if (i.itemStatus !== "Cancelled") {
+            i.itemStatus = "Returned";
+            i.returnStatus = "Completed";
+            i.returnApprovedAt = i.returnApprovedAt || now;
+            i.returnPickedUpAt = i.returnPickedUpAt || now;
+            i.returnInspectedAt = i.returnInspectedAt || now;
+            i.returnCompletedAt = i.returnCompletedAt || now;
           }
         });
 
-        // Refund full amount to wallet if not already refunded — idempotency guard
+        // Refund full amount to wallet ONLY upon Refunded status — idempotency guard
         if (!order.walletRefunded) {
           const refundAmount = Number(order.totalAmount) || 0;
 
           if (refundAmount > 0) {
-            // Mark refunded BEFORE crediting to prevent double-credit
             order.walletRefunded = true;
             order.paymentStatus = "Refunded";
 
@@ -544,7 +631,7 @@ exports.updateReturnStatus = async (req, res) => {
                 type: "CREDIT",
                 amount: refundAmount,
                 title: `Refund from Order #${order.orderNumber}`,
-                description: `Full Order Return Approved — ELARQUE Wallet Credit`,
+                description: `Full Order Return Completed — ELARQUE Wallet Credit`,
                 status: "COMPLETED",
                 paymentRail: "ELARQUE Wallet Refund",
                 order: order._id,
@@ -565,12 +652,6 @@ exports.updateReturnStatus = async (req, res) => {
           }
         });
       }
-    }
-
-    if (targetStatusNorm === "Picked Up") {
-      order.returnPickedUpAt = now;
-    } else if (targetStatusNorm === "Refunded") {
-      order.returnCompletedAt = now;
     }
 
     await order.save();

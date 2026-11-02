@@ -15,7 +15,6 @@ import {
   LogOut,
   Heart,
   Wallet,
-  Ticket,
   MapPin,
   Calendar,
 } from "lucide-react";
@@ -413,16 +412,6 @@ function AddAddress() {
                   </span>
                 </button>
 
-                <button
-                  type="button"
-                  className="el-sidebar-nav-item"
-                  onClick={() => navigate("/coupons")}
-                >
-                  <div className="el-nav-left">
-                    <Ticket size={16} />
-                    <span>COUPONS</span>
-                  </div>
-                </button>
 
                 <button
                   type="button"

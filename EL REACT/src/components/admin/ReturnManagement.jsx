@@ -555,7 +555,8 @@ const ReturnManagement = () => {
             <div className="admin-returns-cards-grid">
               {returnRequests.map((ret, idx) => {
                 const isPending = ret.returnStatus === "Pending";
-                const isApproved = ret.returnStatus === "Approved" || ret.returnStatus === "Picked Up";
+                const isApproved =
+                  ["Approved", "Picked Up", "Collected", "Inspected"].includes(ret.returnStatus);
                 const isRejected = ret.returnStatus === "Rejected";
                 const isRefunded = ret.returnStatus === "Refunded";
 
