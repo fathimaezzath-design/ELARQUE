@@ -1,3 +1,9 @@
+
+const dns = require("dns");
+
+// Fix MongoDB SRV DNS resolution
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
 console.log("SERVER FILE LOADED");
 
 require("dotenv").config();

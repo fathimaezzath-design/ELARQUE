@@ -316,19 +316,24 @@ const ProductManagement = () => {
         }
       } else {
         // Single delete
-        const res = await axios.delete(`${API_BASE_URL}/${productToDelete.id}`, {
+        const targetId = productToDelete.id || productToDelete._id;
+        const res = await axios.delete(`${API_BASE_URL}/${targetId}`, {
           headers: { Authorization: `Bearer ${adminToken}` },
         });
         if (res.data?.success) {
           showToast(`Garment "${productToDelete.name}" removed from catalog.`);
-          setSelectedIds((prev) => prev.filter((id) => id !== productToDelete.id));
+          setSelectedIds((prev) => prev.filter((id) => id !== targetId));
         }
       }
 
       setProductToDelete(null);
       localStorage.setItem("elarque_last_update", Date.now().toString());
       window.dispatchEvent(new CustomEvent("elarque:data-updated"));
-      fetchProducts();
+      if (products.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => Math.max(1, prev - 1));
+      } else {
+        fetchProducts();
+      }
     } catch (err) {
       console.error("Delete product error:", err);
       showToast(err.response?.data?.message || "Failed to delete product.");

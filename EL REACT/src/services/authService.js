@@ -89,5 +89,8 @@ export const verifyEmailChangeOTP = (otp) =>
 export const changePassword = (data) =>
   PROFILE_API.put("/change-password", data);
 
+export const googleLogin = (data) =>
+  API.post("/google-login", data);
+
 
 export default API;

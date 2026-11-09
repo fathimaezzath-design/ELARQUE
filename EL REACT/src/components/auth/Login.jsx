@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../services/authService";
+import { loginUser, googleLogin } from "../../services/authService";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../config/firebase";
 
@@ -338,21 +338,35 @@ padding:34px;
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-        const result = await signInWithPopup(auth, googleProvider);
+const handleGoogleLogin = async () => {
+  try {
+    setLoading(true);
+    setErrors({});
 
-        const user = result.user;
+    const result = await signInWithPopup(auth, googleProvider);
 
-        console.log(user.displayName);
-        console.log(user.email);
+    const idToken = await result.user.getIdToken();
 
-        // Later we'll send this to your Node backend
-        navigate("/");
-    } catch (error) {
-        console.log(error);
+    const { data } = await googleLogin({ idToken });
+
+    if (!data.token) {
+      throw new Error("Backend did not return an authentication token.");
     }
-    };
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    navigate("/");
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR:", error);
+
+    setErrors({
+      server: error.response?.data?.message || error.message || "Google login failed.",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="login-page">

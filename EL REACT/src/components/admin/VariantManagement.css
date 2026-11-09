@@ -990,19 +990,23 @@
 
 .admin-modal-card {
   width: 100%;
-  max-width: 480px;
+  max-width: 440px;
   background: linear-gradient(
     165deg,
-    rgba(25, 9, 16, 0.98) 0%,
-    rgba(14, 4, 9, 0.99) 100%
+    rgba(48, 14, 25, 0.98) 0%,
+    rgba(26, 7, 14, 0.99) 100%
   );
-  border: 1px solid rgba(223, 194, 141, 0.35);
-  border-radius: 18px;
-  padding: 32px 28px;
+  border: 1px solid rgba(223, 194, 141, 0.16);
+  border-radius: 20px;
+  padding: 38px 36px 32px;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85),
-    0 0 40px rgba(95, 14, 28, 0.35);
+    0 0 45px rgba(95, 14, 28, 0.35);
   position: relative;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   animation: admin-modal-pop 0.22s ease-out;
 }
 
@@ -1017,9 +1021,31 @@
   }
 }
 
+.admin-modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #a89485;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.admin-modal-close-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  color: #f7f1eb;
+}
+
 .admin-modal-icon-wrapper {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1027,20 +1053,21 @@
   margin-bottom: 20px;
 }
 
-.admin-modal-icon-delete {
-  background: rgba(122, 21, 38, 0.25);
-  border: 1px solid rgba(248, 113, 113, 0.45);
-  color: #f87171;
+.admin-modal-icon-shield {
+  background: radial-gradient(circle, rgba(135, 26, 48, 0.65) 0%, rgba(65, 12, 23, 0.85) 100%);
+  border: 1px solid rgba(223, 194, 141, 0.45);
+  box-shadow: 0 0 20px rgba(223, 194, 141, 0.22);
+  color: #dfc28d;
 }
 
 .admin-modal-title {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 24px;
-  font-weight: 600;
-  color: #f7e7c4;
-  letter-spacing: 2px;
-  margin: 0 0 10px;
-  text-transform: uppercase;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 27px;
+  font-weight: 500;
+  color: #ffffff;
+  text-transform: none; /* Exactly 'delete variant' as in the screenshot */
+  letter-spacing: normal;
+  margin: 0 0 26px;
 }
 
 .admin-modal-description {
@@ -1136,19 +1163,22 @@
 
 .admin-modal-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
 }
 
 .admin-modal-btn-cancel {
-  padding: 10px 22px;
-  border-radius: 8px;
-  border: 1px solid rgba(193, 154, 89, 0.25);
-  background: rgba(22, 7, 14, 0.7);
-  color: #c7b6a8;
+  flex: 1;
+  padding: 12px 22px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e6ded7;
   font-family: "Poppins", sans-serif;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   cursor: pointer;
@@ -1156,9 +1186,9 @@
 }
 
 .admin-modal-btn-cancel:hover:not(:disabled) {
-  border-color: rgba(223, 194, 141, 0.5);
+  border-color: rgba(223, 194, 141, 0.4);
   color: #f7e7c4;
-  background: rgba(35, 10, 20, 0.85);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .admin-modal-btn-cancel:disabled {
@@ -1167,32 +1197,33 @@
 }
 
 .admin-modal-btn-confirm {
+  flex: 1;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 10px 24px;
-  border-radius: 8px;
-  border: 1px solid transparent;
+  padding: 12px 22px;
+  border-radius: 9999px;
   font-family: "Poppins", sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.22s ease;
+  transition: all 0.2s ease;
 }
 
 .admin-modal-btn-confirm-delete {
-  background: linear-gradient(135deg, #8f1c30, #580d1b);
-  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(136, 25, 45, 0.45);
+  border: 1px solid rgba(248, 113, 113, 0.28);
   color: #ffffff;
-  box-shadow: 0 4px 18px rgba(122, 21, 38, 0.5);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
 }
 
 .admin-modal-btn-confirm-delete:hover:not(:disabled) {
-  background: linear-gradient(135deg, #a82239, #6d1022);
-  box-shadow: 0 6px 22px rgba(168, 34, 57, 0.6);
-  border-color: #f87171;
+  background: rgba(168, 32, 57, 0.65);
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 0 6px 22px rgba(136, 25, 45, 0.5);
 }
 
 .admin-modal-btn-confirm-delete:disabled {

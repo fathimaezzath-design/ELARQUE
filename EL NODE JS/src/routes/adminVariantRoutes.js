@@ -41,5 +41,10 @@ router.delete(
   adminAuthMiddleware,
   deleteProductVariant
 );
+router.delete(
+  "/:variantId",
+  adminAuthMiddleware,
+  deleteProductVariant
+);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const firebaseAdmin = require("../config/firebaseAdmin");
 const OTP = require("../models/OTP");
 const PasswordResetOTP = require("../models/PasswordResetOTP");
 const Offer = require("../models/Offer");
@@ -923,6 +924,79 @@ exports.getReferralInfo = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to load referral details.",
+    });
+  }
+};
+
+// GOOGLE LOGIN
+exports.googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Google ID token is required.",
+      });
+    }
+
+    const decodedToken = await firebaseAdmin.verifyIdToken(idToken);
+
+    const email = (decodedToken.email || "").trim().toLowerCase();
+
+    if (!email || decodedToken.email_verified !== true) {
+      return res.status(401).json({
+        success: false,
+        message: "Google email verification failed.",
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No ELARQUE account found with this Google email. Please register first.",
+      });
+    }
+
+    if (!user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your ELARQUE account first.",
+      });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been suspended. Please contact support.",
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.json({
+      success: true,
+      message: "Google login successful.",
+      token,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+      },
+    });
+  } catch (err) {
+    console.error("GOOGLE LOGIN ERROR:", err.message);
+
+    return res.status(401).json({
+      success: false,
+      message: "Google authentication failed.",
     });
   }
 };

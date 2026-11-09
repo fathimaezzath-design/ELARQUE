@@ -6,6 +6,8 @@ const {
   getProducts,
   getProductById,
   updateProduct,
+  deleteProduct,
+  batchDeleteProducts,
 } = require("../controllers/adminProductController");
 const adminAuthMiddleware = require("../middlewares/adminAuthMiddleware");
 const {
@@ -39,6 +41,10 @@ router.post(
   uploadProductImages
 );
 
+// POST /api/admin/products/batch-delete - Batch delete products (Admin Protected)
+router.post("/batch-delete", adminAuthMiddleware, batchDeleteProducts);
+router.post("/products/batch-delete", adminAuthMiddleware, batchDeleteProducts);
+
 // POST /api/admin/products - Create new product (Admin Protected)
 router.post("/", adminAuthMiddleware, createProduct);
 router.post("/products", adminAuthMiddleware, createProduct);
@@ -51,6 +57,15 @@ router.patch("/:id", adminAuthMiddleware, (req, res, next) => {
   return updateProduct(req, res, next);
 });
 router.patch("/products/:id", adminAuthMiddleware, updateProduct);
+
+// DELETE /api/admin/products/:id - Soft delete product by MongoDB ID (Admin Protected)
+router.delete("/:id", adminAuthMiddleware, (req, res, next) => {
+  if (req.baseUrl === "/api/admin") {
+    return next();
+  }
+  return deleteProduct(req, res, next);
+});
+router.delete("/products/:id", adminAuthMiddleware, deleteProduct);
 
 module.exports = router;
 

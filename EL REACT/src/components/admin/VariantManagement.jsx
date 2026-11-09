@@ -18,6 +18,8 @@ import {
   SlidersHorizontal,
   Info,
   Plus,
+  Shield,
+  Lock,
 } from "lucide-react";
 import "./VariantManagement.css";
 
@@ -163,7 +165,7 @@ const VariantManagement = () => {
 
   // Open Delete Modal
   const handleOpenDeleteModal = (variant, parent) => {
-    const pId = parent?.id || parent?._id;
+    const pId = parent?.id || parent?._id || variant?.productId || filteredProductId;
     const vId = variant?.id || variant?._id;
     if (!pId || !vId) {
       showNotice("Unable to identify variant for deletion.");
@@ -176,7 +178,7 @@ const VariantManagement = () => {
       productId: pId,
       variantColor: variant.color || "—",
       variantSize: variant.size || "—",
-      productName: parent.name || "Untitled Product",
+      productName: parent.name || filteredProductName || "Untitled Product",
       errorMessage: "",
       isDeleting: false,
     });
@@ -1057,7 +1059,7 @@ const VariantManagement = () => {
           </div>
         </div>
       </div>
-      {/* 7. DELETE CONFIRMATION MODAL */}
+      {/* 7. DELETE CONFIRMATION MODAL - Exactly matching reference screenshot */}
       {deleteModal.isOpen && (
         <div
           className="admin-modal-overlay"
@@ -1071,46 +1073,26 @@ const VariantManagement = () => {
           aria-labelledby="delete-variant-modal-title"
         >
           <div className="admin-modal-card">
-            <div className="admin-modal-icon-wrapper admin-modal-icon-delete">
-              <Trash2 size={24} />
+            {/* Top-Right Circular Close Button */}
+            <button
+              type="button"
+              className="admin-modal-close-btn"
+              onClick={handleCloseDeleteModal}
+              disabled={deleteModal.isDeleting}
+              aria-label="Close modal"
+            >
+              <X size={14} />
+            </button>
+
+            {/* Shield Icon Badge */}
+            <div className="admin-modal-icon-wrapper admin-modal-icon-shield">
+              <Shield size={20} className="admin-modal-shield-svg" />
             </div>
 
+            {/* Title - all lowercase serif matching reference screenshot */}
             <h2 id="delete-variant-modal-title" className="admin-modal-title">
-              Delete Variant?
+              delete variant
             </h2>
-
-            <p className="admin-modal-description">
-              Are you sure you want to permanently remove this variant? This
-              action <strong className="danger-highlight">cannot be undone</strong> and will remove all stock allocation and imagery associated with this size and shade.
-            </p>
-
-            {/* Target Variant Specifications Card */}
-            <div className="admin-modal-variant-details">
-              <div className="modal-detail-row">
-                <span className="modal-detail-label">Parent Silhouette:</span>
-                <span className="modal-detail-value product-title">
-                  {deleteModal.productName}
-                </span>
-              </div>
-              <div className="modal-detail-row">
-                <span className="modal-detail-label">Colorway:</span>
-                <span className="modal-detail-value color-badge">
-                  <span
-                    className="modal-color-swatch-dot"
-                    style={{
-                      backgroundColor: getColorHex(deleteModal.variantColor),
-                    }}
-                  />
-                  <span>{deleteModal.variantColor}</span>
-                </span>
-              </div>
-              <div className="modal-detail-row">
-                <span className="modal-detail-label">Garment Size:</span>
-                <span className="modal-detail-value size-badge">
-                  {deleteModal.variantSize}
-                </span>
-              </div>
-            </div>
 
             {/* Error Message inside Modal (e.g. 409 last variant or network error) */}
             {deleteModal.errorMessage && (
@@ -1120,6 +1102,7 @@ const VariantManagement = () => {
               </div>
             )}
 
+            {/* Action Buttons */}
             <div className="admin-modal-actions">
               <button
                 type="button"
@@ -1127,7 +1110,7 @@ const VariantManagement = () => {
                 onClick={handleCloseDeleteModal}
                 disabled={deleteModal.isDeleting}
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 type="button"
@@ -1138,12 +1121,12 @@ const VariantManagement = () => {
                 {deleteModal.isDeleting ? (
                   <>
                     <span className="admin-spinner-sm" />
-                    <span>Deleting...</span>
+                    <span>DELETING...</span>
                   </>
                 ) : (
                   <>
-                    <Trash2 size={13} />
-                    <span>Delete Variant</span>
+                    <Lock size={13} />
+                    <span>DELETE</span>
                   </>
                 )}
               </button>

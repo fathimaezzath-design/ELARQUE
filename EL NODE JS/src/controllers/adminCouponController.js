@@ -1,10 +1,10 @@
 const Coupon = require("../models/Coupon");
 const mongoose = require("mongoose");
 
-// ──────────────────────────────────────────────────────────────────────────────
+
 // GET /api/admin/coupons
 // List all coupons with search, filters, sorting, pagination & summary stats
-// ──────────────────────────────────────────────────────────────────────────────
+
 exports.getAllCoupons = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -20,7 +20,7 @@ exports.getAllCoupons = async (req, res) => {
       filter.$or = [{ code: searchRegex }, { title: searchRegex }, { description: searchRegex }];
     }
 
-    // ── Status filter ──
+    // Status filter 
     if (req.query.status === "active") {
       filter.isActive = true;
       filter.expiryDate = { $gte: now };
@@ -31,12 +31,12 @@ exports.getAllCoupons = async (req, res) => {
     }
     // "all" = no filter
 
-    // ── Category tag filter ──
+    // Category tag filter 
     if (req.query.categoryTag && req.query.categoryTag !== "all") {
       filter.categoryTag = new RegExp(`^${req.query.categoryTag.trim()}$`, "i");
     }
 
-    // ── Sorting ──
+    // Sorting 
     let sortObj = { createdAt: -1 }; // default: newest first
     switch (req.query.sort) {
       case "oldest":
@@ -114,10 +114,10 @@ exports.getAllCoupons = async (req, res) => {
   }
 };
 
-// ──────────────────────────────────────────────────────────────────────────────
+
 // POST /api/admin/coupons
 // Create a new coupon
-// ──────────────────────────────────────────────────────────────────────────────
+
 exports.createCoupon = async (req, res) => {
   try {
     const {
@@ -188,10 +188,10 @@ exports.createCoupon = async (req, res) => {
   }
 };
 
-// ──────────────────────────────────────────────────────────────────────────────
+
 // GET /api/admin/coupons/:id
 // Get single coupon details
-// ──────────────────────────────────────────────────────────────────────────────
+
 exports.getCouponById = async (req, res) => {
   try {
     const { id } = req.params;

@@ -864,26 +864,30 @@ exports.deleteProductVariant = async (req, res) => {
   try {
     const { productId, variantId } = req.params;
 
-    // 1. Validate IDs
-    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Product ID format.",
-      });
-    }
-
-    if (!variantId || !mongoose.Types.ObjectId.isValid(variantId)) {
+    // 1. Resolve variant ID (could be passed in variantId or in productId for /:variantId)
+    const effectiveVariantId = variantId || (productId && mongoose.Types.ObjectId.isValid(productId) ? productId : null);
+    if (!effectiveVariantId || !mongoose.Types.ObjectId.isValid(effectiveVariantId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid Variant ID format.",
       });
     }
 
-    // 2. Find Product
-    const product = await Product.findOne({
-      _id: productId,
-      isDeleted: false,
-    });
+    // 2. Find Product: either by productId if provided, or by variantId subdocument
+    let product = null;
+    if (productId && variantId && mongoose.Types.ObjectId.isValid(productId)) {
+      product = await Product.findOne({
+        _id: productId,
+        isDeleted: false,
+      });
+    }
+
+    if (!product) {
+      product = await Product.findOne({
+        "variants._id": effectiveVariantId,
+        isDeleted: false,
+      });
+    }
 
     if (!product) {
       return res.status(404).json({
@@ -892,8 +896,8 @@ exports.deleteProductVariant = async (req, res) => {
       });
     }
 
-    // 3. Find Variant
-    const targetVariant = product.variants.id(variantId);
+    // 3. Find Variant within product
+    const targetVariant = product.variants.id(effectiveVariantId);
     if (!targetVariant) {
       return res.status(404).json({
         success: false,
@@ -910,12 +914,14 @@ exports.deleteProductVariant = async (req, res) => {
     }
 
     // 5. Remove Variant and Save Product
-    product.variants.pull(variantId);
-    await product.save();
+    product.variants.pull({ _id: effectiveVariantId });
+    await product.save({ validateBeforeSave: false });
 
     return res.status(200).json({
       success: true,
       message: "Variant deleted successfully",
+      deletedVariantId: effectiveVariantId,
+      productId: product._id,
     });
   } catch (error) {
     console.error("Delete product variant error:", error);

@@ -12,6 +12,7 @@ const {
   resendResetOTP,
   resetPassword,
   getProfile,
+  googleLogin,
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -34,5 +35,7 @@ router.post("/reset-password", resetPassword);
 // Profile & Referral Info
 router.get("/profile", authMiddleware, getProfile);
 router.get("/referral-info", authMiddleware, require("../controllers/authController").getReferralInfo);
+
+router.post("/google-login", googleLogin);
 
 module.exports = router;

@@ -924,7 +924,7 @@ exports.deleteProduct = async (req, res) => {
     }
 
     product.isDeleted = true;
-    await product.save();
+    await product.save({ validateBeforeSave: false });
 
     return res.status(200).json({
       success: true,
