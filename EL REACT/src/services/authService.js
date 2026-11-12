@@ -1,11 +1,15 @@
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.DEV
+  ? "http://localhost:5000"
+  : "";
+
 const API = axios.create({
-  baseURL: "http://localhost:5000/api/auth",
+  baseURL: `${API_BASE_URL}/api/auth`,
 });
 
 const PROFILE_API = axios.create({
-  baseURL: "http://localhost:5000/api/profile",
+  baseURL: `${API_BASE_URL}/api/profile`,
 });
 
 // Add JWT automatically to profile requests
