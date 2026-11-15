@@ -22,17 +22,10 @@ import Footer from "../common/Footer";
 import { getProducts, getProductFacets } from "../../services/productService";
 import { addToCart } from "../../services/cartService";
 import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
+import { resolveImageUrl } from "../../config/api";
 import "./Collections.css";
 
 const SIZES_CANONICAL = ["XS", "S", "M", "L", "XL"];
-
-// Helper to safely resolve image paths
-const resolveImageUrl = (url) => {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `http://localhost:5000${url}`;
-  return `http://localhost:5000/${url}`;
-};
 
 // Format currency
 const formatINR = (val) => {
