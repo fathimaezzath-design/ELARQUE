@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, AlertCircle } from 'lucide-react';
 import './AdminLogin.css';
+import { API_BASE_URL } from '../../config/api';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const AdminLogin = () => {
       setLoading(true);
       setErrorMessage('');
 
-      const response = await axios.post('http://localhost:5000/api/admin/login', {
+      const response = await axios.post(`${API_BASE_URL}/admin/login`, {
         email: trimmedEmail,
         password,
       });
