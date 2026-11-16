@@ -1,11 +1,8 @@
-/* ============================================================
-   ELARQUE Admin · Add/Edit Coupon — Signature Atelier Dark Theme
-   Matching the original dark burgundy, gold & black admin aesthetic
-   ============================================================ */
+
 
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap");
 
-/* ── Root ────────────────────────────────────────────────── */
+/* ── Root  */
 .el-ac-root {
   min-height: 100vh;
   background: radial-gradient(

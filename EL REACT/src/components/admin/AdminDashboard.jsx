@@ -31,17 +31,14 @@ import {
   RotateCcw,
   Radio,
 } from "lucide-react";
+import { API_BASE_URL, resolveImageUrl } from "../../config/api";
 import "./AdminDashboard.css";
 
-const API_BASE = "http://localhost:5000/api/admin";
+const API_BASE = `${API_BASE_URL}/admin`;
 const AUTO_REFRESH_INTERVAL_MS = 6000; // Real-time background sync every 6 seconds
 
 // Image resolver for atelier media
-const resolveImg = (url) => {
-  if (!url) return null;
-  if (url.startsWith("http")) return url;
-  return `http://localhost:5000${url.startsWith("/") ? "" : "/"}${url}`;
-};
+const resolveImg = resolveImageUrl;
 
 // INR formatter
 const fmt = (val) => {
