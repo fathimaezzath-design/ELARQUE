@@ -56,6 +56,8 @@ function ProtectedUserRoute({ children }) {
   if (!isCustomerTokenValid(token)) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
+    window.dispatchEvent(new Event("storage"));
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

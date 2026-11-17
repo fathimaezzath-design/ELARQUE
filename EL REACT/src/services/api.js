@@ -29,6 +29,8 @@ export const attachCustomerInterceptors = (axiosInstance) => {
           // Token expired, invalid, or account suspended
           localStorage.removeItem("token");
           localStorage.removeItem("user");
+          window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
+          window.dispatchEvent(new Event("storage"));
         }
       }
       return Promise.reject(error);

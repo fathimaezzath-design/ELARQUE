@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Search, Heart, ShoppingBag, User, Menu, X } from "lucide-react";
 import { NAV_LINKS } from "../../data/homeData";
-
-// Safely calculate unique product ID count from elarque_session_wishlist
-const getStoredWishlistCount = () => {
-  try {
-    const saved = localStorage.getItem("elarque_session_wishlist");
-    if (!saved) return 0;
-    const list = JSON.parse(saved);
-    if (!Array.isArray(list)) return 0;
-    return new Set(list.filter(Boolean)).size;
-  } catch {
-    return 0;
-  }
-};
+import {
+  getStoredWishlistCount,
+  validateWishlist,
+  syncWishlistOnAuthChange,
+} from "../../utils/wishlistStorage";
 
 function Navbar({ wishlistCount = 0, cartCount = 0 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,26 +18,45 @@ function Navbar({ wishlistCount = 0, cartCount = 0 }) {
   // Live cart count — listens for elarque_cart_updated events dispatched by Cart.jsx and ProductDetails.jsx
   const [cartItemCount, setCartItemCount] = useState(0);
 
-  // Live wishlist count — listens for elarque_wishlist_updated and storage events
+  // Live wishlist count — single consistent source of truth
   const [sessionWishlistCount, setSessionWishlistCount] = useState(getStoredWishlistCount);
 
+  // Listen to wishlist updates, auth transitions, storage changes, and validate on mount
   useEffect(() => {
-    const handleWishlistUpdate = () => {
+    const handleWishlistUpdate = (e) => {
+      if (e?.detail && typeof e.detail.count === "number") {
+        setSessionWishlistCount(e.detail.count);
+      } else {
+        setSessionWishlistCount(getStoredWishlistCount());
+      }
+    };
+
+    const handleAuthChange = () => {
+      syncWishlistOnAuthChange();
       setSessionWishlistCount(getStoredWishlistCount());
     };
 
     window.addEventListener("elarque_wishlist_updated", handleWishlistUpdate);
+    window.addEventListener("elarque_auth_changed", handleAuthChange);
     window.addEventListener("storage", handleWishlistUpdate);
+
+    // Asynchronously validate wishlist against product catalog to prune deleted/inactive products
+    validateWishlist();
+
     return () => {
       window.removeEventListener("elarque_wishlist_updated", handleWishlistUpdate);
+      window.removeEventListener("elarque_auth_changed", handleAuthChange);
       window.removeEventListener("storage", handleWishlistUpdate);
     };
   }, []);
 
-  const displayWishlistCount =
-    typeof wishlistCount === "number" && wishlistCount > 0
-      ? wishlistCount
-      : sessionWishlistCount;
+  // Ensure count remains synchronized on navigation
+  useEffect(() => {
+    setSessionWishlistCount(getStoredWishlistCount());
+  }, [location.pathname]);
+
+  // Single consistent source of truth: sessionWishlistCount
+  const displayWishlistCount = sessionWishlistCount;
 
   useEffect(() => {
     // Fetch initial count on mount (only if logged in)

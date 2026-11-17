@@ -27,6 +27,7 @@ import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import formatPrice from "../../utils/formatPrice";
+import { getStoredWishlistCount } from "../../utils/wishlistStorage";
 
 function Profile() {
   const navigate = useNavigate();
@@ -122,6 +123,8 @@ function Profile() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
+    window.dispatchEvent(new Event("storage"));
     navigate("/login");
   };
 
@@ -285,7 +288,7 @@ function Profile() {
 
   const effectiveUser = user || {};
   const effectiveWallet = effectiveUser.wallet !== undefined && effectiveUser.wallet !== 0 ? effectiveUser.wallet : 12450;
-  const effectiveWishlist = effectiveUser.wishlistCount || 12;
+  const effectiveWishlist = getStoredWishlistCount();
   const effectiveOrders = effectiveUser.orderCount || 24;
 
   const getFormattedAddress = () => {

@@ -28,6 +28,7 @@ import { getProfile } from "../../services/authService";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import { resolveImageUrl } from "../../config/api";
+import { getStoredWishlistCount } from "../../utils/wishlistStorage";
 import "./AddAddress.css";
 
 // ---------------------------------------------------------------------------
@@ -277,6 +278,8 @@ function AddAddress() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
+    window.dispatchEvent(new Event("storage"));
     navigate("/login");
   };
 
@@ -392,7 +395,7 @@ function AddAddress() {
                     <span>WISHLIST</span>
                   </div>
                   <span className="el-nav-badge">
-                    {user?.wishlistCount ? `${user.wishlistCount}V` : "2V"}
+                    {String(getStoredWishlistCount()).padStart(2, "0")}
                   </span>
                 </button>
 

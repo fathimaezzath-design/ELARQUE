@@ -1,27 +1,21 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, ShoppingBag, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import UserLayout from "../../layouts/UserLayout";
 import { getProductById } from "../../services/productService";
 import { showWishlistToast } from "../../utils/toast";
 import { resolveImageUrl } from "../../config/api";
+import {
+  getStoredWishlistIds,
+  saveStoredWishlistIds,
+  removeFromWishlist,
+  normalizeWishlistIds,
+} from "../../utils/wishlistStorage";
 
 // Safe currency formatter
 const formatINR = (val) => {
   if (val === undefined || val === null || isNaN(val)) return "—";
   return `₹${Number(val).toLocaleString("en-IN")}`;
-};
-
-// Safe helper to read session wishlist from localStorage
-const getStoredWishlistIds = () => {
-  try {
-    const saved = localStorage.getItem("elarque_session_wishlist");
-    if (!saved) return [];
-    const list = JSON.parse(saved);
-    return Array.isArray(list) ? Array.from(new Set(list.filter(Boolean))) : [];
-  } catch {
-    return [];
-  }
 };
 
 function Wishlist() {
@@ -30,11 +24,22 @@ function Wishlist() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const loadedKeyRef = useRef("");
 
   // Load product data for saved IDs
   const loadWishlistProducts = useCallback(async (ids) => {
-    if (!ids || ids.length === 0) {
+    const normalized = normalizeWishlistIds(ids);
+
+    if (!normalized || normalized.length === 0) {
       setProducts([]);
+      setWishlistIds([]);
+      loadedKeyRef.current = "";
+      setLoading(false);
+      return;
+    }
+
+    const currentKey = normalized.join(",");
+    if (currentKey === loadedKeyRef.current && products.length > 0) {
       setLoading(false);
       return;
     }
@@ -44,16 +49,35 @@ function Wishlist() {
 
     try {
       const results = await Promise.allSettled(
-        ids.map((id) => getProductById(id))
+        normalized.map((id) => getProductById(id))
       );
 
       const loaded = [];
-      results.forEach((res) => {
-        if (res.status === "fulfilled" && res.value?.data?.success && res.value?.data?.product) {
-          loaded.push(res.value.data.product);
+      const validIds = [];
+
+      results.forEach((res, index) => {
+        if (
+          res.status === "fulfilled" &&
+          res.value?.data?.success &&
+          res.value?.data?.product &&
+          !res.value.data.product.isDeleted
+        ) {
+          const prod = res.value.data.product;
+          loaded.push(prod);
+          const pid = String(prod.id || prod._id || normalized[index]).trim();
+          validIds.push(pid);
         }
       });
 
+      const uniqueValidIds = normalizeWishlistIds(validIds);
+
+      // If one or more IDs were stale/invalid/deleted, prune storage immediately!
+      if (uniqueValidIds.length !== normalized.length) {
+        saveStoredWishlistIds(uniqueValidIds);
+        setWishlistIds(uniqueValidIds);
+      }
+
+      loadedKeyRef.current = uniqueValidIds.join(",");
       setProducts(loaded);
     } catch (err) {
       console.error("Failed to load wishlist products:", err);
@@ -61,9 +85,9 @@ function Wishlist() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [products.length]);
 
-  // Initial load
+  // Initial load & dependency on wishlistIds
   useEffect(() => {
     loadWishlistProducts(wishlistIds);
   }, [loadWishlistProducts, wishlistIds]);
@@ -72,7 +96,10 @@ function Wishlist() {
   useEffect(() => {
     const handleSync = () => {
       const current = getStoredWishlistIds();
-      setWishlistIds(current);
+      const currentKey = current.join(",");
+      if (currentKey !== loadedKeyRef.current) {
+        setWishlistIds(current);
+      }
     };
 
     window.addEventListener("elarque_wishlist_updated", handleSync);
@@ -86,26 +113,19 @@ function Wishlist() {
   // Remove product from wishlist
   const handleRemove = (productId, e) => {
     if (e) e.stopPropagation();
+    const pid = String(productId).trim();
 
-    const nextIds = wishlistIds.filter(
-      (id) => id !== productId && id !== String(productId)
-    );
+    const nextIds = removeFromWishlist(pid);
+    loadedKeyRef.current = nextIds.join(",");
     setWishlistIds(nextIds);
-    setProducts((prev) => prev.filter((p) => (p.id || p._id) !== productId));
-
-    try {
-      localStorage.setItem("elarque_session_wishlist", JSON.stringify(nextIds));
-    } catch (err) {
-      console.error("Failed to update localStorage:", err);
-    }
-
-    const targetProduct = products.find((p) => (p.id || p._id) === productId);
-    showWishlistToast(targetProduct || { name: "Silhouette" }, false);
-
-    // Notify Navbar and other listeners of updated wishlist
-    window.dispatchEvent(
-      new CustomEvent("elarque_wishlist_updated", { detail: nextIds })
+    setProducts((prev) =>
+      prev.filter((p) => String(p.id || p._id).trim() !== pid)
     );
+
+    const targetProduct = products.find(
+      (p) => String(p.id || p._id).trim() === pid
+    );
+    showWishlistToast(targetProduct || { name: "Silhouette" }, false);
   };
 
   return (

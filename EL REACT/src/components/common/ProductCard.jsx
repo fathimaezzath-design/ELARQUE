@@ -5,6 +5,10 @@ import formatPrice from "../../utils/formatPrice";
 import { addToCart } from "../../services/cartService";
 import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
 import { resolveImageUrl } from "../../config/api";
+import {
+  isProductInWishlist,
+  toggleWishlist,
+} from "../../utils/wishlistStorage";
 
 const NEUTRAL_PLACEHOLDER =
   "https://placehold.co/700x900/1b0e14/dfc28d?text=ELARQUE";
@@ -45,20 +49,32 @@ function ProductCard({
   const navigate = useNavigate();
   const prodId = product?.id || product?._id;
 
-  // Initialize wishlist from props or local session storage
+  // Initialize wishlist from props or centralized wishlist storage
   const [wishlistActive, setWishlistActive] = useState(() => {
     if (isWishlisted) return true;
-    try {
-      const saved = localStorage.getItem("elarque_session_wishlist");
-      if (saved) {
-        const list = JSON.parse(saved);
-        if (Array.isArray(list) && prodId) {
-          return list.includes(prodId);
-        }
-      }
-    } catch {}
-    return false;
+    return prodId ? isProductInWishlist(prodId) : false;
   });
+
+  // Sync active state when prodId changes or on external updates
+  useEffect(() => {
+    if (prodId) {
+      setWishlistActive(isProductInWishlist(prodId));
+    }
+  }, [prodId]);
+
+  useEffect(() => {
+    const handleSync = () => {
+      if (prodId) {
+        setWishlistActive(isProductInWishlist(prodId));
+      }
+    };
+    window.addEventListener("elarque_wishlist_updated", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      window.removeEventListener("elarque_wishlist_updated", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
+  }, [prodId]);
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -80,23 +96,10 @@ function ProductCard({
 
   const handleWishlistClick = (e) => {
     e.stopPropagation();
-    const nextState = !wishlistActive;
-    setWishlistActive(nextState);
+    if (!prodId) return;
 
-    // Sync with elarque_session_wishlist in localStorage
-    try {
-      const saved = localStorage.getItem("elarque_session_wishlist");
-      let list = saved ? JSON.parse(saved) : [];
-      if (!Array.isArray(list)) list = [];
-      if (nextState) {
-        if (prodId && !list.includes(prodId)) list.push(prodId);
-      } else {
-        list = list.filter((id) => id !== prodId);
-      }
-      localStorage.setItem("elarque_session_wishlist", JSON.stringify(list));
-      window.dispatchEvent(new CustomEvent("elarque_wishlist_updated", { detail: list }));
-      window.dispatchEvent(new Event("storage"));
-    } catch {}
+    const { isWishlisted: nextState } = toggleWishlist(prodId);
+    setWishlistActive(nextState);
 
     // Trigger luxury pop-up notification
     showWishlistToast(product, nextState);

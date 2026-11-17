@@ -54,7 +54,7 @@ function Home() {
       <AnnouncementBar />
 
       {/* 2. Main Navigation Header */}
-      <Navbar wishlistCount={wishlistCount} cartCount={cartCount} />
+      <Navbar cartCount={cartCount} />
 
       {/* 3. Hero Section ("Haute Western Tailoring") */}
       <HeroSection />

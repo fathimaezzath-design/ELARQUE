@@ -308,6 +308,8 @@ const EditProfile = () => {
         if (error?.response?.status === 401 || error?.response?.status === 403) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
+          window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
+          window.dispatchEvent(new Event("storage"));
           navigate("/login");
           return;
         }

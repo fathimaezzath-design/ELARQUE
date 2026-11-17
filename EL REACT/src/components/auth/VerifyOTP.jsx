@@ -356,6 +356,7 @@ function VerifyOTP() {
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
       }
+      window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
       window.dispatchEvent(new Event("storage"));
 
       navigate("/");

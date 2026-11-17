@@ -32,6 +32,12 @@ import {
 } from "../../services/reviewService";
 import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
 import { resolveImageUrl } from "../../config/api";
+import {
+  getStoredWishlistCount,
+  isProductInWishlist,
+  toggleWishlist,
+  removeFromWishlist,
+} from "../../utils/wishlistStorage";
 import "./ProductDetails.css";
 
 const ALLOWED_SIZES = ["XS", "S", "M", "L", "XL"];
@@ -84,19 +90,6 @@ const formatINR = (val) => {
   return `₹${Number(val).toLocaleString("en-IN")}`;
 };
 
-// Safely calculate unique product ID count from elarque_session_wishlist
-const getSessionWishlistCount = () => {
-  try {
-    const saved = localStorage.getItem("elarque_session_wishlist");
-    if (!saved) return 0;
-    const list = JSON.parse(saved);
-    if (!Array.isArray(list)) return 0;
-    return new Set(list.filter(Boolean)).size;
-  } catch {
-    return 0;
-  }
-};
-
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -128,7 +121,7 @@ const ProductDetails = () => {
 
   // Local Wishlist State
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [wishlistCount, setWishlistCount] = useState(getSessionWishlistCount);
+  const [wishlistCount, setWishlistCount] = useState(getStoredWishlistCount);
 
   // Dynamic Real Reviews State
   const [reviews, setReviews] = useState([]);
@@ -310,27 +303,10 @@ const ProductDetails = () => {
           setActiveImageIndex(0);
           setQuantity(1);
 
-          // Check session wishlist
-          try {
-            const saved = localStorage.getItem("elarque_session_wishlist");
-            if (saved) {
-              const list = JSON.parse(saved);
-              if (Array.isArray(list)) {
-                setIsWishlisted(list.includes(prod.id || prod._id));
-                setWishlistCount(new Set(list.filter(Boolean)).size);
-              } else {
-                setIsWishlisted(false);
-                setWishlistCount(0);
-              }
-            } else {
-              setIsWishlisted(false);
-              setWishlistCount(0);
-            }
-          } catch (e) {
-            console.error(e);
-            setIsWishlisted(false);
-            setWishlistCount(0);
-          }
+          // Check centralized wishlist
+          const currentProdId = prod.id || prod._id;
+          setIsWishlisted(isProductInWishlist(currentProdId));
+          setWishlistCount(getStoredWishlistCount());
         } else {
           setError("Product not found or currently unavailable in the atelier catalog.");
         }
@@ -495,35 +471,33 @@ const ProductDetails = () => {
     setZoomCoords({ x, y });
   };
 
+  // Sync wishlist on external updates or session changes
+  useEffect(() => {
+    const handleSync = () => {
+      const prodId = product?.id || product?._id || id;
+      if (prodId) {
+        setIsWishlisted(isProductInWishlist(prodId));
+      }
+      setWishlistCount(getStoredWishlistCount());
+    };
+    window.addEventListener("elarque_wishlist_updated", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      window.removeEventListener("elarque_wishlist_updated", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
+  }, [product, id]);
+
   // Wishlist toggle
   const handleWishlistToggle = () => {
     if (!product) return;
     const prodId = product.id || product._id;
-    setIsWishlisted((prev) => {
-      const next = !prev;
-      try {
-        const saved = localStorage.getItem("elarque_session_wishlist");
-        let list = [];
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) list = parsed;
-        }
-        if (next) {
-          if (!list.includes(prodId)) list.push(prodId);
-        } else {
-          list = list.filter((item) => item !== prodId);
-        }
-        const uniqueList = Array.from(new Set(list.filter(Boolean)));
-        localStorage.setItem("elarque_session_wishlist", JSON.stringify(uniqueList));
-        window.dispatchEvent(new CustomEvent("elarque_wishlist_updated", { detail: uniqueList }));
-        window.dispatchEvent(new Event("storage"));
-        setWishlistCount(uniqueList.length);
-      } catch (e) {
-        console.error(e);
-      }
-      showWishlistToast(product, next);
-      return next;
-    });
+    if (!prodId) return;
+
+    const { isWishlisted: next, count } = toggleWishlist(prodId);
+    setIsWishlisted(next);
+    setWishlistCount(count);
+    showWishlistToast(product, next);
   };
 
   // Share action
@@ -578,31 +552,10 @@ const ProductDetails = () => {
           new CustomEvent("elarque_cart_updated", { detail: response.data.cart })
         );
         // Synchronize wishlist: remove product from session wishlist upon adding to cart
+        const targetId = product?.id || product?._id || productId;
+        removeFromWishlist(targetId);
         setIsWishlisted(false);
-        try {
-          const saved = localStorage.getItem("elarque_session_wishlist");
-          if (saved) {
-            const list = JSON.parse(saved);
-            if (Array.isArray(list)) {
-              const targetId = product?.id || product?._id || productId;
-              const updated = Array.from(
-                new Set(
-                  list.filter(
-                    (item) =>
-                      Boolean(item) &&
-                      item !== targetId &&
-                      item !== product?._id &&
-                      item !== product?.id
-                  )
-                )
-              );
-              localStorage.setItem("elarque_session_wishlist", JSON.stringify(updated));
-              setWishlistCount(updated.length);
-            }
-          }
-        } catch (storageErr) {
-          console.error(storageErr);
-        }
+        setWishlistCount(getStoredWishlistCount());
         const addedNotice = `${product.name} (${selectedSize}, ${selectedColor}) added to your shopping bag.`;
         setCartNotice(addedNotice);
         showCartToast(product, addedNotice);
@@ -649,31 +602,10 @@ const ProductDetails = () => {
           new CustomEvent("elarque_cart_updated", { detail: response.data.cart })
         );
         // Synchronize wishlist: remove product from session wishlist upon adding to cart
+        const targetId = product?.id || product?._id || productId;
+        removeFromWishlist(targetId);
         setIsWishlisted(false);
-        try {
-          const saved = localStorage.getItem("elarque_session_wishlist");
-          if (saved) {
-            const list = JSON.parse(saved);
-            if (Array.isArray(list)) {
-              const targetId = product?.id || product?._id || productId;
-              const updated = Array.from(
-                new Set(
-                  list.filter(
-                    (item) =>
-                      Boolean(item) &&
-                      item !== targetId &&
-                      item !== product?._id &&
-                      item !== product?.id
-                  )
-                )
-              );
-              localStorage.setItem("elarque_session_wishlist", JSON.stringify(updated));
-              setWishlistCount(updated.length);
-            }
-          }
-        } catch (storageErr) {
-          console.error(storageErr);
-        }
+        setWishlistCount(getStoredWishlistCount());
         navigate("/cart");
       } else {
         setCartNotice(response.data?.message || "Could not add to bag. Please try again.");
@@ -692,7 +624,7 @@ const ProductDetails = () => {
   return (
     <div className="el-product-details-page">
       {/* GLOBAL NAVBAR */}
-      <Navbar wishlistCount={wishlistCount} />
+      <Navbar />
 
       <main className="el-details-main">
         {/* LOADING STATE */}

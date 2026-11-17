@@ -189,6 +189,8 @@ function MyOrders() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
+    window.dispatchEvent(new Event("storage"));
     navigate("/login");
   };
 

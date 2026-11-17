@@ -23,6 +23,11 @@ import { getProducts, getProductFacets } from "../../services/productService";
 import { addToCart } from "../../services/cartService";
 import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
 import { resolveImageUrl } from "../../config/api";
+import {
+  getStoredWishlistIds,
+  toggleWishlist,
+  removeFromWishlist,
+} from "../../utils/wishlistStorage";
 import "./Collections.css";
 
 const SIZES_CANONICAL = ["XS", "S", "M", "L", "XL"];
@@ -91,14 +96,20 @@ const Collections = () => {
   const [quickViewSelectedColor, setQuickViewSelectedColor] = useState("");
   const [quickViewAdding, setQuickViewAdding] = useState(false);
   const [quickViewNotice, setQuickViewNotice] = useState({ type: "", text: "" });
-  const [sessionWishlist, setSessionWishlist] = useState(() => {
-    try {
-      const saved = localStorage.getItem("elarque_session_wishlist");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [sessionWishlist, setSessionWishlist] = useState(getStoredWishlistIds);
+
+  // Sync wishlist state when modified from other components or tabs
+  useEffect(() => {
+    const handleSync = () => {
+      setSessionWishlist(getStoredWishlistIds());
+    };
+    window.addEventListener("elarque_wishlist_updated", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      window.removeEventListener("elarque_wishlist_updated", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
+  }, []);
 
   // Data fetching state
   const [products, setProducts] = useState([]);
@@ -275,26 +286,10 @@ const Collections = () => {
   const handleWishlistToggle = (e, product) => {
     e.stopPropagation();
     const prodId = product.id || product._id;
-    const isCurrentlyWishlisted = sessionWishlist.includes(prodId);
-    const nextState = !isCurrentlyWishlisted;
+    if (!prodId) return;
 
-    setSessionWishlist((prev) => {
-      let updated;
-      if (prev.includes(prodId)) {
-        updated = prev.filter((id) => id !== prodId);
-      } else {
-        updated = [...prev, prodId];
-      }
-      try {
-        localStorage.setItem("elarque_session_wishlist", JSON.stringify(updated));
-        window.dispatchEvent(new CustomEvent("elarque_wishlist_updated", { detail: updated }));
-        window.dispatchEvent(new Event("storage"));
-      } catch (storageErr) {
-        console.error(storageErr);
-      }
-      return updated;
-    });
-
+    const { isWishlisted: nextState, ids } = toggleWishlist(prodId);
+    setSessionWishlist(ids);
     showWishlistToast(product, nextState);
   };
 
@@ -383,19 +378,9 @@ const Collections = () => {
           new CustomEvent("elarque_cart_updated", { detail: response.data.cart })
         );
         // Synchronize wishlist: remove product from session wishlist upon adding to cart
-        setSessionWishlist((prev) => {
-          if (!Array.isArray(prev)) return prev;
-          const targetId = quickViewProduct?.id || quickViewProduct?._id || productId;
-          const updated = prev.filter(
-            (id) => id !== targetId && id !== quickViewProduct?._id && id !== quickViewProduct?.id
-          );
-          try {
-            localStorage.setItem("elarque_session_wishlist", JSON.stringify(updated));
-          } catch (storageErr) {
-            console.error(storageErr);
-          }
-          return updated;
-        });
+        const targetId = quickViewProduct?.id || quickViewProduct?._id || productId;
+        const updatedWishlist = removeFromWishlist(targetId);
+        setSessionWishlist(updatedWishlist);
         setQuickViewNotice({
           type: "success",
           text: `${quickViewProduct.name} added to your shopping bag.`,
@@ -456,7 +441,7 @@ const Collections = () => {
   return (
     <div className="el-collections-page">
       {/* GLOBAL NAVBAR */}
-      <Navbar wishlistCount={sessionWishlist.length} />
+      <Navbar />
 
       <main className="el-collections-main">
         {/* 1. EDITORIAL HERO BANNER (MATCHING REFERENCE) */}

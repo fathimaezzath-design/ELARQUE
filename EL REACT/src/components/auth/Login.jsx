@@ -327,6 +327,8 @@ padding:34px;
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
       }
+      window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
+      window.dispatchEvent(new Event("storage"));
 
       navigate("/");
     } catch (err) {
@@ -355,6 +357,8 @@ const handleGoogleLogin = async () => {
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
+    window.dispatchEvent(new CustomEvent("elarque_auth_changed"));
+    window.dispatchEvent(new Event("storage"));
 
     navigate("/");
   } catch (error) {
