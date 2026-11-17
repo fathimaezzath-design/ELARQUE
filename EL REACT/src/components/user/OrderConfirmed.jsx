@@ -4,18 +4,12 @@ import { Check, Truck, ShieldCheck, ShoppingBag } from "lucide-react";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import { generateInvoicePDF } from "../../utils/generateInvoicePDF";
+import { resolveImageUrl } from "../../config/api";
 import "./OrderConfirmed.css";
 
 const formatINR = (val) => {
   if (val === undefined || val === null || isNaN(val)) return "0";
   return Number(val).toLocaleString("en-IN");
-};
-
-const resolveImageUrl = (url) => {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `http://localhost:5000${url}`;
-  return `http://localhost:5000/${url}`;
 };
 
 function OrderConfirmed() {

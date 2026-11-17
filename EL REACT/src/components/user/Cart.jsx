@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
+import { resolveImageUrl } from "../../config/api";
 import {
   getCart,
   updateItemQuantity,
@@ -56,14 +57,6 @@ const getColorHex = (color) => {
     "ivory & bordeaux": "#DFC28D",
   };
   return map[c] || "#5c061c";
-};
-
-// Image URL resolver
-const resolveImageUrl = (url) => {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `http://localhost:5000${url}`;
-  return `http://localhost:5000/${url}`;
 };
 
 // Currency formatter

@@ -31,6 +31,7 @@ import {
   checkReviewEligibility,
 } from "../../services/reviewService";
 import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
+import { resolveImageUrl } from "../../config/api";
 import "./ProductDetails.css";
 
 const ALLOWED_SIZES = ["XS", "S", "M", "L", "XL"];
@@ -75,14 +76,6 @@ const getColorHex = (color) => {
     beige: "#f5f5dc",
   };
   return colorMap[c] || "#5a1e2a";
-};
-
-// Image resolver
-const resolveImageUrl = (url) => {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `http://localhost:5000${url}`;
-  return `http://localhost:5000/${url}`;
 };
 
 // Currency formatter
@@ -427,7 +420,7 @@ const ProductDetails = () => {
     };
   }, [product, selectedVariant]);
 
-  // Gallery images: prefer variant images if present, fallback to product images
+  // Gallery images: prefer variant images if present, fallback to product images or all variant images
   const galleryImages = useMemo(() => {
     if (selectedVariant && Array.isArray(selectedVariant.images) && selectedVariant.images.length > 0) {
       return selectedVariant.images;
@@ -438,6 +431,24 @@ const ProductDetails = () => {
     if (product?.coverImage) {
       return [product.coverImage];
     }
+    if (product?.image) {
+      return [product.image];
+    }
+    if (Array.isArray(product?.variants)) {
+      const allVariantImages = [];
+      product.variants.forEach((v) => {
+        if (Array.isArray(v.images)) {
+          v.images.forEach((img) => {
+            if (img && typeof img === "string" && !allVariantImages.includes(img)) {
+              allVariantImages.push(img);
+            }
+          });
+        }
+      });
+      if (allVariantImages.length > 0) {
+        return allVariantImages;
+      }
+    }
     return [];
   }, [product, selectedVariant]);
 
@@ -445,7 +456,7 @@ const ProductDetails = () => {
   const safeImageIndex =
     activeImageIndex >= galleryImages.length ? 0 : activeImageIndex;
   const activeMainImage =
-    galleryImages[safeImageIndex] || product?.coverImage || null;
+    galleryImages[safeImageIndex] || product?.coverImage || product?.image || null;
 
   // Selected variant stock and status
   const hasVariants = Array.isArray(product?.variants) && product.variants.length > 0;
@@ -786,7 +797,14 @@ const ProductDetails = () => {
                             onClick={() => setActiveImageIndex(idx)}
                             aria-label={`Thumbnail ${idx + 1}`}
                           >
-                            <img src={fullUrl} alt={`Thumbnail ${idx + 1}`} />
+                            <img
+                              src={fullUrl || "https://placehold.co/120x150/1b0e14/dfc28d?text=ELARQUE"}
+                              alt={`Thumbnail ${idx + 1}`}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = "https://placehold.co/120x150/1b0e14/dfc28d?text=ELARQUE";
+                              }}
+                            />
                             <span className="el-thumb-index">#{idx + 1}</span>
                           </button>
                         );
@@ -833,9 +851,13 @@ const ProductDetails = () => {
                     >
                       {activeMainImage ? (
                         <img
-                          src={resolveImageUrl(activeMainImage)}
+                          src={resolveImageUrl(activeMainImage) || "https://placehold.co/800x1000/1b0e14/dfc28d?text=ELARQUE"}
                           alt={product.name}
                           className="el-hero-display-img"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "https://placehold.co/800x1000/1b0e14/dfc28d?text=ELARQUE";
+                          }}
                           style={
                             isZoomed
                               ? {

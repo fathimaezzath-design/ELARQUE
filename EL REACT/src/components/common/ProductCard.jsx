@@ -4,13 +4,34 @@ import { Heart, Star, ShoppingBag, Loader2 } from "lucide-react";
 import formatPrice from "../../utils/formatPrice";
 import { addToCart } from "../../services/cartService";
 import { showCartToast, showWishlistToast, showAuthToast } from "../../utils/toast";
+import { resolveImageUrl } from "../../config/api";
 
-// Helper to safely resolve image paths (uploads vs external URLs)
-const resolveImageUrl = (url) => {
-  if (!url) return "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=700&q=85";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `http://localhost:5000${url}`;
-  return `http://localhost:5000/${url}`;
+const NEUTRAL_PLACEHOLDER =
+  "https://placehold.co/700x900/1b0e14/dfc28d?text=ELARQUE";
+
+// Robust helper to extract image path from product data across variants
+const extractProductImage = (prod) => {
+  if (!prod) return null;
+  if (prod.image && typeof prod.image === "string") return prod.image;
+  if (prod.coverImage && typeof prod.coverImage === "string") return prod.coverImage;
+  if (Array.isArray(prod.images) && prod.images.length > 0) {
+    const found = prod.images.find((img) => img && typeof img === "string");
+    if (found) return found;
+  }
+  if (Array.isArray(prod.variants) && prod.variants.length > 0) {
+    for (const v of prod.variants) {
+      if (Array.isArray(v.images) && v.images.length > 0) {
+        const found = v.images.find((img) => img && typeof img === "string");
+        if (found) return found;
+      }
+    }
+  }
+  return null;
+};
+
+const getCardImageSrc = (prod) => {
+  const rawImg = extractProductImage(prod);
+  return resolveImageUrl(rawImg) || NEUTRAL_PLACEHOLDER;
 };
 
 function ProductCard({
@@ -41,18 +62,10 @@ function ProductCard({
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [imgSrc, setImgSrc] = useState(() =>
-    resolveImageUrl(product?.image || product?.coverImage || (product?.images && product?.images[0]))
-  );
+  const [imgSrc, setImgSrc] = useState(() => getCardImageSrc(product));
 
   useEffect(() => {
-    setImgSrc(
-      resolveImageUrl(
-        product?.image ||
-          product?.coverImage ||
-          (product?.images && product?.images[0])
-      )
-    );
+    setImgSrc(getCardImageSrc(product));
   }, [product]);
 
   const handleCardClick = (e) => {
@@ -230,9 +243,7 @@ function ProductCard({
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
           onError={() => {
-            setImgSrc(
-              "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=700&q=85"
-            );
+            setImgSrc(NEUTRAL_PLACEHOLDER);
             setImageLoaded(true);
           }}
         />

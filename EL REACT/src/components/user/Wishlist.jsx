@@ -4,14 +4,7 @@ import { Heart, ShoppingBag, ArrowRight, ArrowLeft, Sparkles } from "lucide-reac
 import UserLayout from "../../layouts/UserLayout";
 import { getProductById } from "../../services/productService";
 import { showWishlistToast } from "../../utils/toast";
-
-// Image URL resolver consistent with Collections & ProductDetails
-const resolveImageUrl = (url) => {
-  if (!url) return "/placeholder-image.png";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `http://localhost:5000${url}`;
-  return `http://localhost:5000/${url}`;
-};
+import { resolveImageUrl } from "../../config/api";
 
 // Safe currency formatter
 const formatINR = (val) => {

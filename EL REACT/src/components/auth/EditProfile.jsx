@@ -27,6 +27,7 @@ import {
   verifyEmailChangeOTP,
 } from "../../services/profileService";
 import Navbar from "../common/Navbar";
+import { resolveImageUrl } from "../../config/api";
 
 
 /* =========================
@@ -34,22 +35,7 @@ import Navbar from "../common/Navbar";
 ========================= */
 
 const getImageUrl = (image) => {
-  if (!image) {
-    return "";
-  }
-
-  if (
-    image.startsWith("http://") ||
-    image.startsWith("https://")
-  ) {
-    return image;
-  }
-
-  if (image.startsWith("/")) {
-    return `http://localhost:5000${image}`;
-  }
-
-  return `http://localhost:5000/${image}`;
+  return resolveImageUrl(image) || "";
 };
 
 

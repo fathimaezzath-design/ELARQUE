@@ -1,13 +1,7 @@
 /**
  * ELARQUE Luxury Atelier Toast Notification Event Bus & Helpers
  */
-
-const resolveImageUrl = (url) => {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `http://localhost:5000${url}`;
-  return `http://localhost:5000/${url}`;
-};
+import { resolveImageUrl } from "../config/api";
 
 /**
  * Dispatch a generic toast notification

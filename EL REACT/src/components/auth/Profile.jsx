@@ -22,6 +22,7 @@ import {
 
 import { getProfile } from "../../services/profileService";
 import { getAddresses } from "../../services/addressService";
+import { resolveImageUrl } from "../../config/api";
 import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
@@ -333,11 +334,7 @@ function Profile() {
             <div className="el-patron-avatar-wrap">
               {effectiveUser.profileImage ? (
                 <img
-                  src={
-                    effectiveUser.profileImage.startsWith("http")
-                      ? effectiveUser.profileImage
-                      : `http://localhost:5000${effectiveUser.profileImage}`
-                  }
+                  src={resolveImageUrl(effectiveUser.profileImage)}
                   alt={effectiveUser.fullName || "Patron Avatar"}
                   className="el-patron-avatar-img"
                 />

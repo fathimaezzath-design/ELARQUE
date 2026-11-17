@@ -27,16 +27,14 @@ import {
 import { getProfile } from "../../services/authService";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
+import { resolveImageUrl } from "../../config/api";
 import "./AddAddress.css";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 const getImageUrl = (image) => {
-  if (!image) return "";
-  if (image.startsWith("http://") || image.startsWith("https://")) return image;
-  if (image.startsWith("/")) return `http://localhost:5000${image}`;
-  return `http://localhost:5000/${image}`;
+  return resolveImageUrl(image) || "";
 };
 
 function AddAddress() {

@@ -38,17 +38,12 @@ import {
 } from "../../services/couponService";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
+import { resolveImageUrl } from "../../config/api";
 import "./Checkout.css";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const resolveImageUrl = (url) => {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return `http://localhost:5000${url}`;
-  return `http://localhost:5000/${url}`;
-};
 
 const formatINR = (val) => {
   if (val === undefined || val === null || isNaN(val)) return "0.00";

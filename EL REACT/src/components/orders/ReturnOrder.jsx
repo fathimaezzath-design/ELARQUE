@@ -20,6 +20,7 @@ import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import formatPrice from "../../utils/formatPrice";
+import { resolveImageUrl } from "../../config/api";
 import "./ReturnOrder.css";
 
 const FALLBACK_ITEM_IMG =
@@ -267,7 +268,7 @@ function ReturnOrder() {
 
   const orderNum = order?.orderNumber || `#ELQ-${String(orderId).slice(-6).toUpperCase()}`;
   const itemImg = selectedItem?.productImage || FALLBACK_ITEM_IMG;
-  const resolvedImg = itemImg.startsWith("http") ? itemImg : `http://localhost:5000${itemImg}`;
+  const resolvedImg = resolveImageUrl(itemImg);
 
   const formatDateDisplay = (dateString) => {
     if (!dateString) return "20 July 2026";

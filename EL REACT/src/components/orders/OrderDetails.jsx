@@ -22,6 +22,7 @@ import {
   requestItemReturn,
 } from "../../services/orderService";
 import { createProductReview } from "../../services/reviewService";
+import { resolveImageUrl } from "../../config/api";
 import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
@@ -781,9 +782,7 @@ function OrderDetails() {
             <div className="el-od-items-list">
               {items.map((item, idx) => {
                 const itemImg = item.productImage || FALLBACK_ITEM_IMG;
-                const resolvedImg = itemImg.startsWith("http")
-                  ? itemImg
-                  : `http://localhost:5000${itemImg}`;
+                const resolvedImg = resolveImageUrl(itemImg);
 
                 const isItemActive = item.itemStatus === "Active";
                 const isItemCancelled = item.itemStatus === "Cancelled";

@@ -22,6 +22,7 @@ import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
 import Footer from "../common/Footer";
 import formatPrice from "../../utils/formatPrice";
+import { resolveImageUrl } from "../../config/api";
 import "./ReturnDetails.css";
 
 const FALLBACK_ITEM_IMG =
@@ -204,7 +205,7 @@ function ReturnDetails() {
   } = returnDetails;
 
   const itemImg = item?.productImage || FALLBACK_ITEM_IMG;
-  const resolvedImg = itemImg.startsWith("http") ? itemImg : `http://localhost:5000${itemImg}`;
+  const resolvedImg = resolveImageUrl(itemImg);
 
   const formatShortDate = (dateString, fallback = "Pending") => {
     if (!dateString) return fallback;

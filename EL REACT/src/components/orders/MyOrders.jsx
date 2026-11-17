@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { getMyOrders } from "../../services/orderService";
+import { resolveImageUrl } from "../../config/api";
 import { getProfile } from "../../services/profileService";
 import AnnouncementBar from "../common/AnnouncementBar";
 import Navbar from "../common/Navbar";
@@ -245,11 +246,7 @@ function MyOrders() {
             <div className="el-patron-avatar-wrap">
               {effectiveUser.profileImage ? (
                 <img
-                  src={
-                    effectiveUser.profileImage.startsWith("http")
-                      ? effectiveUser.profileImage
-                      : `http://localhost:5000${effectiveUser.profileImage}`
-                  }
+                  src={resolveImageUrl(effectiveUser.profileImage)}
                   alt={effectiveUser.fullName || "Patron Avatar"}
                   className="el-patron-avatar-img"
                 />
@@ -530,9 +527,7 @@ function MyOrders() {
                   firstItem.productImage ||
                   FALLBACK_GARMENT_IMAGES[idx % FALLBACK_GARMENT_IMAGES.length];
 
-                const resolvedImg = itemImage.startsWith("http")
-                  ? itemImage
-                  : `http://localhost:5000${itemImage}`;
+                const resolvedImg = resolveImageUrl(itemImage);
 
                 return (
                   <article key={order._id || idx} className="el-order-commission-card">
