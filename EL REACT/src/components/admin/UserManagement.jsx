@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import './UserManagement.css';
+import { API_BASE_URL } from "../../config/api";
 
 // Initial high-fidelity mock users sorted latest first (based strictly on User.js schema)
 const INITIAL_MOCK_USERS = [
@@ -74,7 +75,7 @@ const UserManagement = () => {
     try {
       setLoading(true);
       const adminToken = localStorage.getItem('adminToken');
-      const res = await axios.get('http://localhost:5000/api/admin/users', {
+      const res = await axios.get(`${API_BASE_URL}/admin/users`, {
         headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {},
       });
       if (res?.data?.users && Array.isArray(res.data.users) && res.data.users.length > 0) {
@@ -147,7 +148,7 @@ const UserManagement = () => {
     try {
       const adminToken = localStorage.getItem('adminToken');
       await axios.patch(
-        `http://localhost:5000/api/admin/users/${targetId}/block`,
+        `${API_BASE_URL}/admin/users/${targetId}/block`,
         { isBlocked: nextBlockedState },
         {
           headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {},

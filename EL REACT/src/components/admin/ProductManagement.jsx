@@ -25,9 +25,10 @@ import {
   Boxes,
 } from "lucide-react";
 import "./ProductManagement.css";
+import { API_BASE_URL as SHARED_API_BASE, resolveImageUrl } from "../../config/api";
 
-const API_BASE_URL = "http://localhost:5000/api/admin/products";
-const CATEGORIES_API_URL = "http://localhost:5000/api/admin/categories";
+const API_BASE_URL = `${SHARED_API_BASE}/admin/products`;
+const CATEGORIES_API_URL = `${SHARED_API_BASE}/admin/categories`;
 const PAGE_LIMIT = 10;
 
 // Format INR currency
@@ -45,8 +46,7 @@ const getProductThumbnail = (product) => {
   if (Array.isArray(product.variants)) {
     for (const v of product.variants) {
       if (Array.isArray(v.images) && v.images.length > 0) {
-        const img = v.images[0];
-        return img.startsWith("http") ? img : `http://localhost:5000${img}`;
+        return resolveImageUrl(v.images[0]);
       }
     }
   }

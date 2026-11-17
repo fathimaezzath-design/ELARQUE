@@ -14,10 +14,11 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import ProductImageUploader from "./ProductImageUploader";
+import { API_BASE_URL as SHARED_API_BASE, resolveImageUrl } from "../../config/api";
 import "./EditProduct.css";
 
-const API_BASE_URL = "http://localhost:5000/api/admin/products";
-const CATEGORIES_API_URL = "http://localhost:5000/api/admin/categories";
+const API_BASE_URL = `${SHARED_API_BASE}/admin/products`;
+const CATEGORIES_API_URL = `${SHARED_API_BASE}/admin/categories`;
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL"];
 
 // Luxury Atelier Color Mapping
@@ -613,9 +614,7 @@ const EditProduct = () => {
                   {existingImages.length > 0 ? (
                     <div className="admin-existing-grid">
                       {existingImages.map((imgUrl, idx) => {
-                        const fullUrl = imgUrl.startsWith("http")
-                          ? imgUrl
-                          : `http://localhost:5000${imgUrl}`;
+                        const fullUrl = resolveImageUrl(imgUrl);
                         return (
                           <div
                             key={idx}

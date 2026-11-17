@@ -19,8 +19,9 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import './CategoryManagement.css';
+import { API_BASE_URL as SHARED_API_BASE, resolveImageUrl } from '../../config/api';
 
-const API_BASE_URL = 'http://localhost:5000/api/admin/categories';
+const API_BASE_URL = `${SHARED_API_BASE}/admin/categories`;
 const PAGE_LIMIT = 10;
 
 const CategoryManagement = () => {
@@ -721,7 +722,7 @@ const CategoryManagement = () => {
                       <td className="admin-cat-image-cell">
                         {cat.image ? (
                           <img
-                            src={cat.image}
+                            src={resolveImageUrl(cat.image)}
                             alt={cat.name}
                             className="admin-cat-image-thumb"
                           />

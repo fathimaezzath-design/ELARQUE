@@ -22,8 +22,9 @@ import {
   Lock,
 } from "lucide-react";
 import "./VariantManagement.css";
+import { API_BASE_URL, resolveImageUrl } from "../../config/api";
 
-const VARIANTS_API_URL = "http://localhost:5000/api/admin/variants";
+const VARIANTS_API_URL = `${API_BASE_URL}/admin/variants`;
 const PAGE_LIMIT = 10;
 
 // Luxury Atelier Color Swatch Mapping
@@ -70,18 +71,7 @@ const formatPrice = (amount) => {
   }).format(amount);
 };
 
-// Resolve Image URL
-const resolveImageUrl = (imagePath) => {
-  if (!imagePath) return null;
-  if (
-    imagePath.startsWith("http://") ||
-    imagePath.startsWith("https://") ||
-    imagePath.startsWith("data:")
-  ) {
-    return imagePath;
-  }
-  return `http://localhost:5000${imagePath}`;
-};
+
 
 const VariantManagement = () => {
   const navigate = useNavigate();
@@ -239,7 +229,7 @@ const VariantManagement = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:5000/api/admin/products/${deleteModal.productId}/variants/${deleteModal.variantId}`,
+        `${API_BASE_URL}/admin/products/${deleteModal.productId}/variants/${deleteModal.variantId}`,
         {
           headers: {
             Authorization: `Bearer ${adminToken}`,

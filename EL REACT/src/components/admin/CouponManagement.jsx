@@ -21,8 +21,9 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import "./CouponManagement.css";
+import { API_BASE_URL } from "../../config/api";
 
-const ADMIN_API = "http://localhost:5000/api/admin/coupons";
+const ADMIN_API = `${API_BASE_URL}/admin/coupons`;
 
 const adminHeader = () => ({
   Authorization: `Bearer ${localStorage.getItem("adminToken")}`,

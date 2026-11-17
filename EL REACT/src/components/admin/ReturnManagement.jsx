@@ -28,6 +28,7 @@ import {
 } from "../../services/adminReturnService";
 import formatPrice from "../../utils/formatPrice";
 import "./ReturnManagement.css";
+import { resolveImageUrl } from "../../config/api";
 
 // Helper for relative time or date formatting
 function formatRelativeTime(dateString) {
@@ -279,8 +280,7 @@ const ReturnManagement = () => {
   // Helper for image URL
   const getProductImg = (path) => {
     if (!path) return "https://placehold.co/120x150/1b0e14/dfc28d?text=ELARQUE";
-    if (path.startsWith("http")) return path;
-    return `http://localhost:5000${path.startsWith("/") ? path : `/${path}`}`;
+    return resolveImageUrl(path);
   };
 
   return (

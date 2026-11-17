@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import "./ProductImageUploader.css";
+import { API_BASE_URL } from "../../config/api";
 
 // Helper to create an HTML Image element from a source URL
 const createImage = (url) =>
@@ -512,7 +513,7 @@ function ProductImageUploader({
       });
 
       const response = await axios.post(
-        "http://localhost:5000/api/admin/products/images",
+        `${API_BASE_URL}/admin/products/images`,
         formData,
         {
           headers: {

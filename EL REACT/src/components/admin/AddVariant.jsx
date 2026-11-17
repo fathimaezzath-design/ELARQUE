@@ -10,9 +10,10 @@ import {
   Package,
 } from "lucide-react";
 import "./AddVariant.css";
+import { API_BASE_URL } from "../../config/api";
 
-const PRODUCTS_API_URL = "http://localhost:5000/api/admin/products";
-const UPLOAD_API_URL   = "http://localhost:5000/api/admin/products/images";
+const PRODUCTS_API_URL = `${API_BASE_URL}/admin/products`;
+const UPLOAD_API_URL   = `${API_BASE_URL}/admin/products/images`;
 const SIZES = ["XS", "S", "M", "L", "XL"];
 
 // Color name → hex mapping

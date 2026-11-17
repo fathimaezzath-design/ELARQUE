@@ -20,8 +20,9 @@ import {
   Layers,
 } from "lucide-react";
 import "./OffersManagement.css";
+import { API_BASE_URL } from "../../config/api";
 
-const API_BASE = "http://localhost:5000/api/admin/offers";
+const API_BASE = `${API_BASE_URL}/admin/offers`;
 
 const adminHeader = () => ({
   Authorization: `Bearer ${localStorage.getItem("adminToken")}`,

@@ -28,8 +28,9 @@ import {
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 import "./SalesReport.css";
+import { API_BASE_URL } from "../../config/api";
 
-const API_BASE = "http://localhost:5000/api/admin/sales-report";
+const API_BASE = `${API_BASE_URL}/admin/sales-report`;
 
 // Helper for formatting INR Currency
 const fmtINR = (val) => {

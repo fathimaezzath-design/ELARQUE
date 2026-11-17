@@ -22,8 +22,9 @@ import {
 } from "lucide-react";
 import formatPrice from "../../utils/formatPrice";
 import "./OrderManagement.css";
+import { API_BASE_URL, resolveImageUrl } from "../../config/api";
 
-const API_ORDERS_URL = "http://localhost:5000/api/admin/orders";
+const API_ORDERS_URL = `${API_BASE_URL}/admin/orders`;
 
 // Status configuration for badges
 const STATUS_CONFIG = {
@@ -419,7 +420,7 @@ const OrderManagement = () => {
                                 src={
                                   firstItem.productImage.startsWith("http")
                                     ? firstItem.productImage
-                                    : `http://localhost:5000${firstItem.productImage}`
+                                    : resolveImageUrl(firstItem.productImage)
                                 }
                                 alt={firstItem.productName || "Product"}
                                 className="admin-item-thumb"
@@ -648,7 +649,7 @@ const OrderManagement = () => {
                               src={
                                 item.productImage.startsWith("http")
                                   ? item.productImage
-                                  : `http://localhost:5000${item.productImage}`
+                                  : resolveImageUrl(item.productImage)
                               }
                               alt={item.productName}
                               className="admin-item-thumb"

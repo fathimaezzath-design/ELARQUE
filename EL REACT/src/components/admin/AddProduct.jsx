@@ -9,10 +9,11 @@ import {
   RefreshCw,
 } from "lucide-react";
 import ProductImageUploader from "./ProductImageUploader";
+import { API_BASE_URL as SHARED_API_BASE } from "../../config/api";
 import "./AddProduct.css";
 
-const API_BASE_URL = "http://localhost:5000/api/admin/products";
-const CATEGORIES_API_URL = "http://localhost:5000/api/admin/categories";
+const API_BASE_URL = `${SHARED_API_BASE}/admin/products`;
+const CATEGORIES_API_URL = `${SHARED_API_BASE}/admin/categories`;
 const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL"];
 
 const AddProduct = () => {
