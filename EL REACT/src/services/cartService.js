@@ -1,8 +1,9 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { attachCustomerInterceptors } from "./api";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api/cart",
+  baseURL: `${API_BASE_URL}/cart`,
 });
 
 attachCustomerInterceptors(API);
