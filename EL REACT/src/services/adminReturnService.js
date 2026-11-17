@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_BASE_URL as SHARED_API_BASE } from "../config/api";
 
-const API_BASE_URL = "http://localhost:5000/api/admin/returns";
+const API_BASE_URL = `${SHARED_API_BASE}/admin/returns`;
 
 const getAuthHeaders = () => {
   const adminToken = localStorage.getItem("adminToken");
