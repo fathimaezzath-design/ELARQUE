@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { HERO_DATA } from "../../data/homeData";
+import { getProducts } from "../../services/productService";
+import { resolveImageUrl } from "../../config/api";
 import formatPrice from "../../utils/formatPrice";
 
 function HeroSection() {
@@ -15,6 +17,61 @@ function HeroSection() {
     heroImage,
     featuredCard,
   } = HERO_DATA;
+
+  // Dynamic best seller product for the hero image & floating card
+  const [bestSeller, setBestSeller] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await getProducts({ isBestSeller: true, limit: 1 });
+        if (
+          !cancelled &&
+          res?.data?.success &&
+          Array.isArray(res.data.products) &&
+          res.data.products.length > 0
+        ) {
+          setBestSeller(res.data.products[0]);
+        }
+      } catch {
+        // Silently fall back to static data
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Resolve the hero image: prefer the first best seller's product image from DB
+  const bestSellerImageRaw =
+    bestSeller?.image ||
+    bestSeller?.coverImage ||
+    (bestSeller?.images && bestSeller.images[0]);
+  const dynamicHeroUrl = bestSellerImageRaw
+    ? resolveImageUrl(bestSellerImageRaw)
+    : null;
+  const heroImgUrl = dynamicHeroUrl || heroImage.url;
+  const heroImgAlt = bestSeller?.name
+    ? `${bestSeller.name} — ELARQUE Best Seller`
+    : heroImage.alt;
+
+  // Floating card: use real product data when available, fall back to static
+  const cardTitle = bestSeller?.name || featuredCard.title;
+  const cardDesc =
+    bestSeller?.fabric ||
+    bestSeller?.description ||
+    featuredCard.description;
+  const cardPrice = bestSeller?.price ?? featuredCard.price;
+  const cardOriginal =
+    bestSeller?.originalPrice ?? featuredCard.originalPrice;
+
+  // Smooth-scroll handler for "SHOP BEST SELLER"
+  const handleScrollToBestsellers = (e) => {
+    e.preventDefault();
+    const target = document.getElementById("bestsellers");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <section className="el-hero-section" aria-label="Hero Introduction">
@@ -38,9 +95,13 @@ function HeroSection() {
 
           {/* CTA Buttons */}
           <div className="el-hero-actions">
-            <a href={primaryCta.href} className="el-btn el-btn-primary">
+            <button
+              type="button"
+              onClick={handleScrollToBestsellers}
+              className="el-btn el-btn-primary"
+            >
               {primaryCta.label} <ArrowRight size={15} />
-            </a>
+            </button>
             <a href={secondaryCta.href} className="el-btn el-btn-secondary">
               {secondaryCta.label}
             </a>
@@ -61,8 +122,8 @@ function HeroSection() {
         <div className="el-hero-right">
           <div className="el-hero-media-wrapper">
             <img
-              src={heroImage.url}
-              alt={heroImage.alt}
+              src={heroImgUrl}
+              alt={heroImgAlt}
               className="el-hero-img"
               loading="eager"
             />
@@ -75,23 +136,24 @@ function HeroSection() {
                   <span className="el-floating-badge">{featuredCard.badge}</span>
                 </div>
 
-                <h4 className="el-floating-title">{featuredCard.title}</h4>
-                <p className="el-floating-desc">{featuredCard.description}</p>
+                <h4 className="el-floating-title">{cardTitle}</h4>
+                <p className="el-floating-desc">{cardDesc}</p>
 
                 <div className="el-floating-footer">
                   <div className="el-floating-pricing">
                     <span className="el-floating-price">
-                      {formatPrice(featuredCard.price)}
+                      {formatPrice(cardPrice)}
                     </span>
-                    {featuredCard.originalPrice && (
+                    {cardOriginal && (
                       <span className="el-floating-original">
-                        {formatPrice(featuredCard.originalPrice)}
+                        {formatPrice(cardOriginal)}
                       </span>
                     )}
                   </div>
 
                   <a
                     href="#bestsellers"
+                    onClick={handleScrollToBestsellers}
                     className="el-floating-btn"
                     title={featuredCard.ctaLabel}
                   >
@@ -204,6 +266,8 @@ function HeroSection() {
           justify-content: center;
           gap: 8px;
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          border: none;
+          cursor: pointer;
         }
 
         .el-btn-primary {
