@@ -27,6 +27,29 @@ import "./Collections.css";
 
 const SIZES_CANONICAL = ["XS", "S", "M", "L", "XL"];
 
+const HERO_PLACEHOLDER_IMAGE =
+  "https://placehold.co/1200x800/1b0e14/dfc28d?text=ELARQUE+ATELIER";
+
+// Helper to extract the first valid image path from a product object
+const extractFirstProductImage = (prod) => {
+  if (!prod) return null;
+  if (prod.image && typeof prod.image === "string") return prod.image;
+  if (prod.coverImage && typeof prod.coverImage === "string") return prod.coverImage;
+  if (Array.isArray(prod.images) && prod.images.length > 0) {
+    const found = prod.images.find((img) => img && typeof img === "string");
+    if (found) return found;
+  }
+  if (Array.isArray(prod.variants) && prod.variants.length > 0) {
+    for (const v of prod.variants) {
+      if (Array.isArray(v.images) && v.images.length > 0) {
+        const found = v.images.find((img) => img && typeof img === "string");
+        if (found) return found;
+      }
+    }
+  }
+  return null;
+};
+
 // Format currency
 const formatINR = (val) => {
   if (val === undefined || val === null || isNaN(val)) return "—";
@@ -415,6 +438,21 @@ const Collections = () => {
   // Total products count to show in categories
   const totalFacetCount = facets?.totalProducts || pagination.totalProducts;
 
+  // Derive the first product with a valid image from the collection's product data
+  const heroProduct = useMemo(() => {
+    if (!Array.isArray(products) || products.length === 0) return null;
+    return (
+      products.find((p) => Boolean(extractFirstProductImage(p))) ||
+      products[0] ||
+      null
+    );
+  }, [products]);
+
+  const heroBannerImage = useMemo(() => {
+    const rawImage = extractFirstProductImage(heroProduct);
+    return rawImage ? resolveImageUrl(rawImage) : null;
+  }, [heroProduct]);
+
   return (
     <div className="el-collections-page">
       {/* GLOBAL NAVBAR */}
@@ -447,9 +485,9 @@ const Collections = () => {
                 type="button"
                 className="el-btn-hero-secondary"
                 onClick={() => {
-                  const firstProd = products[0];
-                  if (firstProd) {
-                    navigate(`/products/${firstProd.id || firstProd._id}`);
+                  const targetProd = heroProduct || products[0];
+                  if (targetProd) {
+                    navigate(`/products/${targetProd.id || targetProd._id}`);
                   } else {
                     document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
                   }
@@ -462,9 +500,17 @@ const Collections = () => {
 
           <div className="el-hero-editorial-visual">
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=85"
-              alt="Haute Western Signature Collection Silhouette"
+              src={heroBannerImage || HERO_PLACEHOLDER_IMAGE}
+              alt={
+                heroProduct?.name
+                  ? `${heroProduct.name} — ELARQUE Archive Collection`
+                  : "ELARQUE Archive Collection"
+              }
               className="el-hero-editorial-img"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = HERO_PLACEHOLDER_IMAGE;
+              }}
             />
           </div>
         </section>
