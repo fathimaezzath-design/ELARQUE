@@ -1,8 +1,9 @@
 import axios from "axios";
-import { attachCustomerInterceptors } from "./api";
+import { API_BASE_URL } from "../config/api";
+
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api/reviews",
+  baseURL: `${API_BASE_URL}/reviews`,
 });
 
 attachCustomerInterceptors(API);
