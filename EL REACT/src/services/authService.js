@@ -3,11 +3,11 @@ import axios from "axios";
 import { API_BASE_URL } from "../config/api";
 
 const API = axios.create({
-  baseURL: `${API_BASE_URL}/api/auth`,
+  baseURL: `${API_BASE_URL}/auth`,
 });
 
 const PROFILE_API = axios.create({
-  baseURL: `${API_BASE_URL}/api/profile`,
+  baseURL: `${API_BASE_URL}/profile`,
 });
 
 // Add JWT automatically to profile requests

@@ -1,4 +1,6 @@
+
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 const API = axios.create({
   baseURL: `${API_BASE_URL}/payment`,
@@ -18,6 +20,7 @@ export const loadRazorpayScript = () => {
       resolve(true);
       return;
     }
+
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
@@ -31,7 +34,6 @@ export const loadRazorpayScript = () => {
    RAZORPAY GATEWAY
    ========================================================================= */
 
-// Initialize a Razorpay checkout session on server
 export const createRazorpayOrder = (addressId, couponCode = "") => {
   return API.post(
     "/razorpay/create-order",
@@ -40,7 +42,6 @@ export const createRazorpayOrder = (addressId, couponCode = "") => {
   );
 };
 
-// Verify payment cryptographic signature & place order
 export const verifyRazorpayPayment = (payload) => {
   return API.post(
     "/razorpay/verify",
@@ -50,10 +51,9 @@ export const verifyRazorpayPayment = (payload) => {
 };
 
 /* =========================================================================
-   PAYPAL GATEWAY (Multi-Gateway Add-On)
+   PAYPAL GATEWAY
    ========================================================================= */
 
-// Initialize PayPal order
 export const createPayPalOrder = (addressId, couponCode = "") => {
   return API.post(
     "/paypal/create-order",
@@ -62,7 +62,6 @@ export const createPayPalOrder = (addressId, couponCode = "") => {
   );
 };
 
-// Capture PayPal payment
 export const capturePayPalPayment = (payload) => {
   return API.post(
     "/paypal/capture",

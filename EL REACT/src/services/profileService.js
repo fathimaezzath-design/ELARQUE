@@ -1,6 +1,6 @@
+
+import axios from "axios";
 import { API_BASE_URL } from "../config/api";
-
-
 import { attachCustomerInterceptors } from "./api";
 
 const API = axios.create({
@@ -47,7 +47,6 @@ export const updateProfile = (data) => {
 
 export const updateProfileImage = (file) => {
   const formData = new FormData();
-
   formData.append("profileImage", file);
 
   return API.put("/image", formData, {
@@ -75,25 +74,16 @@ export const changePassword = (data) => {
 export const sendEmailChangeOTP = (newEmail, currentPassword = "") => {
   return API.post(
     "/email/send-otp",
-    {
-      newEmail,
-      currentPassword,
-    },
-    {
-      headers: authHeader(),
-    }
+    { newEmail, currentPassword },
+    { headers: authHeader() }
   );
 };
 
 export const verifyEmailChangeOTP = (otp) => {
   return API.post(
     "/email/verify-otp",
-    {
-      otp,
-    },
-    {
-      headers: authHeader(),
-    }
+    { otp },
+    { headers: authHeader() }
   );
 };
 
